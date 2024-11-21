@@ -107,7 +107,7 @@ $(() => {
       showPageSizeSelector: true,
       allowedPageSizes: [10, 25, 50, 100],
     },
-    remoteOperations: false,
+    remoteOperations: true,
     searchPanel: {
       visible: true,
       highlightCaseSensitive: true,

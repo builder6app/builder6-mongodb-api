@@ -69,11 +69,19 @@ app.get('/records/:collectionName', async (req, res) => {
 
     console.log("query start", options)
 
-    options.processingOptions.replaceIds = false;
+    const loadOptions = {
+      take: 20,
+      skip: 0,
+      ...options.loadOptions
+    }
+    const processingOptions = {
+      replaceIds: false,
+      ...options.processingOptions
+    }
     const results = await devextremeQuery(
       db.collection(collectionName),
-      options.loadOptions,
-      options.processingOptions
+      loadOptions,
+      processingOptions
     );
     
     console.log("query end", options, results)
