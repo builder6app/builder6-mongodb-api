@@ -128,7 +128,19 @@ $(() => {
     showColumnTotals: false,
     fieldChooser: {
       enabled: true,
+      allowSearch: true,
       height: 400,
+    },
+    headerFilter: {
+      search: {
+        enabled: true,
+      },
+      showRelevantValues: true,
+      width: 300,
+      height: 400,
+    },
+    fieldPanel: {
+      visible: true,
     },
     dataSource: customDataSource,
   }).dxPivotGrid('instance');
