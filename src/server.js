@@ -1,8 +1,9 @@
 require('babel-polyfill');
 
+const uuid = require('uuid');
 const path = require('path');
 const express = require('express');
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
 const devextremeQuery = require('devextreme-query-mongodb');
 const getOptions = require('devextreme-query-mongodb/options').getOptions;
@@ -11,7 +12,14 @@ const app = express();
 const port = 3000;
 
 // Middleware
-app.use(bodyParser.json());
+
+// create application/json parser
+var jsonParser = bodyParser.json()
+
+// create application/x-www-form-urlencoded parser
+var urlencodedParser = bodyParser.urlencoded()
+
+app.use(jsonParser);
 app.use(express.static(path.join(__dirname,'public')))
 
 // MongoDB connection
@@ -31,11 +39,19 @@ MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 // Create
 app.post('/records/:collectionName', async (req, res) => {
   try {
+    const _id = uuid.v4();
+    const data = {
+      _id,
+      ...req.body
+    }
     const collectionName = req.params.collectionName;
-    const result = await db.collection(collectionName).insertOne(req.body);
-    res.status(201).send(result.ops[0]);
+    const result = await db.collection(collectionName).insertOne(data);
+    console.log('insert', data, result);
+
+    res.status(201).send(result.insertedId);
   } catch (error) {
-    res.status(400).send(error);
+    console.error("query error", error)
+    res.status(500).send(error);
   }
 });
 
@@ -63,7 +79,7 @@ app.get('/records/:collectionName', async (req, res) => {
     console.log("query end", options, results)
     res.status(200).send(results);
   } catch (error) {
-    console.log("query error", error)
+    console.error("query error", error)
     res.status(500).send(error);
   }
 });
@@ -77,6 +93,7 @@ app.get('/records/:collectionName/all', async (req, res) => {
     
     res.status(200).send(items);
   } catch (error) {
+    console.error("query error", error)
     res.status(500).send(error);
   }
 });
@@ -85,31 +102,34 @@ app.get('/records/:collectionName/all', async (req, res) => {
 app.get('/records/:collectionName/:id', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
-    const item = await db.collection(collectionName).findOne({ _id: new ObjectId(req.params.id) });
+    const item = await db.collection(collectionName).findOne({ _id: req.params.id });
     if (!item) {
       return res.status(404).send();
     }
     res.status(200).send(item);
   } catch (error) {
+    console.log("query error", error)
     res.status(500).send(error);
   }
 });
 
 // Update
-app.patch('/records/:collectionName/:id', async (req, res) => {
+app.put('/records/:collectionName/:id', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
     const result = await db.collection(collectionName).findOneAndUpdate(
-      { _id: new ObjectId(req.params.id) },
+      { _id: req.params.id },
       { $set: req.body },
       { returnDocument: 'after' }
     );
-    if (!result.value) {
+    console.log('update', req.body, result)
+    if (!result) {
       return res.status(404).send();
     }
-    res.status(200).send(result.value);
+    res.status(200).send(result);
   } catch (error) {
-    res.status(400).send(error);
+    console.error("query error", error)
+    res.status(500).send(error);
   }
 });
 
@@ -117,12 +137,13 @@ app.patch('/records/:collectionName/:id', async (req, res) => {
 app.delete('/records/:collectionName/:id', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
-    const result = await db.collection(collectionName).deleteOne({ _id: new ObjectId(req.params.id) });
+    const result = await db.collection(collectionName).deleteOne({ _id: req.params.id });
     if (!result.deletedCount) {
       return res.status(404).send();
     }
     res.status(200).send({ message: 'Item deleted' });
   } catch (error) {
+    console.error("query error", error)
     res.status(500).send(error);
   }
 });

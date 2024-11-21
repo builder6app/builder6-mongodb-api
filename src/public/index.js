@@ -1,5 +1,7 @@
 $(() => {
 
+  const objectName = 'space_users';
+  
   function isNotEmpty(value) {
     return value !== undefined && value !== null && value !== "";
   }
@@ -32,7 +34,7 @@ $(() => {
             }
         });
 
-        $.getJSON("/records/space_users", params)
+        $.getJSON(`/records/${objectName}`, params)
             .done(function(response) {
                 d.resolve(response.data, { 
                     totalCount: response.totalCount,
@@ -43,6 +45,47 @@ $(() => {
             .fail(function() { throw "Data loading error" });
         return d.promise();
     },
+
+    insert: function(values) {
+      var deferred = $.Deferred();
+      $.ajax({
+          url: `/records/${objectName}`,
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(values)
+      })
+      .done(deferred.resolve)
+      .fail(function(e){
+          deferred.reject("Insertion failed");
+      });
+      return deferred.promise();
+    },
+    remove: function(key) {
+        var deferred = $.Deferred();
+        $.ajax({
+            url: `/records/${objectName}/` + encodeURIComponent(key),
+            method: "DELETE"
+        })
+        .done(deferred.resolve)
+        .fail(function(e){
+            deferred.reject("Deletion failed");
+        });
+        return deferred.promise();
+    },
+    update: function(key, values) {
+        var deferred = $.Deferred();
+        $.ajax({
+            url: `/records/${objectName}/` + encodeURIComponent(key),
+            method: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(values)
+        })
+        .done(deferred.resolve)
+        .fail(function(e){
+            deferred.reject("Update failed");
+        });
+        return deferred.promise();
+    }
     // Needed to process selected value(s) in the SelectBox, Lookup, Autocomplete, and DropDownBox
     // byKey: function(key) {
     //     var d = new $.Deferred();
@@ -72,6 +115,18 @@ $(() => {
     groupPanel: { visible: true },
     grouping: {
       autoExpandAll: false,
+    },
+    editing: {
+      mode: 'popup',
+      allowUpdating: true,
+      allowAdding: true,
+      allowDeleting: true,
+      popup: {
+        title: 'Employee Info',
+        showTitle: true,
+        width: 700,
+        height: 525,
+      },
     },
     allowColumnReordering: true,
     rowAlternationEnabled: true,
