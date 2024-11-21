@@ -1,18 +1,61 @@
 $(() => {
-  $('#gridContainer').dxDataGrid({
-    dataSource: {
-      store: {
-        type: 'odata',
-        version: 2,
-        url: 'https://js.devexpress.com/Demos/SalesViewer/odata/DaySaleDtoes',
-        key: 'Id',
-        beforeSend(request) {
-          const year = new Date().getFullYear() - 1;
-          request.params.startDate = `${year}-05-10`;
-          request.params.endDate = `${year}-5-15`;
-        },
-      },
+
+  function isNotEmpty(value) {
+    return value !== undefined && value !== null && value !== "";
+  }
+
+  var customDataSource = new DevExpress.data.CustomStore({
+    key: "_id",
+    load: function(loadOptions) {
+        var d = $.Deferred();
+        var params = {};
+
+        [
+            "filter",
+            "group", 
+            "groupSummary",
+            "parentIds",
+            "requireGroupCount",
+            "requireTotalCount",
+            "searchExpr",
+            "searchOperation",
+            "searchValue",
+            "select",
+            "sort",
+            "skip",     
+            "take",
+            "totalSummary", 
+            "userData"
+        ].forEach(function(i) {
+            if(i in loadOptions && isNotEmpty(loadOptions[i])) {
+                params[i] = JSON.stringify(loadOptions[i]);
+            }
+        });
+
+        $.getJSON("/records/space_users", params)
+            .done(function(response) {
+                d.resolve(response.data, { 
+                    totalCount: response.totalCount,
+                    summary: response.summary,
+                    groupCount: response.groupCount
+                });
+            })
+            .fail(function() { throw "Data loading error" });
+        return d.promise();
     },
+    // Needed to process selected value(s) in the SelectBox, Lookup, Autocomplete, and DropDownBox
+    // byKey: function(key) {
+    //     var d = new $.Deferred();
+    //     $.get('https://mydomain.com/MyDataService?id=' + key)
+    //         .done(function(result) {
+    //             d.resolve(result);
+    //         });
+    //     return d.promise();
+    // }
+  });
+
+  $('#gridContainer').dxDataGrid({
+    dataSource: customDataSource,
     paging: {
       pageSize: 10,
     },
@@ -36,86 +79,25 @@ $(() => {
     width: '100%',
     columns: [
       {
-        dataField: 'Product',
-        groupIndex: 0,
+        dataField: 'name',
       },
       {
-        dataField: 'Amount',
-        caption: 'Sale Amount',
-        dataType: 'number',
-        format: 'currency',
-        alignment: 'right',
+        dataField: 'profile',
+        caption: 'Profile',
+        dataType: 'string',
       },
       {
-        dataField: 'Discount',
-        caption: 'Discount %',
-        dataType: 'number',
-        format: 'percent',
-        alignment: 'right',
-        allowGrouping: false,
-        cellTemplate: discountCellTemplate,
-        cssClass: 'bullet',
-      },
-      {
-        dataField: 'SaleDate',
+        dataField: 'created',
         dataType: 'date',
       },
       {
-        dataField: 'Region',
+        dataField: 'created_by',
         dataType: 'string',
-      },
-      {
-        dataField: 'Sector',
-        dataType: 'string',
-      },
-      {
-        dataField: 'Channel',
-        dataType: 'string',
-      },
-      {
-        dataField: 'Customer',
-        dataType: 'string',
-        width: 150,
       },
     ],
     onContentReady(e) {
-      if (!collapsed) {
-        collapsed = true;
-        e.component.expandRow(['EnviroCare']);
-      }
     },
   });
 });
-
-const discountCellTemplate = function (container, options) {
-  $('<div/>').dxBullet({
-    onIncidentOccurred: null,
-    size: {
-      width: 150,
-      height: 35,
-    },
-    margin: {
-      top: 5,
-      bottom: 0,
-      left: 5,
-    },
-    showTarget: false,
-    showZeroLevel: true,
-    value: options.value * 100,
-    startScaleValue: 0,
-    endScaleValue: 100,
-    tooltip: {
-      enabled: true,
-      font: {
-        size: 18,
-      },
-      paddingTopBottom: 2,
-      customizeTooltip() {
-        return { text: options.text };
-      },
-      zIndex: 5,
-    },
-  }).appendTo(container);
-};
 
 let collapsed = false;
