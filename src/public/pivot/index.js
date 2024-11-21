@@ -9,7 +9,6 @@ $(() => {
   var customDataSource = {
     key: "_id",
     remoteOperations: true,
-    pageSize: 10,
     load: function(loadOptions) {
       var d = $.Deferred();
       var params = {};
