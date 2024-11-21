@@ -37,7 +37,7 @@ MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
 // CRUD Routes
 
 // Create
-app.post('/records/:collectionName', async (req, res) => {
+app.post('/api/v1/direct/:collectionName', async (req, res) => {
   try {
     const _id = uuid.v4();
     const data = {
@@ -56,7 +56,7 @@ app.post('/records/:collectionName', async (req, res) => {
 });
 
 // Read all
-app.get('/records/:collectionName', async (req, res) => {
+app.get('/api/v1/direct/:collectionName', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
     // const items = await db.collection(collectionName).find({}).toArray();
@@ -94,7 +94,7 @@ app.get('/records/:collectionName', async (req, res) => {
 
 
 // Read all
-app.get('/records/:collectionName/all', async (req, res) => {
+app.get('/api/v1/direct/:collectionName/all', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
     const items = await db.collection(collectionName).find({}).toArray();
@@ -107,7 +107,7 @@ app.get('/records/:collectionName/all', async (req, res) => {
 });
 
 // Read one
-app.get('/records/:collectionName/:id', async (req, res) => {
+app.get('/api/v1/direct/:collectionName/:id', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
     const item = await db.collection(collectionName).findOne({ _id: req.params.id });
@@ -122,7 +122,7 @@ app.get('/records/:collectionName/:id', async (req, res) => {
 });
 
 // Update
-app.put('/records/:collectionName/:id', async (req, res) => {
+app.put('/api/v1/direct/:collectionName/:id', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
     const result = await db.collection(collectionName).findOneAndUpdate(
@@ -142,7 +142,7 @@ app.put('/records/:collectionName/:id', async (req, res) => {
 });
 
 // Delete
-app.delete('/records/:collectionName/:id', async (req, res) => {
+app.delete('/api/v1/direct/:collectionName/:id', async (req, res) => {
   try {
     const collectionName = req.params.collectionName;
     const result = await db.collection(collectionName).deleteOne({ _id: req.params.id });

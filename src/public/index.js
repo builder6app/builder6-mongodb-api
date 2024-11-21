@@ -34,7 +34,7 @@ $(() => {
             }
         });
 
-        $.getJSON(`/records/${objectName}`, params)
+        $.getJSON(`/api/v1/direct/${objectName}`, params)
             .done(function(response) {
                 d.resolve(response.data, { 
                     totalCount: response.totalCount,
@@ -49,7 +49,7 @@ $(() => {
     insert: function(values) {
       var deferred = $.Deferred();
       $.ajax({
-          url: `/records/${objectName}`,
+          url: `/api/v1/direct/${objectName}`,
           method: "POST",
           contentType: "application/json",
           data: JSON.stringify(values)
@@ -63,7 +63,7 @@ $(() => {
     remove: function(key) {
         var deferred = $.Deferred();
         $.ajax({
-            url: `/records/${objectName}/` + encodeURIComponent(key),
+            url: `/api/v1/direct/${objectName}/` + encodeURIComponent(key),
             method: "DELETE"
         })
         .done(deferred.resolve)
@@ -75,7 +75,7 @@ $(() => {
     update: function(key, values) {
         var deferred = $.Deferred();
         $.ajax({
-            url: `/records/${objectName}/` + encodeURIComponent(key),
+            url: `/api/v1/direct/${objectName}/` + encodeURIComponent(key),
             method: "PUT",
             contentType: "application/json",
             data: JSON.stringify(values)

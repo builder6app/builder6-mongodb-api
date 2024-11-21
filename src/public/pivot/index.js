@@ -35,7 +35,7 @@ $(() => {
           }
       });
 
-      $.getJSON(`/records/${objectName}`, params)
+      $.getJSON(`/api/v1/direct/${objectName}`, params)
           .done(function(response) {
               d.resolve(response.data, { 
                   totalCount: response.totalCount,
