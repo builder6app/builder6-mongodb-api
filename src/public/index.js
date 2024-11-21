@@ -128,7 +128,20 @@ $(() => {
         height: 525,
       },
     },
+    filterPanel: { visible: true },
+    headerFilter: { visible: true },
+    selection: {
+      mode: 'multiple',
+    },
     allowColumnReordering: true,
+    allowColumnResizing: true,
+    columnAutoWidth: true,
+    columnChooser: {
+      enabled: true,
+    },
+    columnFixing: {
+      enabled: true,
+    },
     rowAlternationEnabled: true,
     showBorders: true,
     width: '100%',
@@ -150,6 +163,24 @@ $(() => {
         dataType: 'string',
       },
     ],
+    export: {
+      enabled: true,
+      allowExportSelectedData: true,
+    },
+    onExporting(e) {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet(objectName);
+
+      DevExpress.excelExporter.exportDataGrid({
+        component: e.component,
+        worksheet,
+        autoFilterEnabled: true,
+      }).then(() => {
+        workbook.xlsx.writeBuffer().then((buffer) => {
+          saveAs(new Blob([buffer], { type: 'application/octet-stream' }),`${objectName}.xlsx`);
+        });
+      });
+    },
     onContentReady(e) {
     },
   });
