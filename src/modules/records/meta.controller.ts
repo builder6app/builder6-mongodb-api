@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import { Controller, Get, Param, Res, Render } from '@nestjs/common';
 import { MetaService } from './meta.service';
 import { Response } from 'express';
 
@@ -13,14 +13,12 @@ export class MetaController {
     @Res() res: Response,
   ) {
     try {
-      const tableMeta = await this.metaService.getTableMetaStatic(
-        baseId,
-        tableId,
-      );
+      const tableMeta = await this.metaService.getTableMeta(baseId, tableId);
       res.status(200).send(tableMeta);
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);
     }
   }
+
 }

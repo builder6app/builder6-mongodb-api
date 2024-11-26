@@ -59,7 +59,7 @@ export class MetaService {
   ) {
     const collection: Collection = this.db.collection(collectionName);
 
-    return devextremeQuery(
+    const result = await devextremeQuery(
       collection,
       { take: 20, skip: 0, ...loadOptions },
       {
@@ -67,6 +67,8 @@ export class MetaService {
         processingOptions,
       },
     );
+
+    return result.data;
   }
 
   async getTableMeta(baseId: string, tableId: string) {
@@ -77,7 +79,7 @@ export class MetaService {
       {},
     );
     return {
-      table,
+      ...table,
       fields,
     };
   }
