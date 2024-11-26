@@ -34,8 +34,6 @@ MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
   })
   .catch(err => console.error('Error connecting to MongoDB', err));
 
-// CRUD Routes
-
 // Create
 app.post('/api/tables/v0/:baseId/:tableId', async (req, res) => {
    
@@ -56,7 +54,7 @@ app.post('/api/tables/v0/:baseId/:tableId', async (req, res) => {
   }
 });
 
-// Read all
+// Query Table
 app.get('/api/tables/v0/:baseId/:tableId', async (req, res) => {
   try {
     const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
@@ -92,19 +90,6 @@ app.get('/api/tables/v0/:baseId/:tableId', async (req, res) => {
   }
 });
 
-
-// Read all
-app.get('/api/tables/v0/:baseId/:tableId/all', async (req, res) => {
-  try {
-    const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
-    const items = await db.collection(collectionName).find({}).toArray();
-    
-    res.status(200).send(items);
-  } catch (error) {
-    console.error("query error", error)
-    res.status(500).send(error);
-  }
-});
 
 // Read one
 app.get('/api/tables/v0/:baseId/:tableId/:id', async (req, res) => {
