@@ -13,6 +13,7 @@ import { RecordsModule } from './modules/records/records.module';
       rootPath: join(__dirname, '..', 'public'), // 指定静态文件目录
     }),
     ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
       isGlobal: true, // 使配置在整个应用中可用
     }),
     RecordsModule,
