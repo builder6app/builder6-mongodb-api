@@ -1,3 +1,4 @@
+require('dotenv-flow').config({});
 require('babel-polyfill');
 
 const uuid = require('uuid');
@@ -23,28 +24,28 @@ app.use(jsonParser);
 app.use(express.static(path.join(__dirname,'public')))
 
 // MongoDB connection
-const url = 'mongodb://localhost:27017';
-const dbName = 'steedos';
+const url = process.env.B6_TABLES_MONGO_URI;
 let db;
 
 MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(client => {
     console.log('Connected to MongoDB');
-    db = client.db(dbName);
+    db = client.db();
   })
   .catch(err => console.error('Error connecting to MongoDB', err));
 
 // CRUD Routes
 
 // Create
-app.post('/api/v1/direct/:collectionName', async (req, res) => {
+app.post('/api/tables/v0/:baseId/:tableId', async (req, res) => {
+   
   try {
     const _id = uuid.v4();
     const data = {
       _id,
       ...req.body
     }
-    const collectionName = req.params.collectionName;
+    const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
     const result = await db.collection(collectionName).insertOne(data);
     console.log('insert', data, result);
 
@@ -56,10 +57,9 @@ app.post('/api/v1/direct/:collectionName', async (req, res) => {
 });
 
 // Read all
-app.get('/api/v1/direct/:collectionName', async (req, res) => {
+app.get('/api/tables/v0/:baseId/:tableId', async (req, res) => {
   try {
-    const collectionName = req.params.collectionName;
-    // const items = await db.collection(collectionName).find({}).toArray();
+    const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
     const options = getOptions(req.query, {
       areaKM2: 'int',
       population: 'int',
@@ -94,9 +94,9 @@ app.get('/api/v1/direct/:collectionName', async (req, res) => {
 
 
 // Read all
-app.get('/api/v1/direct/:collectionName/all', async (req, res) => {
+app.get('/api/tables/v0/:baseId/:tableId/all', async (req, res) => {
   try {
-    const collectionName = req.params.collectionName;
+    const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
     const items = await db.collection(collectionName).find({}).toArray();
     
     res.status(200).send(items);
@@ -107,9 +107,9 @@ app.get('/api/v1/direct/:collectionName/all', async (req, res) => {
 });
 
 // Read one
-app.get('/api/v1/direct/:collectionName/:id', async (req, res) => {
+app.get('/api/tables/v0/:baseId/:tableId/:id', async (req, res) => {
   try {
-    const collectionName = req.params.collectionName;
+    const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
     const item = await db.collection(collectionName).findOne({ _id: req.params.id });
     if (!item) {
       return res.status(404).send();
@@ -122,9 +122,9 @@ app.get('/api/v1/direct/:collectionName/:id', async (req, res) => {
 });
 
 // Update
-app.put('/api/v1/direct/:collectionName/:id', async (req, res) => {
+app.put('/api/tables/v0/:baseId/:tableId/:id', async (req, res) => {
   try {
-    const collectionName = req.params.collectionName;
+    const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
     const result = await db.collection(collectionName).findOneAndUpdate(
       { _id: req.params.id },
       { $set: req.body },
@@ -142,9 +142,9 @@ app.put('/api/v1/direct/:collectionName/:id', async (req, res) => {
 });
 
 // Delete
-app.delete('/api/v1/direct/:collectionName/:id', async (req, res) => {
+app.delete('/api/tables/v0/:baseId/:tableId/:id', async (req, res) => {
   try {
-    const collectionName = req.params.collectionName;
+    const collectionName = `t_${req.params.baseId}_${req.params.tableId}`;
     const result = await db.collection(collectionName).deleteOne({ _id: req.params.id });
     if (!result.deletedCount) {
       return res.status(404).send();
@@ -155,6 +155,52 @@ app.delete('/api/v1/direct/:collectionName/:id', async (req, res) => {
     res.status(500).send(error);
   }
 });
+
+// Table metadata
+app.get('/api/tables/v0/meta/bases/:baseId/tables/:tableId', async (req, res) => {
+  try {
+    const table = {
+      "_id": req.params.tableId,
+      "base_id": req.params.baseId,
+      "name": "Tasks",
+      "description": "I was changed!",
+      "fields": [
+        {
+          "_id": "fld001",
+          "name": "Name",
+          "type": "text"
+        },
+        {
+          "_id": "fld002",
+          "name": "Company",
+          "type": "text"
+        },
+        {
+          "_id": "fld003",
+          "name": "Age",
+          "type": "number"
+        },
+        {
+          "_id": "fld004",
+          "name": "Created",
+          "type": "datetime"
+        },
+        {
+          "_id": "fld005",
+          "name": "valid",
+          "type": "boolean"
+        },
+      ],
+    }
+    res.status(200).send(table);
+  } catch (error) {
+    console.error("query error", error)
+    res.status(500).send(error);
+  }
+});
+
+
+
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

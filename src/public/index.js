@@ -1,7 +1,9 @@
-$(() => {
-
-  const objectName = 'space_users';
+async function initializeGrid(baseId = 'test', tableId='test') {
+  const tableResponse = await fetch(`/api/tables/v0/meta/bases/${baseId}/tables/${tableId}`);
+  const table = await tableResponse.json();
   
+  console.log(table)
+
   function isNotEmpty(value) {
     return value !== undefined && value !== null && value !== "";
   }
@@ -34,7 +36,7 @@ $(() => {
             }
         });
 
-        $.getJSON(`/api/v1/direct/${objectName}`, params)
+        $.getJSON(`/api/tables/v0/${baseId}/${tableId}`, params)
             .done(function(response) {
                 d.resolve(response.data, { 
                     totalCount: response.totalCount,
@@ -49,7 +51,7 @@ $(() => {
     insert: function(values) {
       var deferred = $.Deferred();
       $.ajax({
-          url: `/api/v1/direct/${objectName}`,
+          url: `/api/tables/v0/${baseId}/${tableId}`,
           method: "POST",
           contentType: "application/json",
           data: JSON.stringify(values)
@@ -63,7 +65,7 @@ $(() => {
     remove: function(key) {
         var deferred = $.Deferred();
         $.ajax({
-            url: `/api/v1/direct/${objectName}/` + encodeURIComponent(key),
+            url: `/api/tables/v0/${baseId}/${tableId}/` + encodeURIComponent(key),
             method: "DELETE"
         })
         .done(deferred.resolve)
@@ -75,7 +77,7 @@ $(() => {
     update: function(key, values) {
         var deferred = $.Deferred();
         $.ajax({
-            url: `/api/v1/direct/${objectName}/` + encodeURIComponent(key),
+            url: `/api/tables/v0/${baseId}/${tableId}/` + encodeURIComponent(key),
             method: "PUT",
             contentType: "application/json",
             data: JSON.stringify(values)
@@ -95,6 +97,38 @@ $(() => {
     //         });
     //     return d.promise();
     // }
+  });
+
+
+  const columns = table.fields.map(field => {
+    let dataType;
+
+    // 根据字段类型设置 dataType
+    switch (field.type) {
+        case 'text':
+            dataType = 'string';
+            break;
+        case 'number':
+            dataType = 'number';
+            break;
+        case 'date':
+            dataType = 'date';
+            break;        
+        case 'datetime':
+            dataType = 'datetime';
+            break;
+        case 'boolean':
+            dataType = 'boolean';
+            break;
+        default:
+            dataType = 'string'; // 默认类型
+    }
+
+    return {
+        dataField: field.name.toLowerCase(), // 假设字段名需要小写
+        caption: field.name,
+        dataType: dataType,
+    };
   });
 
   $('#gridContainer').dxDataGrid({
@@ -145,31 +179,14 @@ $(() => {
     rowAlternationEnabled: true,
     showBorders: true,
     width: '100%',
-    columns: [
-      {
-        dataField: 'name',
-      },
-      {
-        dataField: 'profile',
-        caption: 'Profile',
-        dataType: 'string',
-      },
-      {
-        dataField: 'created',
-        dataType: 'date',
-      },
-      {
-        dataField: 'created_by',
-        dataType: 'string',
-      },
-    ],
+    columns: columns,
     export: {
       enabled: true,
       allowExportSelectedData: true,
     },
     onExporting(e) {
       const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet(objectName);
+      const worksheet = workbook.addWorksheet(table.name);
 
       DevExpress.excelExporter.exportDataGrid({
         component: e.component,
@@ -177,13 +194,14 @@ $(() => {
         autoFilterEnabled: true,
       }).then(() => {
         workbook.xlsx.writeBuffer().then((buffer) => {
-          saveAs(new Blob([buffer], { type: 'application/octet-stream' }),`${objectName}.xlsx`);
+          saveAs(new Blob([buffer], { type: 'application/octet-stream' }),`${table.name}.xlsx`);
         });
       });
     },
     onContentReady(e) {
     },
   });
-});
+}
 
-let collapsed = false;
+$(() => {initializeGrid()})
+

@@ -1,6 +1,8 @@
-$(() => {
-
-  const objectName = 'space_users';
+async function initializeGrid(baseId = 'test', tableId='test') {
+  const tableResponse = await fetch(`/api/tables/v0/meta/bases/${baseId}/tables/${tableId}`);
+  const table = await tableResponse.json();
+  
+  console.log(table)
   
   function isNotEmpty(value) {
     return value !== undefined && value !== null && value !== "";
@@ -35,7 +37,7 @@ $(() => {
           }
       });
 
-      $.getJSON(`/api/v1/direct/${objectName}`, params)
+      $.getJSON(`/api/tables/v0/${baseId}/${tableId}`, params)
           .done(function(response) {
               d.resolve(response.data, { 
                   totalCount: response.totalCount,
@@ -100,5 +102,8 @@ $(() => {
     dataFieldsDisplayMode: 'splitPanes',
     alternateDataFields: false,
   });
-});
+}
+
+
+$(() => {initializeGrid()})
 
