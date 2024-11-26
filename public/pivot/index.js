@@ -1,5 +1,5 @@
 async function initializeGrid(baseId = 'test', tableId='test') {
-  const tableResponse = await fetch(`/api/tables/v0/meta/bases/${baseId}/tables/${tableId}`);
+  const tableResponse = await fetch(`/b6/v0/meta/bases/${baseId}/tables/${tableId}`);
   const table = await tableResponse.json();
   
   console.log(table)
@@ -37,7 +37,7 @@ async function initializeGrid(baseId = 'test', tableId='test') {
           }
       });
 
-      $.getJSON(`/api/tables/v0/${baseId}/${tableId}`, params)
+      $.getJSON(`/b6/v0/${baseId}/${tableId}`, params)
           .done(function(response) {
               d.resolve(response.data, { 
                   totalCount: response.totalCount,
