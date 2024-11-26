@@ -13,7 +13,10 @@ export class MetaController {
     @Res() res: Response,
   ) {
     try {
-      const tableMeta = await this.metaService.getTableMeta(baseId, tableId);
+      const tableMeta = await this.metaService.getTableMetaStatic(
+        baseId,
+        tableId,
+      );
       res.status(200).send(tableMeta);
     } catch (error) {
       console.error('Query error', error);

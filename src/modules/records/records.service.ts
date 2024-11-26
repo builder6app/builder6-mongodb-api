@@ -20,10 +20,10 @@ export class RecordsService {
       .connect()
       .then(() => {
         this.db = client.db();
-        console.log('Connected to MongoDB');
+        console.log('Connected to Records MongoDB');
       })
       .catch((err) => {
-        console.error('Error connecting to MongoDB', err);
+        console.error('Error connecting to Records MongoDB', err);
       });
   }
 
