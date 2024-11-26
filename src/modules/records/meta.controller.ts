@@ -20,5 +20,4 @@ export class MetaController {
       res.status(500).send(error);
     }
   }
-
 }
