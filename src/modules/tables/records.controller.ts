@@ -9,14 +9,14 @@ import {
   Res,
   Req,
 } from '@nestjs/common';
-import { RecordsService } from './records.service';
+import { MongodbService } from './mongodb.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('tables/v2/')
 export class RecordsController {
-  constructor(private readonly recordsService: RecordsService) {}
+  constructor(private readonly mongodbService: MongodbService) {}
 
   @Post(':baseId/:tableId')
   async create(
@@ -26,7 +26,7 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.createTableEntry(
+      const result = await this.mongodbService.createRecord(
         baseId,
         tableId,
         body,
@@ -56,7 +56,7 @@ export class RecordsController {
         replaceIds: false,
         ...options.processingOptions,
       };
-      const results = await this.recordsService.getTableEntries(
+      const results = await this.mongodbService.getRecords(
         baseId,
         tableId,
         loadOptions,
@@ -77,7 +77,7 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.getTableEntryById(
+      const result = await this.mongodbService.getRecordById(
         baseId,
         tableId,
         id,
@@ -101,7 +101,7 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.updateTableEntry(
+      const result = await this.mongodbService.updateRecord(
         baseId,
         tableId,
         id,
@@ -126,7 +126,7 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteTableEntry(
+      const result = await this.mongodbService.deleteRecord(
         baseId,
         tableId,
         id,

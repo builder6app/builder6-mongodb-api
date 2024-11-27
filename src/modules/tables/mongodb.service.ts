@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as devextremeQuery from 'devextreme-query-mongodb';
 
 @Injectable()
-export class RecordsService {
+export class MongodbService {
   private db: Db;
 
   constructor() {
@@ -31,14 +31,14 @@ export class RecordsService {
     return this.db.collection(collectionName);
   }
 
-  async createTableEntry(baseId: string, tableId: string, data: any) {
+  async createRecord(baseId: string, tableId: string, data: any) {
     const collection = this.getCollection(baseId, tableId);
     const entry = { _id: uuidv4(), ...data };
     await collection.insertOne(entry);
     return entry;
   }
 
-  async getTableEntries(
+  async getRecords(
     baseId: string,
     tableId: string,
     loadOptions: any,
@@ -49,17 +49,12 @@ export class RecordsService {
     return devextremeQuery(collection, loadOptions, processingOptions);
   }
 
-  async getTableEntryById(baseId: string, tableId: string, id: string) {
+  async getRecordById(baseId: string, tableId: string, id: string) {
     const collection = this.getCollection(baseId, tableId);
     return await collection.findOne({ _id: id as any });
   }
 
-  async updateTableEntry(
-    baseId: string,
-    tableId: string,
-    id: string,
-    data: any,
-  ) {
+  async updateRecord(baseId: string, tableId: string, id: string, data: any) {
     const collection = this.getCollection(baseId, tableId);
     const result = await collection.findOneAndUpdate(
       { _id: id as any },
@@ -69,7 +64,7 @@ export class RecordsService {
     return result;
   }
 
-  async deleteTableEntry(baseId: string, tableId: string, id: string) {
+  async deleteRecord(baseId: string, tableId: string, id: string) {
     const collection = this.getCollection(baseId, tableId);
     const result = await collection.deleteOne({ _id: id as any });
     return result;

@@ -2,7 +2,7 @@ import { Controller, Get, Param, Res, Render } from '@nestjs/common';
 import { MetaService } from './meta.service';
 import { Response } from 'express';
 
-@Controller('b6/v0/meta/')
+@Controller('tables/v2/meta/')
 export class MetaController {
   constructor(private readonly metaService: MetaService) {}
 
