@@ -9,4 +9,4 @@ import { DemoController } from './demo.controller';
   controllers: [RecordsController, MetaController, DemoController],
   providers: [RecordsService, MetaService],
 })
-export class RecordsModule {}
+export class TablesModule {}

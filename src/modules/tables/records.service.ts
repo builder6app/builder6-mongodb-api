@@ -4,7 +4,6 @@ import { Injectable } from '@nestjs/common';
 import { MongoClient, Db, Collection } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import * as devextremeQuery from 'devextreme-query-mongodb';
-import { getOptions } from 'devextreme-query-mongodb/options';
 
 @Injectable()
 export class RecordsService {
@@ -39,17 +38,14 @@ export class RecordsService {
     return entry;
   }
 
-  async getTableEntries(baseId: string, tableId: string, query: any) {
+  async getTableEntries(
+    baseId: string,
+    tableId: string,
+    loadOptions: any,
+    processingOptions: any,
+  ) {
     const collection = this.getCollection(baseId, tableId);
-    const options = getOptions(query, {
-      areaKM2: 'int',
-      population: 'int',
-    });
-    const loadOptions = { take: 20, skip: 0, ...options.loadOptions };
-    const processingOptions = {
-      replaceIds: false,
-      ...options.processingOptions,
-    };
+
     return devextremeQuery(collection, loadOptions, processingOptions);
   }
 
@@ -70,7 +66,7 @@ export class RecordsService {
       { $set: data },
       { returnDocument: 'after' },
     );
-    return result.value;
+    return result;
   }
 
   async deleteTableEntry(baseId: string, tableId: string, id: string) {

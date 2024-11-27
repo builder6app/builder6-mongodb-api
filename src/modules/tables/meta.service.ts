@@ -43,7 +43,7 @@ export class MetaService {
       { $set: data },
       { returnDocument: 'after' },
     );
-    return result.value;
+    return result;
   }
 
   async deleteEntryById(collectionName: string, id: string) {
@@ -73,6 +73,9 @@ export class MetaService {
 
   async getTableMeta(baseId: string, tableId: string) {
     const table = await this.getEntryById('b6_tables', tableId);
+    if (!table) {
+      return await this.getTableMetaStatic(baseId, tableId);
+    }
     const fields = await this.getEntries(
       'b6_fields',
       { filter: ['table_id', '=', tableId] },

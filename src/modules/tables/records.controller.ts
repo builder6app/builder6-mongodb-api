@@ -11,8 +11,10 @@ import {
 } from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
+import { getOptions } from 'devextreme-query-mongodb/options';
 
-@Controller('b6/v0/')
+// 兼容 Steedos OpenAPI v1 格式的 api
+@Controller('tables/v2/')
 export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 
@@ -44,10 +46,21 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     try {
+      const options = getOptions(req.query, {
+        areaKM2: 'int',
+        population: 'int',
+      });
+
+      const loadOptions = { take: 20, skip: 0, ...options.loadOptions };
+      const processingOptions = {
+        replaceIds: false,
+        ...options.processingOptions,
+      };
       const results = await this.recordsService.getTableEntries(
         baseId,
         tableId,
-        req.query,
+        loadOptions,
+        processingOptions,
       );
       res.status(200).send(results);
     } catch (error) {
@@ -94,6 +107,7 @@ export class RecordsController {
         id,
         body,
       );
+      console.log('result', result, baseId, tableId, id, body);
       if (!result) {
         return res.status(404).send();
       }

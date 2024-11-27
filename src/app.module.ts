@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { RecordsModule } from './modules/records/records.module';
+import { TablesModule } from './modules/tables/tables.module';
 
 @Module({
   imports: [
@@ -11,7 +11,7 @@ import { RecordsModule } from './modules/records/records.module';
       envFilePath: ['.env.local', '.env'],
       isGlobal: true, // 使配置在整个应用中可用
     }),
-    RecordsModule,
+    TablesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

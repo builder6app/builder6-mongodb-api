@@ -1,6 +1,5 @@
-import { Controller, Get, Param, Res, Render } from '@nestjs/common';
+import { Controller, Get, Param, Render } from '@nestjs/common';
 import { MetaService } from './meta.service';
-import { Response } from 'express';
 
 @Controller('/demo/')
 export class DemoController {
