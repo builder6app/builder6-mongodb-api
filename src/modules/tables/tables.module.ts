@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { RecordsController } from './records.controller';
-import { MongodbService } from './mongodb.service';
+import { RecordsService } from './records.service';
 import { MetaController } from './meta.controller';
-import { MetaService } from './meta.service';
 import { DemoController } from './demo.controller';
+import { SteedosModule } from '../steedos/steedos.module';
 
 @Module({
+  imports: [SteedosModule],
   controllers: [RecordsController, MetaController, DemoController],
-  providers: [MongodbService, MetaService],
+  providers: [RecordsService],
 })
 export class TablesModule {}

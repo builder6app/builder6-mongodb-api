@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as devextremeQuery from 'devextreme-query-mongodb';
 
 @Injectable()
-export class MongodbService {
+export class RecordsService {
   private db: Db;
 
   constructor() {
