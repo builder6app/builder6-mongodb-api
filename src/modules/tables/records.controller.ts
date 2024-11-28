@@ -14,7 +14,7 @@ import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
-@Controller('tables/v2/')
+@Controller('api/tables/v2/')
 export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 

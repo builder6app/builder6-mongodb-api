@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="styles.css" />
     <script>
 async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') {
-  const tableResponse = await fetch(`/tables/v2/meta/bases/${baseId}/tables/${tableId}`);
+  const tableResponse = await fetch(`/api/tables/v2/meta/bases/${baseId}/tables/${tableId}`);
   const table = await tableResponse.json();
   
   console.log(table)
@@ -54,7 +54,7 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
             }
         });
 
-        $.getJSON(`/tables/v2/${baseId}/${tableId}`, params)
+        $.getJSON(`/api/tables/v2/${baseId}/${tableId}`, params)
             .done(function(response) {
                 d.resolve(response.data, { 
                     totalCount: response.totalCount,
@@ -69,7 +69,7 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
     insert: function(values) {
       var deferred = $.Deferred();
       $.ajax({
-          url: `/tables/v2/${baseId}/${tableId}`,
+          url: `/api/tables/v2/${baseId}/${tableId}`,
           method: "POST",
           contentType: "application/json",
           data: JSON.stringify(values)
@@ -83,7 +83,7 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
     remove: function(key) {
         var deferred = $.Deferred();
         $.ajax({
-            url: `/tables/v2/${baseId}/${tableId}/` + encodeURIComponent(key),
+            url: `/api/tables/v2/${baseId}/${tableId}/` + encodeURIComponent(key),
             method: "DELETE"
         })
         .done(deferred.resolve)
@@ -95,7 +95,7 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
     update: function(key, values) {
         var deferred = $.Deferred();
         $.ajax({
-            url: `/tables/v2/${baseId}/${tableId}/` + encodeURIComponent(key),
+            url: `/api/tables/v2/${baseId}/${tableId}/` + encodeURIComponent(key),
             method: "PUT",
             contentType: "application/json",
             data: JSON.stringify(values)

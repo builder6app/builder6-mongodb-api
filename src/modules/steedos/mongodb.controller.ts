@@ -14,7 +14,7 @@ import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 
 // 直接操作 mongodb 数据库 的 API，必须是 admin 用户才能操作。
-@Controller('mongodb/v2/')
+@Controller('api/mongodb/v2/')
 export class MongodbController {
   constructor(private readonly mongodbService: MongodbService) {}
 
