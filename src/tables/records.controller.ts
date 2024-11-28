@@ -21,6 +21,12 @@ import { ApiBody, ApiQuery } from '@nestjs/swagger';
 export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 
+  /**
+   * Create a new record
+   *
+   * @remarks This operation allows you to create a new record.
+   *
+   */
   @Post(':baseId/:tableId')
   @ApiBody({
     schema: {
@@ -81,11 +87,13 @@ export class RecordsController {
 
   // 兼容 amis 格式的数据返回接口
   @Get(':baseId/:tableId/amis')
-  @ApiQuery({ name: 'page', required: false, default: 1, description: '分页' })
+  @ApiQuery({ name: 'fields', required: false, description: '字段' })
+  @ApiQuery({ name: 'filters', required: false, description: '过滤' })
+  @ApiQuery({ name: 'sort', required: false, description: '排序' })
+  @ApiQuery({ name: 'page', required: false, description: '分页' })
   @ApiQuery({
     name: 'perPage',
     required: false,
-    default: 10,
     description: '每页数量',
   })
   @ApiQuery({ name: 'orderBy', required: false, description: '排序字段' })
@@ -95,18 +103,17 @@ export class RecordsController {
     description: '排序顺序',
     enum: ['asc', 'desc'],
   })
-  @ApiQuery({ name: 'filters', required: false, description: '过滤' })
-  @ApiQuery({ name: 'fields', required: false, description: '字段' })
   async amisFind(
     @Res() res: Response,
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
-    @Query('page', ParseIntPipe) page = 1,
-    @Query('perPage', ParseIntPipe) perPage: number = 10,
+    @Query('fields') fields?: any,
+    @Query('filters') filters?: any,
+    @Query('sort') sort?: any,
     @Query('orderBy') orderBy?: string,
     @Query('orderDir') orderDir?: string,
-    @Query('filters') filters?: any,
-    @Query('fields') fields?: any,
+    @Query('page', ParseIntPipe) page: number = 1,
+    @Query('perPage', ParseIntPipe) perPage: number = 10,
   ) {
     try {
       const take = perPage ? perPage : 10;
@@ -122,8 +129,19 @@ export class RecordsController {
       if (filters) {
         loadOptions.filter = JSON.parse(filters);
       }
+      if (sort) {
+        const sortFields = sort.split(',');
+        loadOptions.sort = sortFields.map((sortField) => {
+          const [field, dir] = sortField.split(' ');
+          return { selector: field, desc: dir === 'desc' };
+        });
+      }
       if (fields) {
-        loadOptions.select = JSON.parse(fields);
+        try {
+          loadOptions.select = JSON.parse(fields);
+        } catch (e) {
+          loadOptions.select = fields.split(',');
+        }
       }
       const processingOptions = {
         replaceIds: false,
