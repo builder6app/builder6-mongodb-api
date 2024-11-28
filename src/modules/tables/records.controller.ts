@@ -12,6 +12,7 @@ import {
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
+import { ApiBody } from '@nestjs/swagger';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/tables/v2/')
@@ -19,19 +20,25 @@ export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 
   @Post(':baseId/:tableId')
+  @ApiBody({
+    schema: {
+      type: 'object',
+    },
+  })
   async create(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
-    @Body() body: any,
+    @Body() record: object,
     @Res() res: Response,
   ) {
     try {
       const result = await this.recordsService.createRecord(
         baseId,
         tableId,
-        body,
+        record,
       );
-      res.status(201).send(result._id);
+      console.log(result);
+      res.status(200).send(result);
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);
@@ -69,18 +76,18 @@ export class RecordsController {
     }
   }
 
-  @Get(':baseId/:tableId/:id')
+  @Get(':baseId/:tableId/:recordId')
   async findOne(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
-    @Param('id') id: string,
+    @Param('recordId') recordId: string,
     @Res() res: Response,
   ) {
     try {
       const result = await this.recordsService.getRecordById(
         baseId,
         tableId,
-        id,
+        recordId,
       );
       if (!result) {
         return res.status(404).send();
@@ -92,22 +99,26 @@ export class RecordsController {
     }
   }
 
-  @Put(':baseId/:tableId/:id')
+  @Put(':baseId/:tableId/:recordId')
+  @ApiBody({
+    schema: {
+      type: 'object',
+    },
+  })
   async update(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
-    @Param('id') id: string,
-    @Body() body: any,
+    @Param('recordId') recordId: string,
+    @Body() body: object,
     @Res() res: Response,
   ) {
     try {
       const result = await this.recordsService.updateRecord(
         baseId,
         tableId,
-        id,
+        recordId,
         body,
       );
-      console.log('result', result, baseId, tableId, id, body);
       if (!result) {
         return res.status(404).send();
       }
@@ -118,23 +129,23 @@ export class RecordsController {
     }
   }
 
-  @Delete(':baseId/:tableId/:id')
+  @Delete(':baseId/:tableId/:recordId')
   async remove(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
-    @Param('id') id: string,
+    @Param('recordId') recordId: string,
     @Res() res: Response,
   ) {
     try {
       const result = await this.recordsService.deleteRecord(
         baseId,
         tableId,
-        id,
+        recordId,
       );
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
-      res.status(200).send({ message: 'Item deleted' });
+      res.status(200).send({ deleted: true, _id: recordId });
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);

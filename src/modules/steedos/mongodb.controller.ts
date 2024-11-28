@@ -26,7 +26,7 @@ export class MongodbController {
   ) {
     try {
       const result = await this.mongodbService.createRecord(objectName, body);
-      res.status(201).send(result._id);
+      res.status(200).send(result);
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);
