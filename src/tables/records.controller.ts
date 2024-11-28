@@ -96,6 +96,7 @@ export class RecordsController {
     enum: ['asc', 'desc'],
   })
   @ApiQuery({ name: 'filters', required: false, description: '过滤' })
+  @ApiQuery({ name: 'fields', required: false, description: '字段' })
   async amisFind(
     @Res() res: Response,
     @Param('baseId') baseId: string,
@@ -105,6 +106,7 @@ export class RecordsController {
     @Query('orderBy') orderBy?: string,
     @Query('orderDir') orderDir?: string,
     @Query('filters') filters?: any,
+    @Query('fields') fields?: any,
   ) {
     try {
       const take = perPage ? perPage : 10;
@@ -119,6 +121,9 @@ export class RecordsController {
       }
       if (filters) {
         loadOptions.filter = JSON.parse(filters);
+      }
+      if (fields) {
+        loadOptions.select = JSON.parse(fields);
       }
       const processingOptions = {
         replaceIds: false,
