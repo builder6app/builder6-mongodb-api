@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RecordsController } from '../steedos/mongodb.controller';
+import { RecordsController } from './records.controller';
 
 describe('RecordsController', () => {
   let controller: RecordsController;

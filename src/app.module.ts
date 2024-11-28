@@ -3,8 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SteedosModule } from './modules/steedos/steedos.module';
-import { TablesModule } from './modules/tables/tables.module';
+import { SteedosModule } from '@/steedos/steedos.module';
+import { TablesModule } from '@/tables/tables.module';
 
 @Module({
   imports: [

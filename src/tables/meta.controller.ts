@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
-import { MongodbService } from '@/modules/steedos/mongodb.service';
+import { MongodbService } from '@/steedos/mongodb.service';
 import { Response } from 'express';
 
 @Controller('api/tables/v2/meta/')
