@@ -8,6 +8,8 @@ import {
   Body,
   Res,
   Req,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
@@ -45,6 +47,7 @@ export class RecordsController {
     }
   }
 
+  // loadOptions: https://github.com/oliversturm/devextreme-query-mongodb/wiki/loadOptions
   @Get(':baseId/:tableId')
   async findAll(
     @Param('baseId') baseId: string,
@@ -70,6 +73,54 @@ export class RecordsController {
         processingOptions,
       );
       res.status(200).send(results);
+    } catch (error) {
+      console.error('Query error', error);
+      res.status(500).send(error);
+    }
+  }
+
+  // 兼容 amis 格式的数据返回接口
+  @Get(':baseId/:tableId/amis')
+  async amisFind(
+    @Res() res: Response,
+    @Param('baseId') baseId: string,
+    @Param('tableId') tableId: string,
+    @Query('page', ParseIntPipe) page: number = 1,
+    @Query('perPage', ParseIntPipe) perPage: number = 10,
+    @Query('orderBy') orderBy?: string,
+    @Query('orderDir') orderDir?: string,
+    @Query('filters') filters?: any,
+  ) {
+    try {
+      const loadOptions = {
+        take: perPage,
+        skip: ((page as number) - 1) * (perPage as number),
+        requireTotalCount: true,
+      } as any;
+      if (orderBy) {
+        loadOptions.sort = [{ selector: orderBy, desc: orderDir === 'desc' }];
+      }
+      if (filters) {
+        loadOptions.filters = filters;
+      }
+      const processingOptions = {
+        replaceIds: false,
+      };
+      const results = await this.recordsService.getRecords(
+        baseId,
+        tableId,
+        loadOptions,
+        processingOptions,
+      );
+      console.log(loadOptions, results);
+      res.status(200).send({
+        status: 0,
+        msg: '',
+        data: {
+          items: results.data,
+          count: results.totalCount,
+        },
+      });
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);
