@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SteedosModule } from '@/steedos/steedos.module';
 import { TablesModule } from '@/tables/tables.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { TablesModule } from '@/tables/tables.module';
     }),
     SteedosModule,
     TablesModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -50,7 +50,7 @@ export class MongodbController {
         replaceIds: false,
         ...options.processingOptions,
       };
-      const results = await this.mongodbService.getRecords(
+      const results = await this.mongodbService.find(
         objectName,
         loadOptions,
         processingOptions,

@@ -33,11 +33,7 @@ export class MongodbService {
     return entry;
   }
 
-  async getRecords(
-    collectionName: string,
-    loadOptions: any,
-    processingOptions: any,
-  ) {
+  async find(collectionName: string, loadOptions: any, processingOptions: any) {
     const collection = this.db.collection(collectionName);
 
     return devextremeQuery(collection, loadOptions, processingOptions);

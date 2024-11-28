@@ -15,7 +15,7 @@ export class MetaController {
     try {
       let table = await this.mongodbService.getRecordById('b6_tables', tableId);
       if (table) {
-        table.fields = await this.mongodbService.getRecords(
+        table.fields = await this.mongodbService.find(
           'b6_fields',
           { filter: ['table_id', '=', tableId] },
           {},
