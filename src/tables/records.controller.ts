@@ -181,7 +181,7 @@ export class RecordsController {
       if (fields) {
         try {
           loadOptions.select = JSON.parse(fields);
-        } catch (e) {
+        } catch {
           loadOptions.select = fields.split(',');
         }
       }

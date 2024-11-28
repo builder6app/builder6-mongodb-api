@@ -8,6 +8,7 @@ import {
   Body,
   Res,
   Req,
+  Query,
 } from '@nestjs/common';
 import { MongodbService } from './mongodb.service';
 import { Request, Response } from 'express';
@@ -34,10 +35,12 @@ export class MongodbController {
   }
 
   @Get(':objectName')
-  async findAll(
+  async find(
     @Param('objectName') objectName: string,
     @Req() req: Request,
     @Res() res: Response,
+    @Query('fields') fields?: any,
+    @Query('filters') filters?: any,
   ) {
     try {
       const options = getOptions(req.query, {
@@ -46,6 +49,21 @@ export class MongodbController {
       });
 
       const loadOptions = { take: 20, skip: 0, ...options.loadOptions };
+
+      if (filters) {
+        try {
+          loadOptions.filter = JSON.parse(loadOptions.filters as string);
+        } catch {}
+      }
+
+      if (fields) {
+        try {
+          loadOptions.select = JSON.parse(fields);
+        } catch {
+          loadOptions.select = fields.split(',');
+        }
+      }
+
       const processingOptions = {
         replaceIds: false,
         ...options.processingOptions,
@@ -64,12 +82,12 @@ export class MongodbController {
 
   @Get(':objectName/:id')
   async findOne(
+    @Res() res: Response,
     @Param('objectName') objectName: string,
     @Param('id') id: string,
-    @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.getRecordById(objectName, id);
+      const result = await this.mongodbService.findOne(objectName, id);
       if (!result) {
         return res.status(404).send();
       }

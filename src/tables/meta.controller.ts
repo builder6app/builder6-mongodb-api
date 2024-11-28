@@ -13,7 +13,7 @@ export class MetaController {
     @Res() res: Response,
   ) {
     try {
-      let table = await this.mongodbService.getRecordById('b6_tables', tableId);
+      let table = await this.mongodbService.findOne('b6_tables', tableId);
       if (table) {
         table.fields = await this.mongodbService.find(
           'b6_fields',

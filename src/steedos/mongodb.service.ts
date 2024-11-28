@@ -33,15 +33,51 @@ export class MongodbService {
     return entry;
   }
 
-  async find(collectionName: string, loadOptions: any, processingOptions: any) {
+  async find(
+    collectionName: string,
+    queryOptions: any,
+    processingOptions?: any,
+  ) {
+    const { top, skip, filters, sort, fields, ...restOptions } = queryOptions;
+    const loadOptions = {
+      take: top,
+      skip,
+      requireTotalCount: true,
+      ...restOptions,
+    } as any;
+    if (filters) {
+      loadOptions.filter = filters;
+    }
+    if (sort) {
+      const sortFields = sort.split(',');
+      loadOptions.sort = sortFields.map((sortField) => {
+        const [field, dir] = sortField.split(' ');
+        return { selector: field, desc: dir === 'desc' };
+      });
+    }
+    if (fields) {
+      if (typeof fields === 'object') {
+        loadOptions.select = fields;
+      } else if (typeof fields === 'string') {
+        loadOptions.select = fields.split(',');
+      }
+    }
     const collection = this.db.collection(collectionName);
 
     return devextremeQuery(collection, loadOptions, processingOptions);
   }
 
-  async getRecordById(collectionName: string, id: string) {
+  async findOne(collectionName: string, id: string) {
     const collection = this.db.collection(collectionName);
     return await collection.findOne({ _id: id as any });
+  }
+
+  async findOneBy(collectionName: string, options: any) {
+    const { filters, fields } = options;
+    const result = this.find(collectionName, { filters, fields }) as any;
+    if (result.data && result.data.length > 0) {
+      return result.data[0];
+    }
   }
 
   async updateRecord(collectionName: string, id: string, data: any) {
