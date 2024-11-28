@@ -14,7 +14,7 @@ import {
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiQuery } from '@nestjs/swagger';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/tables/v2/')
@@ -81,27 +81,44 @@ export class RecordsController {
 
   // 兼容 amis 格式的数据返回接口
   @Get(':baseId/:tableId/amis')
+  @ApiQuery({ name: 'page', required: false, default: 1, description: '分页' })
+  @ApiQuery({
+    name: 'perPage',
+    required: false,
+    default: 10,
+    description: '每页数量',
+  })
+  @ApiQuery({ name: 'orderBy', required: false, description: '排序字段' })
+  @ApiQuery({
+    name: 'orderDir',
+    required: false,
+    description: '排序顺序',
+    enum: ['asc', 'desc'],
+  })
+  @ApiQuery({ name: 'filters', required: false, description: '过滤' })
   async amisFind(
     @Res() res: Response,
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
-    @Query('page', ParseIntPipe) page: number = 1,
+    @Query('page', ParseIntPipe) page = 1,
     @Query('perPage', ParseIntPipe) perPage: number = 10,
     @Query('orderBy') orderBy?: string,
     @Query('orderDir') orderDir?: string,
     @Query('filters') filters?: any,
   ) {
     try {
+      const take = perPage ? perPage : 10;
+      const skip = (page - 1) * perPage;
       const loadOptions = {
-        take: perPage,
-        skip: ((page as number) - 1) * (perPage as number),
+        take,
+        skip,
         requireTotalCount: true,
       } as any;
       if (orderBy) {
         loadOptions.sort = [{ selector: orderBy, desc: orderDir === 'desc' }];
       }
       if (filters) {
-        loadOptions.filters = filters;
+        loadOptions.filter = JSON.parse(filters);
       }
       const processingOptions = {
         replaceIds: false,
