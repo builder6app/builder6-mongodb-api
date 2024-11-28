@@ -55,11 +55,37 @@ export class RecordsController {
 
   // loadOptions: https://github.com/oliversturm/devextreme-query-mongodb/wiki/loadOptions
   @Get(':baseId/:tableId')
-  async findAll(
-    @Param('baseId') baseId: string,
-    @Param('tableId') tableId: string,
+  @ApiQuery({
+    name: 'fields',
+    required: false,
+    description: '查询的字段，示例：name,created',
+  })
+  @ApiQuery({
+    name: 'filters',
+    required: false,
+    description: '过滤条件，示例：["age", ">", 10]',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '排序，示例：created desc',
+  })
+  @ApiQuery({ name: 'skip', required: false, description: '跳过记录数' })
+  @ApiQuery({
+    name: 'top',
+    required: false,
+    description: '每页记录数，默认20',
+  })
+  async find(
     @Req() req: Request,
     @Res() res: Response,
+    @Param('baseId') baseId: string,
+    @Param('tableId') tableId: string,
+    @Query('fields') fields?: any,
+    @Query('filters') filters?: any,
+    @Query('sort') sort?: any,
+    @Query('skip', ParseIntPipe) skip: number = 0,
+    @Query('top', ParseIntPipe) top: number = 20,
   ) {
     try {
       const options = getOptions(req.query, {
@@ -67,7 +93,7 @@ export class RecordsController {
         population: 'int',
       });
 
-      const loadOptions = { take: 20, skip: 0, ...options.loadOptions };
+      const loadOptions = { take: top, skip: skip, ...options.loadOptions };
       const processingOptions = {
         replaceIds: false,
         ...options.processingOptions,
@@ -87,14 +113,30 @@ export class RecordsController {
 
   // 兼容 amis 格式的数据返回接口
   @Get(':baseId/:tableId/amis')
-  @ApiQuery({ name: 'fields', required: false, description: '字段' })
-  @ApiQuery({ name: 'filters', required: false, description: '过滤' })
-  @ApiQuery({ name: 'sort', required: false, description: '排序' })
-  @ApiQuery({ name: 'page', required: false, description: '分页' })
+  @ApiQuery({
+    name: 'fields',
+    required: false,
+    description: '查询的字段，示例：name,created',
+  })
+  @ApiQuery({
+    name: 'filters',
+    required: false,
+    description: '过滤条件，示例：["age", ">", 10]',
+  })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description: '排序，示例：created desc',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: '当前页码，从1开始。',
+  })
   @ApiQuery({
     name: 'perPage',
     required: false,
-    description: '每页数量',
+    description: '每页记录数，默认20',
   })
   @ApiQuery({ name: 'orderBy', required: false, description: '排序字段' })
   @ApiQuery({
