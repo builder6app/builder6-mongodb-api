@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { MongodbService } from '../steedos/mongodb.service';
+import { MongodbService } from '@/mongodb/mongodb.service';
 
 @Injectable()
 export class AuthService {

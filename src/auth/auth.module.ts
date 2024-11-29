@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { SteedosModule } from '../steedos/steedos.module';
+import { MongodbModule } from '@/mongodb/mongodb.module';
+import { AdminGuard } from './admin.guard';
+import { AuthGuard } from './auth.guard';
 
 @Module({
-  imports: [SteedosModule],
+  imports: [MongodbModule],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, AdminGuard, AuthGuard],
+  exports: [AuthService, AdminGuard, AuthGuard],
 })
 export class AuthModule {}

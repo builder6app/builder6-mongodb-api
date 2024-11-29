@@ -10,12 +10,14 @@ import {
   Req,
   Query,
 } from '@nestjs/common';
-import { MongodbService } from './mongodb.service';
+import { MongodbService } from '../mongodb/mongodb.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 // 直接操作 mongodb 数据库 的 API，必须是 admin 用户才能操作。
 @Controller('api/mongodb/v2/')
+@ApiBearerAuth()
 export class MongodbController {
   constructor(private readonly mongodbService: MongodbService) {}
 

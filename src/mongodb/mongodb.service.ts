@@ -36,7 +36,7 @@ export class MongodbService {
   async find(
     collectionName: string,
     queryOptions: any,
-    processingOptions?: any,
+    processingOptions: any = { replaceIds: false },
   ) {
     const { top, skip, filters, sort, fields, ...restOptions } = queryOptions;
     const loadOptions = {
@@ -74,7 +74,10 @@ export class MongodbService {
 
   async findOneBy(collectionName: string, options: any) {
     const { filters, fields } = options;
-    const result = this.find(collectionName, { filters, fields }) as any;
+    const result = (await this.find(collectionName, {
+      filters,
+      fields,
+    })) as any;
     if (result.data && result.data.length > 0) {
       return result.data[0];
     }

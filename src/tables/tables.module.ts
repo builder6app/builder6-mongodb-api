@@ -3,11 +3,20 @@ import { RecordsController } from './records.controller';
 import { RecordsService } from './records.service';
 import { MetaController } from './meta.controller';
 import { DemoController } from './demo.controller';
-import { SteedosModule } from '../steedos/steedos.module';
+import { MongodbModule } from '@/mongodb/mongodb.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from '@/auth/auth.guard';
+import { AuthModule } from '@/auth/auth.module';
 
 @Module({
-  imports: [SteedosModule],
+  imports: [AuthModule, MongodbModule],
   controllers: [RecordsController, MetaController, DemoController],
-  providers: [RecordsService],
+  providers: [
+    RecordsService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class TablesModule {}

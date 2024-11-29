@@ -3,9 +3,10 @@ import { ConfigModule } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SteedosModule } from '@/steedos/steedos.module';
+import { MongodbModule } from '@/mongodb/mongodb.module';
 import { TablesModule } from '@/tables/tables.module';
 import { AuthModule } from './auth/auth.module';
+import { DataModule } from './data/data.module';
 
 @Module({
   imports: [
@@ -13,9 +14,11 @@ import { AuthModule } from './auth/auth.module';
       envFilePath: ['.env.local', '.env'],
       isGlobal: true, // 使配置在整个应用中可用
     }),
-    SteedosModule,
+    MongodbModule,
+    DataModule,
     TablesModule,
     AuthModule,
+    DataModule,
   ],
   controllers: [AppController],
   providers: [AppService],

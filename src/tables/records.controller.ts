@@ -14,10 +14,11 @@ import {
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
-import { ApiBody, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/tables/v2/')
+@ApiBearerAuth()
 export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
 
@@ -84,8 +85,8 @@ export class RecordsController {
     @Query('fields') fields?: any,
     @Query('filters') filters?: any,
     @Query('sort') sort?: any,
-    @Query('skip', ParseIntPipe) skip: number = 0,
-    @Query('top', ParseIntPipe) top: number = 20,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip: number = 0,
+    @Query('top', new ParseIntPipe({ optional: true })) top: number = 20,
   ) {
     try {
       const options = getOptions(req.query, {
@@ -154,8 +155,9 @@ export class RecordsController {
     @Query('sort') sort?: any,
     @Query('orderBy') orderBy?: string,
     @Query('orderDir') orderDir?: string,
-    @Query('page', ParseIntPipe) page: number = 1,
-    @Query('perPage', ParseIntPipe) perPage: number = 10,
+    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
+    @Query('perPage', new ParseIntPipe({ optional: true }))
+    perPage: number = 10,
   ) {
     try {
       const take = perPage ? perPage : 10;
