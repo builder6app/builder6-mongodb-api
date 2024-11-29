@@ -38,14 +38,21 @@ export class RecordsController {
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
     @Body() record: object,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
+    const user = req['user'];
+    console.log(user);
     try {
-      const result = await this.recordsService.createRecord(
-        baseId,
-        tableId,
-        record,
-      );
+      const result = await this.recordsService.createRecord(baseId, tableId, {
+        ...record,
+        owner: user._id,
+        created_by: user._id,
+        created: new Date(),
+        modified_by: user._id,
+        modified: new Date(),
+        space: user.space,
+      });
       console.log(result);
       res.status(200).send(result);
     } catch (error) {
@@ -245,14 +252,20 @@ export class RecordsController {
     @Param('tableId') tableId: string,
     @Param('recordId') recordId: string,
     @Body() body: object,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
+      const record = {
+        ...body,
+        modified_by: req['user']._id,
+        modified: new Date(),
+      };
       const result = await this.recordsService.updateRecord(
         baseId,
         tableId,
         recordId,
-        body,
+        record,
       );
       if (!result) {
         return res.status(404).send();
