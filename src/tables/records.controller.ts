@@ -10,14 +10,17 @@ import {
   Req,
   Query,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 import { ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@/auth/auth.guard';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/tables/v2/')
+@UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class RecordsController {
   constructor(private readonly recordsService: RecordsService) {}
@@ -42,7 +45,6 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     const user = req['user'];
-    console.log(user);
     try {
       const result = await this.recordsService.createRecord(baseId, tableId, {
         ...record,
@@ -53,7 +55,6 @@ export class RecordsController {
         modified: new Date(),
         space: user.space,
       });
-      console.log(result);
       res.status(200).send(result);
     } catch (error) {
       console.error('Query error', error);
@@ -203,7 +204,6 @@ export class RecordsController {
         loadOptions,
         processingOptions,
       );
-      console.log(loadOptions, results);
       res.status(200).send({
         status: 0,
         msg: '',

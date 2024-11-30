@@ -8,17 +8,18 @@ import * as devextremeQuery from 'devextreme-query-mongodb';
 @Injectable()
 export class MongodbService {
   private db: Db;
+  private client: MongoClient;
 
   constructor() {
-    const client = new MongoClient(process.env.STEEDOS_MONGO_URL, {
+    this.client = new MongoClient(process.env.STEEDOS_MONGO_URL, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
     });
 
-    client
+    this.client
       .connect()
       .then(() => {
-        this.db = client.db();
+        this.db = this.client.db();
         console.log('Connected to Steedos MongoDB');
       })
       .catch((err) => {
@@ -33,7 +34,20 @@ export class MongodbService {
     return entry;
   }
 
-  async find(
+  async find(collectionName: string, query: any, options: any = {}) {
+    const collection = this.db.collection(collectionName);
+    return await collection.find(query, options).toArray();
+  }
+
+  async findOne(collectionName: string, query: any, options: any = {}) {
+    const collection = this.db.collection(collectionName);
+    if (typeof query === 'string') {
+      return await collection.findOne({ _id: query as any }, options);
+    }
+    return await collection.findOne(query, options);
+  }
+
+  async objectqlFind(
     collectionName: string,
     queryOptions: any,
     processingOptions: any = { replaceIds: false },
@@ -67,14 +81,9 @@ export class MongodbService {
     return devextremeQuery(collection, loadOptions, processingOptions);
   }
 
-  async findOne(collectionName: string, id: string) {
-    const collection = this.db.collection(collectionName);
-    return await collection.findOne({ _id: id as any });
-  }
-
-  async findOneBy(collectionName: string, options: any) {
+  async objectqlFindOne(collectionName: string, options: any) {
     const { filters, fields } = options;
-    const result = (await this.find(collectionName, {
+    const result = (await this.objectqlFind(collectionName, {
       filters,
       fields,
     })) as any;
@@ -83,7 +92,7 @@ export class MongodbService {
     }
   }
 
-  async updateRecord(collectionName: string, id: string, data: any) {
+  async objectqlUpdate(collectionName: string, id: string, data: any) {
     const collection = this.db.collection(collectionName);
     const result = await collection.findOneAndUpdate(
       { _id: id as any },

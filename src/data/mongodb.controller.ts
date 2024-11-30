@@ -9,14 +9,17 @@ import {
   Res,
   Req,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { MongodbService } from '../mongodb/mongodb.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { AdminGuard } from '@/auth/admin.guard';
 
 // 直接操作 mongodb 数据库 的 API，必须是 admin 用户才能操作。
 @Controller('api/mongodb/v2/')
+@UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class MongodbController {
   constructor(private readonly mongodbService: MongodbService) {}
@@ -70,7 +73,7 @@ export class MongodbController {
         replaceIds: false,
         ...options.processingOptions,
       };
-      const results = await this.mongodbService.find(
+      const results = await this.mongodbService.objectqlFind(
         objectName,
         loadOptions,
         processingOptions,
@@ -89,7 +92,7 @@ export class MongodbController {
     @Param('id') id: string,
   ) {
     try {
-      const result = await this.mongodbService.findOne(objectName, id);
+      const result = await this.mongodbService.objectqlFindOne(objectName, id);
       if (!result) {
         return res.status(404).send();
       }
@@ -108,7 +111,7 @@ export class MongodbController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.updateRecord(
+      const result = await this.mongodbService.objectqlUpdate(
         objectName,
         id,
         body,

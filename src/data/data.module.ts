@@ -9,10 +9,10 @@ import { AuthModule } from '@/auth/auth.module';
   imports: [AuthModule, MongodbModule],
   controllers: [MongodbController],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AdminGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AdminGuard,
+    // },
   ],
 })
 export class DataModule {}
