@@ -29,5 +29,5 @@ export class MetaService {
       } as any;
     }
     return table;
-    }
+  }
 }
