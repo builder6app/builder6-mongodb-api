@@ -39,9 +39,9 @@ export class AuthController {
       
       const cookieOptions: CookieOptions = {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'none',
         maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
-        secure: process.env.NODE_ENV === 'production', // ensure cookies are sent over HTTPS in production
+        secure: true,
       };
       
       res.cookie('X-Auth-Token', authToken, cookieOptions);
