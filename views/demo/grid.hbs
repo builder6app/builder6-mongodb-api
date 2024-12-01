@@ -18,7 +18,7 @@
     <script>
 async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') {
   const B6_TABLES_API = '/api/tables/v2';
-  const tableResponse = await fetch(`${B6_TABLES_API}/meta/bases/${baseId}/tables/${tableId}`);
+  const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, {credentials: 'include'});
   const table = await tableResponse.json();
   
   console.log(table)
@@ -55,7 +55,7 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
                   }
               });
 
-              const response = await fetch(`${B6_TABLES_API}/${baseId}/${tableId}?` + new URLSearchParams(params));
+              const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?' + new URLSearchParams(params), {credentials: 'include'});
               if (!response.ok) throw new Error("Data loading error");
               const data = await response.json();
 
@@ -72,12 +72,13 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
 
       insert: async function(values) {
           try {
-              const response = await fetch(`${B6_TABLES_API}/${baseId}/${tableId}`, {
+              const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId, {
                   method: "POST",
                   headers: {
                       "Content-Type": "application/json"
                   },
-                  body: JSON.stringify(values)
+                  body: JSON.stringify(values),
+                  credentials: 'include'
               });
               if (!response.ok) throw new Error("Insertion failed");
               return await response.json();
@@ -88,8 +89,9 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
 
       remove: async function(key) {
           try {
-              const response = await fetch(`${B6_TABLES_API}/${baseId}/${tableId}/` + encodeURIComponent(key), {
-                  method: "DELETE"
+              const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + encodeURIComponent(key), {
+                  method: "DELETE",
+                  credentials: 'include'
               });
               if (!response.ok) throw new Error("Deletion failed");
               return await response.json();
@@ -100,12 +102,13 @@ async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') 
 
       update: async function(key, values) {
           try {
-              const response = await fetch(`${B6_TABLES_API}/${baseId}/${tableId}/` + encodeURIComponent(key), {
+              const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + encodeURIComponent(key), {
                   method: "PUT",
                   headers: {
                       "Content-Type": "application/json"
                   },
-                  body: JSON.stringify(values)
+                  body: JSON.stringify(values),
+                  credentials: 'include'
               });
               if (!response.ok) throw new Error("Update failed");
               return await response.json();
