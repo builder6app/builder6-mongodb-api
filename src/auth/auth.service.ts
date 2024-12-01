@@ -110,8 +110,6 @@ export class AuthService {
   }
 
   extractTokenFromHeaderOrCookie(request: Request): string | undefined {
-    console.log(request.headers)
-    console.log(request.cookies)
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     let spaceToken = type === 'Bearer' ? token : undefined;
 
