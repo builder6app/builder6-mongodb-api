@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongodbModule } from '@/mongodb/mongodb.module';
 import { TablesModule } from '@/tables/tables.module';
 import { AuthModule } from './auth/auth.module';
-import { DataModule } from './data/data.module';
+import { SteedosModule } from './steedos/steedos.module';
 
 @Module({
   imports: [
@@ -13,10 +13,9 @@ import { DataModule } from './data/data.module';
       isGlobal: true, // 使配置在整个应用中可用
     }),
     MongodbModule,
-    DataModule,
+    SteedosModule,
     TablesModule,
     AuthModule,
-    DataModule,
   ],
   controllers: [],
   providers: [],
