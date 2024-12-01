@@ -1,8 +1,3 @@
-/*
- * @LastEditTime: 2024-11-30 18:07:11
- * @LastEditors: liaodaxue
- * @customMade: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 import {
   CanActivate,
   ExecutionContext,
@@ -18,7 +13,7 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = this.authService.extractTokenFromHeaderOrCookie(request);
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -33,8 +28,4 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
-  }
 }

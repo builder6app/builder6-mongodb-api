@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { MongodbService } from '@/mongodb/mongodb.service';
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -108,6 +109,18 @@ export class AuthService {
     }
   }
 
+  extractTokenFromHeaderOrCookie(request: Request): string | undefined {
+    console.log(request.headers)
+    console.log(request.cookies)
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    let spaceToken = type === 'Bearer' ? token : undefined;
+
+    if (!spaceToken && request.cookies && request.cookies['X-Auth-Token'] && request.cookies['X-Space-Id']) {
+      spaceToken = `${request.cookies['X-Space-Id']},${request.cookies['X-Auth-Token']}`;
+    }
+    return spaceToken;
+  }
+
   hashLoginToken(loginToken) {
     const hash = crypto.createHash('sha256');
     hash.update(loginToken);
@@ -130,7 +143,6 @@ export class AuthService {
     )
     return {
       ...hashedStampedToken,
-      token: stampedToken.token,
       hashedToken: this.hashLoginToken(stampedToken.token)
     };
   }

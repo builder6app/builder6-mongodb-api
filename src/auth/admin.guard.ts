@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2024-11-30 22:37:45
+ * @LastEditTime: 2024-12-01 13:06:06
  * @LastEditors: liaodaxue
  * @customMade: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,7 +18,7 @@ export class AdminGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = this.authService.extractTokenFromHeaderOrCookie(request);
     if (!token) {
       throw new UnauthorizedException();
     }
