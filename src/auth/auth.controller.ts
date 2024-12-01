@@ -1,15 +1,10 @@
-/*
- * @LastEditTime: 2024-11-30 22:37:42
- * @LastEditors: liaodaxue
- * @customMade: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 import { Body, Controller, Get, Post, Req, Res, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBody } from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
 
 
-@Controller('auth')
+@Controller('api/steedos/v6/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 

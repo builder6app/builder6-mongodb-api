@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 
-@Controller('/demo/')
+@Controller('/api/tables/v2/demo/')
 export class DemoController {
   @Get('grid/:baseId/:tableId')
   @Render('demo/grid')

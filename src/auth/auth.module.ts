@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
-import { DemoController } from '../auth/demo.controller';
 import { AuthService } from './auth.service';
 import { MongodbModule } from '@/mongodb/mongodb.module';
 import { AdminGuard } from './admin.guard';
@@ -14,7 +13,7 @@ import { AuthGuard } from './auth.guard';
       signOptions: { expiresIn: '60s' },
     }),
   ],
-  controllers: [AuthController, DemoController],
+  controllers: [AuthController],
   providers: [AuthService, AdminGuard, AuthGuard],
   exports: [AuthService, AdminGuard, AuthGuard],
 })
