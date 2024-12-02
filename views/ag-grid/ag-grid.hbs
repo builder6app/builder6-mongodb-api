@@ -79,6 +79,11 @@
                     paginationPageSize: 20,
                     cacheBlockSize: 20,
                     editType: 'fullRow',
+                    cellSelection: {
+                        handle: { 
+                            mode: 'range',
+                        }
+                    },
                     onRowValueChanged: onRowValueChanged,
                     datasource: getDataSource(),
                     defaultColDef: {
