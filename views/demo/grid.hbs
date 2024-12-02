@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/devextreme@22.2.14/dist/js/dx.all.js"></script>
     <link rel="stylesheet" type="text/css" href="styles.css" />
     <script>
+      
 async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') {
   const B6_TABLES_API = '/api/tables/v2';
   const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, {credentials: 'include'});

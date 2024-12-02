@@ -10,8 +10,7 @@ export class MetaService {
     if (table) {
       table.fields = await this.mongodbService.find(
         'b6_fields',
-        { filter: ['table_id', '=', tableId] },
-        {},
+        { table_id: tableId },
       );
     } else {
       table = {
