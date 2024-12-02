@@ -17,8 +17,10 @@
     <link rel="stylesheet" type="text/css" href="styles.css" />
     <script>
       
-async function initializeGrid(baseId = '{{ baseId }}', tableId='{{ tableId }}') {
+async function initializeGrid() {
   const B6_TABLES_API = '/api/tables/v2';
+  const baseId = '{{ baseId }}';
+  const tableId='{{ tableId }}';
   const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, {credentials: 'include'});
   const table = await tableResponse.json();
   

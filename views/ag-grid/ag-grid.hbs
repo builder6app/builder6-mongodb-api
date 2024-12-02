@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AG Grid</title>
+    <title>AG Grid Enterprise with Dynamic Loading and Editing</title>
     <!-- 引入 AG Grid 的 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
@@ -11,42 +11,133 @@
         /* 设置表格的高度和宽度 */
         .ag-theme-alpine {
             height: 400px;
-            width: 600px;
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <h1>AG Grid</h1>
+    <h1>AG Grid - Dynamic Loading and Editing</h1>
     <!-- 创建一个容器来放置 AG Grid -->
     <div id="myGrid" class="ag-theme-alpine"></div>
 
     <!-- 引入 AG Grid 的 JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-enterprise/dist/ag-grid-enterprise.noStyle.js"></script>
     <script>
-        // 定义列和行数据
-        const columnDefs = [
-            { headerName: "Make", field: "make" },
-            { headerName: "Model", field: "model" },
-            { headerName: "Price", field: "price" }
-        ];
 
-        const rowData = [
-            { make: "Toyota", model: "Celica", price: 35000 },
-            { make: "Ford", model: "Mondeo", price: 32000 },
-            { make: "Porsche", model: "Boxster", price: 72000 }
-        ];
+        const B6_TABLES_API = '/api/tables/v2';
+        const baseId = '{{ baseId }}';
+        const tableId='{{ tableId }}';
+        
+        // 启用 AG Grid 企业版
+        agGrid.LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
 
-        // 初始化网格
-        const gridOptions = {
-            columnDefs: columnDefs,
-            rowData: rowData
-        };
+        // 创建一个异步函数来初始化表格
+        async function initializeGrid() {
+            try {
+                // 获取列定义
+                const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, {credentials: 'include'});
+                const table = await tableResponse.json();
+                console.log(table)
 
-        // 渲染网格
+                const columnDefs = table.fields.map(field => {
+                    let cellDataType;
+
+                    // 根据字段类型设置 dataType
+                    switch (field.type) {
+                        case 'text':
+                            cellDataType = 'text';
+                            break;
+                        case 'number':
+                            cellDataType = 'number';
+                            break;
+                        case 'date':
+                            cellDataType = 'date';
+                            break;        
+                        case 'datetime':
+                            cellDataType = 'date';
+                            break;
+                        case 'boolean':
+                            cellDataType = 'boolean';
+                            break;
+                        default:
+                            cellDataType = 'text'; // 默认类型
+                    }
+
+                    return {
+                        field: field.name.toLowerCase(), // 假设字段名需要小写
+                        headerName: field.name,
+                        cellDataType: cellDataType,
+                    };
+                });
+                
+                // 初始化网格配置
+                const gridOptions = {
+                    columnDefs: columnDefs,
+                    rowData: null, // 初始为空，通过 API 动态加载
+                    rowModelType: 'infinite',
+                    paginationPageSize: 20,
+                    cacheBlockSize: 20,
+                    editType: 'fullRow',
+                    onRowValueChanged: onRowValueChanged,
+                    datasource: getDataSource(),
+                    defaultColDef: {
+                        flex: 1,
+                        minWidth: 100,
+                        resizable: true,
+                    }
+                };
+
+                // 渲染网格
+                const gridDiv = document.querySelector('#myGrid');
+                new agGrid.Grid(gridDiv, gridOptions);
+            } catch (error) {
+                console.error('Error initializing grid:', error);
+            }
+        }
+
+        // 监听行数据改变事件
+        async function onRowValueChanged(event) {
+            const data = event.data;
+            console.log('Saving updated data to server:', data);
+            try {
+                // 保存更新的数据到服务端
+                const response = await fetch('https://your-api-endpoint.com/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const responseData = await response.json();
+                console.log('Data saved successfully:', responseData);
+            } catch (error) {
+                console.error('Error saving data:', error);
+            }
+        }
+
+        // 数据源，动态加载数据
+        function getDataSource() {
+            return {
+                getRows: async function(params) {
+                    console.log('Requesting rows from server:', params);
+                    try {
+                        // 请求服务端 API 获取数据
+                        const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
+                        const data = await response.json();
+                        params.successCallback(data.data, data.totalCount);
+                    } catch (error) {
+                        console.error('Error fetching data:', error);
+                        params.failCallback();
+                    }
+                }
+            };
+        }
+
+        // 在文档加载后初始化表格
         document.addEventListener('DOMContentLoaded', function() {
-            const gridDiv = document.querySelector('#myGrid');
-            new agGrid.Grid(gridDiv, gridOptions);
+            initializeGrid();
         });
     </script>
+
 </body>
 </html>
