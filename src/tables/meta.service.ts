@@ -6,12 +6,13 @@ export class MetaService {
   constructor(private readonly mongodbService: MongodbService) {}
 
   async getTableMeta(baseId: string, tableId: string) {
-    let table = await this.mongodbService.findOne('b6_tables', tableId);
+    let table = await this.mongodbService.findOne('b6_tables', {
+      _id: tableId,
+    });
     if (table) {
-      table.fields = await this.mongodbService.find(
-        'b6_fields',
-        { table_id: tableId },
-      );
+      table.fields = await this.mongodbService.find('b6_fields', {
+        table_id: tableId,
+      });
     } else {
       table = {
         _id: tableId,

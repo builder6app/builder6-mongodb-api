@@ -34,12 +34,12 @@ export class MongodbService {
     return entry;
   }
 
-  async find(collectionName: string, query: any, options: any = {}) {
+  async find(collectionName: string, query: object, options: object = {}) {
     const collection = this.db.collection(collectionName);
     return await collection.find(query, options).toArray();
   }
 
-  async findOne(collectionName: string, query: any, options: any = {}) {
+  async findOne(collectionName: string, query: object, options: object = {}) {
     const collection = this.db.collection(collectionName);
     if (typeof query === 'string') {
       return await collection.findOne({ _id: query as any }, options);
