@@ -17,6 +17,10 @@
 </head>
 <body>
     <h1>AG Grid - Dynamic Loading and Editing</h1>
+    <div class="button-container">
+        <!-- 创建一个按钮来添加新行 -->
+        <button id="addRowBtn">Add New Row</button>
+    </div>
     <!-- 创建一个容器来放置 AG Grid -->
     <div id="myGrid" class="ag-theme-alpine"></div>
 
@@ -75,7 +79,7 @@
                 const gridOptions = {
                     columnDefs: columnDefs,
                     rowData: null, // 初始为空，通过 API 动态加载
-                    rowModelType: 'infinite',
+                    rowModelType: 'serverSide',
                     paginationPageSize: 20,
                     cacheBlockSize: 20,
                     editType: 'fullRow',
@@ -85,17 +89,22 @@
                         }
                     },
                     onRowValueChanged: onRowValueChanged,
-                    datasource: getDataSource(),
+                    //datasource: getDataSource(),
                     defaultColDef: {
                         flex: 1,
                         minWidth: 100,
                         resizable: true,
-                    }
+                    },
+                    serverSideDatasource: getServerSideDatasource(),
                 };
 
                 // 渲染网格
                 const gridDiv = document.querySelector('#myGrid');
                 new agGrid.Grid(gridDiv, gridOptions);
+
+                // 设置新增行按钮的事件
+                document.getElementById('addRowBtn').addEventListener('click', addNewRow(gridOptions));
+
             } catch (error) {
                 console.error('Error initializing grid:', error);
             }
@@ -119,6 +128,27 @@
             } catch (error) {
                 console.error('Error saving data:', error);
             }
+        }
+
+
+        function getServerSideDatasource() {
+            return {
+                getRows: async function(params) {
+                    console.log('Server Side Datasource - Requesting rows from server:', params.request);
+                    try {
+                        const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
+                        const data = await response.json();
+                        
+                        params.success({
+                            rowData: data.data,
+                            rowCount: data.totalCount
+                        });
+                    } catch (error) {
+                        console.error('Error fetching data from server:', error);
+                        params.fail();
+                    }
+                }
+            };
         }
 
         // 数据源，动态加载数据
