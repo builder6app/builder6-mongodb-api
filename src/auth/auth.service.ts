@@ -1,6 +1,5 @@
-import SHA256 from 'sha256';
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { MongodbService } from '@/mongodb/mongodb.service';
 import { JwtService } from '@nestjs/jwt';
@@ -24,7 +23,9 @@ export class AuthService {
       spaceId = await this.getMasterSpaceId();
     }
 
-    const bcryptPassword = SHA256(password);
+    const hash = crypto.createHash('sha256');
+    hash.update(password);
+    const bcryptPassword = hash.digest('hex');
     const user = (await this.mongodbService.findOne('users', {
       $or: [
         { username: username },
@@ -111,12 +112,15 @@ export class AuthService {
 
   async getUserByToken(token: string): Promise<any> {
     const tokenArray = token.split(',');
+    console.log('getUserByToken', tokenArray);
     if (tokenArray.length !== 2) {
       throw new UnauthorizedException();
     }
     const spaceId = tokenArray[0];
     const authToken = tokenArray[1];
+    console.log(spaceId, authToken);
     const hashedStampedToken = this.hashLoginToken(authToken);
+    console.log(spaceId, authToken, hashedStampedToken);
     const user = (await this.mongodbService.findOne('users', {
       'services.resume.loginTokens.hashedToken': hashedStampedToken,
     })) as any;
