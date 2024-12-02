@@ -34,6 +34,9 @@
         
         // 启用 AG Grid 企业版
         agGrid.LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
+        
+        let gridApi; // 提前声明 gridApi 以便全局访问
+        let gridOptions; // 提前声明 gridOptions 以便全局访问
 
         // 创建一个异步函数来初始化表格
         async function initializeGrid() {
@@ -76,7 +79,7 @@
                 });
                 
                 // 初始化网格配置
-                const gridOptions = {
+                gridOptions = {
                     columnDefs: columnDefs,
                     rowData: null, // 初始为空，通过 API 动态加载
                     rowModelType: 'serverSide',
@@ -100,10 +103,10 @@
 
                 // 渲染网格
                 const gridDiv = document.querySelector('#myGrid');
-                new agGrid.Grid(gridDiv, gridOptions);
+                gridApi = new agGrid.Grid(gridDiv, gridOptions);
 
                 // 设置新增行按钮的事件
-                document.getElementById('addRowBtn').addEventListener('click', addNewRow(gridOptions));
+                document.getElementById('addRowBtn').addEventListener('click', addNewRow);
 
             } catch (error) {
                 console.error('Error initializing grid:', error);
@@ -151,23 +154,46 @@
             };
         }
 
-        // 数据源，动态加载数据
-        function getDataSource() {
-            return {
-                getRows: async function(params) {
-                    console.log('Requesting rows from server:', params);
-                    try {
-                        // 请求服务端 API 获取数据
-                        const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
-                        const data = await response.json();
-                        params.successCallback(data.data, data.totalCount);
-                    } catch (error) {
-                        console.error('Error fetching data:', error);
-                        params.failCallback();
-                    }
+        // 新增行的功能
+        async function addNewRow() {
+            if (!gridOptions) {
+                console.error('Grid options not available. Ensure grid is initialized properly.');
+                return;
+            }
+            const newRow = createNewRowData();
+
+            // 将新增数据发送到服务器
+            try {
+                const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newRow)
+                });
+
+                if (response.ok) {
+                    console.log('New row added successfully');
+                    // 新增数据成功后刷新网格数据
+                    gridApi.refreshServerSide({ purge: true });
+                } else {
+                    console.error('Failed to add new row:', response.statusText);
                 }
-            };
+            } catch (error) {
+                console.error('Error adding new row:', error);
+            }
         }
+
+        // 创建一个新行数据，可以初始化为默认值或空值
+        function createNewRowData() {
+            const newRow = {};
+            // 可以给每个字段一个默认值，例如：
+            gridOptions.columnDefs.forEach(colDef => {
+                newRow[colDef.field] = ''; // 设置为空或设置默认值
+            });
+            return newRow;
+        }
+
 
         // 在文档加载后初始化表格
         document.addEventListener('DOMContentLoaded', function() {
