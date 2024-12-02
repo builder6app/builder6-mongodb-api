@@ -112,15 +112,12 @@ export class AuthService {
 
   async getUserByToken(token: string): Promise<any> {
     const tokenArray = token.split(',');
-    console.log('getUserByToken', tokenArray);
     if (tokenArray.length !== 2) {
       throw new UnauthorizedException();
     }
     const spaceId = tokenArray[0];
     const authToken = tokenArray[1];
-    console.log(spaceId, authToken);
     const hashedStampedToken = this.hashLoginToken(authToken);
-    console.log(spaceId, authToken, hashedStampedToken);
     const user = (await this.mongodbService.findOne('users', {
       'services.resume.loginTokens.hashedToken': hashedStampedToken,
     })) as any;
