@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
     <style>
         /* 设置表格的高度和宽度 */
-        .ag-theme-alpine {
+        #myGrid {
             height: 400px;
             width: 100%;
         }
@@ -51,10 +51,10 @@
                             cellDataType = 'number';
                             break;
                         case 'date':
-                            cellDataType = 'date';
+                            cellDataType = 'dateString';
                             break;        
                         case 'datetime':
-                            cellDataType = 'date';
+                            cellDataType = 'dateString';
                             break;
                         case 'boolean':
                             cellDataType = 'boolean';
