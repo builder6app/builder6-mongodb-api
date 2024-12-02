@@ -7,7 +7,8 @@ import { AdminGuard } from './admin.guard';
 import { AuthGuard } from './auth.guard';
 
 @Module({
-  imports: [MongodbModule,
+  imports: [
+    MongodbModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '60s' },

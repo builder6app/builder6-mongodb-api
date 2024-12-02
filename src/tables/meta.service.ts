@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class MetaService {
   constructor(private readonly mongodbService: MongodbService) {}
-  
-  async getTableMeta(baseId:string, tableId: string) {
+
+  async getTableMeta(baseId: string, tableId: string) {
     let table = await this.mongodbService.findOne('b6_tables', tableId);
     if (table) {
       table.fields = await this.mongodbService.find(

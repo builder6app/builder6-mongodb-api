@@ -10,9 +10,6 @@ import { DemoController } from './demo.controller';
 @Module({
   imports: [AuthModule, MongodbModule],
   controllers: [RecordsController, MetaController, DemoController],
-  providers: [
-    MetaService,
-    RecordsService,
-  ],
+  providers: [MetaService, RecordsService],
 })
 export class TablesModule {}

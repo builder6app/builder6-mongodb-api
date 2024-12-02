@@ -33,9 +33,10 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ extended: true, limit: '100mb', parameterLimit: 1000000 }));
+  app.use(
+    urlencoded({ extended: true, limit: '100mb', parameterLimit: 1000000 }),
+  );
   app.use(compression());
-
 
   await app.listen(process.env.PORT ?? 3000);
 }

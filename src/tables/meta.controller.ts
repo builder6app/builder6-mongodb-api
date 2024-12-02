@@ -15,7 +15,7 @@ export class MetaController {
     @Res() res: Response,
   ) {
     try {
-      let table = await this.metaService.getTableMeta(baseId, tableId);
+      const table = await this.metaService.getTableMeta(baseId, tableId);
       res.status(200).send(table);
     } catch (error) {
       console.error('Query error', error);
