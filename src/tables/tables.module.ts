@@ -5,11 +5,17 @@ import { MetaService } from './meta.service';
 import { MetaController } from './meta.controller';
 import { MongodbModule } from '@/mongodb/mongodb.module';
 import { AuthModule } from '@/auth/auth.module';
-import { DemoController } from './demo.controller';
+import { DevExtremeController } from './devextreme.controller';
+import { AgGridController } from './ag-grid.controller';
 
 @Module({
   imports: [AuthModule, MongodbModule],
-  controllers: [RecordsController, MetaController, DemoController],
+  controllers: [
+    RecordsController,
+    MetaController,
+    DevExtremeController,
+    AgGridController,
+  ],
   providers: [MetaService, RecordsService],
 })
 export class TablesModule {}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AG Grid</title>
+    <!-- 引入 AG Grid 的 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
+    <style>
+        /* 设置表格的高度和宽度 */
+        .ag-theme-alpine {
+            height: 400px;
+            width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AG Grid Example</h1>
+    <!-- 创建一个容器来放置 AG Grid -->
+    <div id="myGrid" class="ag-theme-alpine"></div>
+
+    <!-- 引入 AG Grid 的 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.noStyle.js"></script>
+    <script>
+        // 定义列和行数据
+        const columnDefs = [
+            { headerName: "Make", field: "make" },
+            { headerName: "Model", field: "model" },
+            { headerName: "Price", field: "price" }
+        ];
+
+        const rowData = [
+            { make: "Toyota", model: "Celica", price: 35000 },
+            { make: "Ford", model: "Mondeo", price: 32000 },
+            { make: "Porsche", model: "Boxster", price: 72000 }
+        ];
+
+        // 初始化网格
+        const gridOptions = {
+            columnDefs: columnDefs,
+            rowData: rowData
+        };
+
+        // 渲染网格
+        document.addEventListener('DOMContentLoaded', function() {
+            const gridDiv = document.querySelector('#myGrid');
+            new agGrid.Grid(gridDiv, gridOptions);
+        });
+    </script>
+</body>
+</html>
