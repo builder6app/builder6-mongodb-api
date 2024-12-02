@@ -103,7 +103,7 @@
 
                 // 渲染网格
                 const gridDiv = document.querySelector('#myGrid');
-                gridApi = new agGrid.Grid(gridDiv, gridOptions);
+                gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
                 // 设置新增行按钮的事件
                 document.getElementById('addRowBtn').addEventListener('click', addNewRow);
