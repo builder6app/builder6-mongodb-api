@@ -20,7 +20,7 @@ export class MetaService {
         name: 'Tasks',
         description: 'I was changed!',
         fields: [
-          { _id: 'fld001', name: 'Name', type: 'text' },
+          { _id: 'fld001', name: 'Name', type: 'text', default_value: "默认文本" },
           { _id: 'fld003', name: 'Age', type: 'number' },
           { _id: 'fld002', name: 'Discount', type: 'number', precision: 2 },
           { _id: 'fld002', name: 'Info', type: 'textarea' },

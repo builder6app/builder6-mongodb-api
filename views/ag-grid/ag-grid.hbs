@@ -136,7 +136,7 @@
                     baseDataType: 'date',
                     extendsDataType: 'date',
                     valueGetter: params => {
-                        const fieldType = params.colDef.cellEditorParams.fieldType;
+                        const fieldType = params.colDef.cellEditorParams.fieldConfig.type;
                         const fieldName = params.colDef.field;
                         const fieldValue = params.data[fieldName];
                         if (!fieldValue) return null;
@@ -145,7 +145,7 @@
                         return date;
                     },
                     valueFormatter: params => {
-                        const fieldType = params.colDef.cellEditorParams.fieldType;
+                        const fieldType = params.colDef.cellEditorParams.fieldConfig.type;
                         const date = new Date(params.value);
 
                         if (!params.value) return "";
@@ -172,38 +172,38 @@
                 let fieldOptions;
 
                 // 根据字段类型设置 dataType
+                cellEditorParams = {
+                    fieldConfig: field
+                };
                 switch (field.type) {
                     case 'text':
                         cellDataType = 'text';
                         break;
                     case 'number':
                         cellDataType = 'number';
-                        cellEditorParams = {
+                        Object.assign(cellEditorParams, {
                             precision: field.precision ?? 0
-                        };
+                        });
                         break;
                     case 'select':
                         cellDataType = 'text';
                         fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
                         fieldOptions.unshift("");
-                        cellEditorParams = {
+                        Object.assign(cellEditorParams, {
                             values: fieldOptions
-                        };
+                        });
                         cellEditor = "agSelectCellEditor";
                         break;
                     case 'select-multiple':
                         cellDataType = 'object';
                         fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
-                        cellEditorParams = {
+                        Object.assign(cellEditorParams, {
                             values: fieldOptions
-                        };
+                        });
                         cellEditor = MultiSelectCellEditor;
                         break;
                     case 'date':
                         cellDataType = 'date';
-                        cellEditorParams = {
-                            fieldType: 'date'
-                        };
                         //cellEditor = "agDateInput";//ag-grid内置日期编辑控件，但是显示配置的话样式有问题
                         valueFormatter = dataTypeDefinitions.date.valueFormatter;
                         //如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
@@ -211,9 +211,6 @@
                         break;
                     case 'datetime':
                         cellDataType = 'date';
-                        cellEditorParams = {
-                            fieldType: 'datetime'
-                        };
                         cellEditor = DateTimeEditor;
                         //因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
                         //valueGetter = dataTypeDefinitions.date.valueGetter;
@@ -351,11 +348,24 @@
         const newRow = {};
         // 可以给每个字段一个默认值，例如：
         gridOptions.columnDefs.forEach(colDef => {
-            newRow[colDef.field] = ''; // 设置为空或设置默认值
+            const dfValue = getFieldDefaultValue(colDef); // 设置为空或设置默认值
+            if (typeof dfValue != "undefined") {
+                newRow[colDef.field] = dfValue;
+            }
         });
         return newRow;
     }
 
+    function getFieldDefaultValue(colDef) {
+        const fieldConfig = colDef.cellEditorParams.fieldConfig;
+        const defaultValue = fieldConfig.default_value;
+        if(typeof defaultValue !== "undefined"){
+            return defaultValue;
+        }
+        if (fieldConfig.type === "boolean") {
+            return false;
+        }
+    }
 
     // 在文档加载后初始化表格
     document.addEventListener('DOMContentLoaded', function () {
