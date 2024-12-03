@@ -71,6 +71,48 @@
             }
         }
 
+        class MultiSelectCellEditor {
+            init(params) {
+                this.eInput = document.createElement('select');
+                this.eInput.setAttribute('multiple', 'true');
+                this.eInput.style.width = '200px';
+                debugger;
+                const options = params.colDef.cellEditorParams.values;
+                options.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.text = option;
+                    optionElement.value = option;
+                    this.eInput.appendChild(optionElement);
+                });
+
+                // 设置初始值
+                const selectedValues = Array.isArray(params.value) ? params.value : [];
+                for (let option of this.eInput.options) {
+                    if (selectedValues.includes(option.value)) {
+                        option.selected = true;
+                    }
+                }
+            }
+
+            getGui() {
+                return this.eInput;
+            }
+
+            afterGuiAttached() {
+                this.eInput.focus();
+            }
+
+            getValue() {
+                const selectedOptions = Array.from(this.eInput.selectedOptions);
+                return selectedOptions.map(option => option.value);
+            }
+
+            destroy() { }
+
+            isPopup() {
+                return true;
+            }
+        }
         // 创建一个异步函数来初始化表格
         async function initializeGrid() {
             try {
@@ -117,6 +159,7 @@
                     let cellEditor;
                     let valueFormatter;
                     let valueGetter;
+                    let fieldOptions;
 
                     // 根据字段类型设置 dataType
                     switch (field.type) {
@@ -128,6 +171,23 @@
                             cellEditorParams = {
                                 precision: field.precision ?? 0
                             };
+                            break;
+                        case 'select':
+                            cellDataType = 'text';
+                            fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
+                            fieldOptions.unshift("");
+                            cellEditorParams = {
+                                values: fieldOptions
+                            };
+                            cellEditor = "agSelectCellEditor";
+                            break;
+                        case 'select-multiple':
+                            cellDataType = 'object';
+                            fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
+                            cellEditorParams = {
+                                values: fieldOptions
+                            };
+                            cellEditor = MultiSelectCellEditor;
                             break;
                         case 'date':
                             cellDataType = 'date';
@@ -166,6 +226,8 @@
                         valueGetter
                     };
                 });
+
+                console.log("===columnDefs===", columnDefs);
 
                 // 初始化网格配置
                 gridOptions = {
