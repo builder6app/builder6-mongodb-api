@@ -27,7 +27,7 @@ export class MongodbService {
       });
   }
 
-  async createRecord(collectionName: string, data: any) {
+  async insertOne(collectionName: string, data: any) {
     const collection = this.db.collection(collectionName);
     const entry = { _id: uuidv4(), ...data };
     await collection.insertOne(entry);
@@ -102,7 +102,7 @@ export class MongodbService {
     return result;
   }
 
-  async deleteRecord(collectionName: string, id: string) {
+  async deleteOne(collectionName: string, id: string) {
     const collection = this.db.collection(collectionName);
     const result = await collection.deleteOne({ _id: id as any });
     return result;

@@ -5,6 +5,7 @@ import { MongodbModule } from '@/mongodb/mongodb.module';
 import { TablesModule } from '@/tables/tables.module';
 import { AuthModule } from './auth/auth.module';
 import { SteedosModule } from './steedos/steedos.module';
+import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SteedosModule } from './steedos/steedos.module';
     SteedosModule,
     TablesModule,
     AuthModule,
+    RoomsModule,
   ],
   controllers: [],
   providers: [],

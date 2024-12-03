@@ -31,7 +31,7 @@ export class MongodbController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.createRecord(objectName, body);
+      const result = await this.mongodbService.insertOne(objectName, body);
       res.status(200).send(result);
     } catch (error) {
       console.error('Query error', error);
@@ -133,7 +133,7 @@ export class MongodbController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.deleteRecord(objectName, id);
+      const result = await this.mongodbService.deleteOne(objectName, id);
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
