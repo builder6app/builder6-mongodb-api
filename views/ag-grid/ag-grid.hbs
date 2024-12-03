@@ -14,6 +14,19 @@
             height: 400px;
             width: 100%;
         }
+
+        .custom-tooltip {
+            padding: 5px;
+        }
+
+        .custom-tooltip p {
+            margin: 5px;
+            white-space: nowrap;
+        }
+
+        .custom-tooltip p:first-of-type {
+            font-weight: bold;
+        }
     </style>
 </head>
 
@@ -123,6 +136,29 @@
             return true;
         }
     }
+
+    class CustomTooltip {
+        constructor() {
+            this.eGui = null;
+        }
+
+        init(params) {
+            this.eGui = document.createElement('div');
+            const color = params.color || '#cc693344';
+
+            this.eGui.classList.add('custom-tooltip');
+            this.eGui.style.backgroundColor = color;
+            this.eGui.innerHTML = `
+            <div><b>不符合校验规则</b></div>
+            <div>${params.value}</div>
+        `;
+        }
+
+        getGui() {
+            return this.eGui;
+        }
+    }
+
     // 创建一个异步函数来初始化表格
     async function initializeGrid() {
         try {
@@ -167,6 +203,12 @@
                     fields: {}
                 }
             };
+
+            const tooltipValueGetter = params => {
+                if (params.data.__verificationErrors && params.data.__verificationErrors.length) {
+                    return params.data.__verificationErrors;
+                }
+            }
 
             const columnDefs = table.fields.map(field => {
                 let cellDataType,
@@ -242,7 +284,12 @@
                     cellEditor,
                     editable,
                     valueFormatter,
-                    valueGetter
+                    valueGetter,
+                    tooltipMouseTrack: true,
+                    tooltipInteraction: true,
+                    tooltipShowDelay: 0,
+                    tooltipHideDelay: 8000,
+                    tooltipValueGetter
                 };
             });
 
@@ -250,6 +297,11 @@
             gridOptions = {
                 columnDefs: columnDefs,
                 dataTypeDefinitions,
+                /*getRowStyle: params => {
+                    if (params.data.__verificationErrors && params.data.__verificationErrors.length) {
+                        return { background: '#cc693344' };
+                    }
+                },*/
                 rowData: null, // 初始为空，通过 API 动态加载
                 rowModelType: 'serverSide',
                 paginationPageSize: 20,
@@ -266,6 +318,7 @@
                     flex: 1,
                     minWidth: 100,
                     resizable: true,
+                    tooltipComponent: CustomTooltip
                 },
                 serverSideDatasource: getServerSideDatasource(),
             };
@@ -290,22 +343,24 @@
         console.log('Saving updated data to server:', data);
         try {
             // 校验
+            const rowNode = event.node;
             let validated = true;
             const verifications = table.verifications || [];
-            const errors = [];
+            const verificationErrors = [];
             verifications.forEach(function (verification) {
                 validated = evaluate(verification.rule, data, { evalMode: true });
-                if(!validated){
-                    errors.push(verification.alert);
+                if (!validated) {
+                    verificationErrors.push(verification.alert);
                 }
             });
-            validated = errors.length === 0;
+            validated = verificationErrors.length === 0;
             if (!validated) {
                 console.log("The table verifications is not passed for the row data:", verifications, data);
                 event.api.startEditingCell({
                     rowIndex: event.rowIndex,
                     colKey: event.api.getAllGridColumns()[0].colId
                 });
+                rowNode.setData(Object.assign({}, data, { __verificationErrors: verificationErrors }))
                 return;
             }
             // 循环所有公式字段执行公式计算并设置值到data中
@@ -317,6 +372,7 @@
                 data[formulaFieldName] = evaluate(formula, data, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
             }
             // 保存更新的数据到服务端
+            delete data.__verificationErrors
             const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + data._id, {
                 method: 'PUT',
                 headers: {
@@ -326,7 +382,6 @@
             });
             const responseData = await response.json();
             console.log('Data saved successfully:', responseData);
-            const rowNode = event.node;
             rowNode.setData(responseData);
         } catch (error) {
             console.error('Error saving data:', error);
