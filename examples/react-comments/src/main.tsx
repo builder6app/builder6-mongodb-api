@@ -12,6 +12,21 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <LiveblocksProvider
       baseUrl="http://localhost:5100"
+
+      // Get users' info from their ID
+      resolveUsers={async ({ userIds }) => {
+        const searchParams = new URLSearchParams(
+          userIds.map((userId) => ["userIds", userId])
+        );
+        const response = await fetch(`http://localhost:5100/v2/c/users?${searchParams}`);
+
+        if (!response.ok) {
+          throw new Error("Problem resolving users");
+        }
+
+        const users = await response.json();
+        return users;
+      }}
       publicApiKey={import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY}
     >
       <App roomId={roomId} />

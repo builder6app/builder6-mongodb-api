@@ -1,11 +1,18 @@
 import { RoomsService } from './rooms.service';
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 
-@Controller('v2')
+@Controller('v2/c/')
 export class RoomsController {
   constructor(private roomsService: RoomsService) {}
 
-  @Get('c/rooms/:roomId/threads')
+  @Get('users')
+  async getUsers(@Query('userIds') userIds: string | string[]) {
+    const users = await this.roomsService.getUsers(userIds);
+    console.log('getUsers', userIds, users);
+    return users;
+  }
+
+  @Get('rooms/:roomId/threads')
   async getThreads(@Param('roomId') roomId: string) {
     const threads = await this.roomsService.getThreads(roomId);
     return {
@@ -23,7 +30,7 @@ export class RoomsController {
     };
   }
 
-  @Post('c/rooms/:roomId/threads')
+  @Post('rooms/:roomId/threads')
   async createThread(
     @Param('roomId') roomId: string,
     @Body() record: Record<string, any>,
@@ -40,7 +47,7 @@ export class RoomsController {
     return newThread;
   }
 
-  @Post('c/rooms/:roomId/threads/:threadId/comments')
+  @Post('rooms/:roomId/threads/:threadId/comments')
   async createComment(
     @Param('roomId') roomId: string,
     @Param('threadId') threadId: string,

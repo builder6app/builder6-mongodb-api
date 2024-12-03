@@ -34,6 +34,25 @@ export class RoomsService {
     return { id: attachmentId };
   }
 
+  async getUsers(userIds: string | string[]) {
+    if (typeof userIds === 'string') {
+      userIds = [userIds];
+    }
+    const users = [];
+
+    for (const userId of userIds) {
+      const user = await this.mongodbService.findOne('users', {
+        _id: userId,
+      });
+      users.push({
+        name: user ? user.name : 'Unknown',
+        // avatar: "https://liveblocks.io/avatars/avatar-4.png"
+      });
+    }
+
+    return users;
+  }
+
   async getThreads(roomId: string) {
     const threads = await this.mongodbService.find('b6_threads', {
       roomId: roomId,
