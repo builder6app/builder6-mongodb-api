@@ -49,6 +49,7 @@
 
     let gridApi; // 提前声明 gridApi 以便全局访问
     let gridOptions; // 提前声明 gridOptions 以便全局访问
+    let table;
 
     const padZero = num => num.toString().padStart(2, '0');
     class DateTimeEditor {
@@ -127,7 +128,7 @@
         try {
             // 获取列定义
             const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, { credentials: 'include' });
-            const table = await tableResponse.json();
+            table = await tableResponse.json();
             console.log(table);
 
             const dataTypeDefinitions = {
@@ -288,13 +289,32 @@
         const data = event.data;
         console.log('Saving updated data to server:', data);
         try {
+            // 校验
+            let validated = true;
+            const verifications = table.verifications || [];
+            const errors = [];
+            verifications.forEach(function (verification) {
+                validated = evaluate(verification.rule, data, { evalMode: true });
+                if(!validated){
+                    errors.push(verification.alert);
+                }
+            });
+            validated = errors.length === 0;
+            if (!validated) {
+                console.log("The table verifications is not passed for the row data:", verifications, data);
+                event.api.startEditingCell({
+                    rowIndex: event.rowIndex,
+                    colKey: event.api.getAllGridColumns()[0].colId
+                });
+                return;
+            }
             // 循环所有公式字段执行公式计算并设置值到data中
             const dataTypeDefinitions = event.api.getGridOption("dataTypeDefinitions");
             const formulaFields = dataTypeDefinitions.formula.fields;
             for (var formulaFieldName in formulaFields) {
                 const formulaField = formulaFields[formulaFieldName];
                 const formula = formulaField.formula;
-                data[formulaFieldName] = evaluate(formula, data,  { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
+                data[formulaFieldName] = evaluate(formula, data, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
             }
             // 保存更新的数据到服务端
             const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + data._id, {

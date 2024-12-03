@@ -13,6 +13,9 @@ export class MetaService {
       table.fields = await this.mongodbService.find('b6_fields', {
         table_id: tableId,
       });
+      table.verifications = await this.mongodbService.find('b6_verification', {
+        table: tableId,
+      });
     } else {
       table = {
         _id: tableId,
@@ -41,6 +44,12 @@ export class MetaService {
           { _id: 'fld004', name: 'Created', type: 'datetime' },
           { _id: 'fld005', name: 'valid', type: 'boolean' },
         ],
+        verifications: [
+          {
+            "alert": "年龄必须大于18岁",
+            "rule": "fld003 > 18"
+          }
+        ]
       } as any;
     }
     return table;
