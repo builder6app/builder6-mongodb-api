@@ -27,6 +27,14 @@
         .custom-tooltip p:first-of-type {
             font-weight: bold;
         }
+
+        .verification-errors-row {
+            background-color: #cc693344;
+        }
+
+        .verification-errors-row .ag-cell-edit-wrapper {
+            border: solid 3px #cc693344 !important;
+        }
     </style>
 </head>
 
@@ -46,9 +54,9 @@
         import { evaluate } from 'https://cdn.skypack.dev/amis-formula';
         window.evaluate = evaluate;
 
-        const expression = '${1 + 2 * 3}';
-        const result = evaluate(expression);
-        console.log('Result:', result); // Output: 7
+        // const expression = '${1 + 2 * 3}';
+        // const result = evaluate(expression);
+        // console.log('Result:', result); // Output: 7
     </script>
 </body>
 <script>
@@ -297,11 +305,9 @@
             gridOptions = {
                 columnDefs: columnDefs,
                 dataTypeDefinitions,
-                /*getRowStyle: params => {
-                    if (params.data.__verificationErrors && params.data.__verificationErrors.length) {
-                        return { background: '#cc693344' };
-                    }
-                },*/
+                rowClassRules: {
+                    'verification-errors-row': (params) => { return params.data && params.data.__verificationErrors && params.data.__verificationErrors.length; }
+                },
                 rowData: null, // 初始为空，通过 API 动态加载
                 rowModelType: 'serverSide',
                 paginationPageSize: 20,
