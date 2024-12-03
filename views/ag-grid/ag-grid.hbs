@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>AG Grid - Dynamic Loading and Editing</h1>
     <div class="button-container">
@@ -30,24 +32,91 @@
 
         const B6_TABLES_API = '/api/tables/v2';
         const baseId = '{{ baseId }}';
-        const tableId='{{ tableId }}';
-        
+        const tableId = '{{ tableId }}';
+
         // 启用 AG Grid 企业版
         agGrid.LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
-        
+
         let gridApi; // 提前声明 gridApi 以便全局访问
         let gridOptions; // 提前声明 gridOptions 以便全局访问
+
+        const padZero = num => num.toString().padStart(2, '0');
+        class DateTimeEditor {
+            init(params) {
+                this.eInput = document.createElement('input');
+                this.eInput.type = 'datetime-local';
+                //this.eInput.value = params.value ? this.formatDate(params.value) : '';
+                const localDate = new Date(params.value);
+                const value = `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
+                this.eInput.value = value;
+                this.eInput.style.width = '100%';
+            }
+
+            getGui() {
+                return this.eInput;
+            }
+
+            afterGuiAttached() {
+                this.eInput.focus();
+            }
+
+            getValue() {
+                const value = this.eInput.value;
+                return value ? new Date(value) : null;
+            }
+
+            formatDate(date) {
+                const d = new Date(date);
+                return d.toISOString();
+            }
+        }
 
         // 创建一个异步函数来初始化表格
         async function initializeGrid() {
             try {
                 // 获取列定义
-                const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, {credentials: 'include'});
+                const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, { credentials: 'include' });
                 const table = await tableResponse.json();
-                console.log(table)
+                console.log(table);
+
+                const dataTypeDefinitions = {
+                    date: {
+                        baseDataType: 'date',
+                        extendsDataType: 'date',
+                        valueGetter: params => {
+                            const fieldType = params.colDef.cellEditorParams.fieldType;
+                            const fieldName = params.colDef.field;
+                            const fieldValue = params.data[fieldName];
+                            if (!fieldValue) return null;
+
+                            const date = new Date(fieldValue);
+                            return date;
+                        },
+                        valueFormatter: params => {
+                            const fieldType = params.colDef.cellEditorParams.fieldType;
+                            const date = new Date(params.value);
+
+                            if (!params.value) return "";
+
+                            if (fieldType === "date") {
+                                return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+                            } else if (fieldType === "datetime") {
+                                // Convert to local time considering timezone
+                                const localDate = new Date(date.getTime());
+                                return `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
+                            }
+
+                            return "";
+                        }
+                    }
+                };
 
                 const columnDefs = table.fields.map(field => {
                     let cellDataType;
+                    let cellEditorParams;
+                    let cellEditor;
+                    let valueFormatter;
+                    let valueGetter;
 
                     // 根据字段类型设置 dataType
                     switch (field.type) {
@@ -56,12 +125,28 @@
                             break;
                         case 'number':
                             cellDataType = 'number';
+                            cellEditorParams = {
+                                precision: field.precision ?? 0
+                            };
                             break;
                         case 'date':
-                            cellDataType = 'dateString';
-                            break;        
+                            cellDataType = 'date';
+                            cellEditorParams = {
+                                fieldType: 'date'
+                            };
+                            //cellEditor = "agDateInput";//ag-grid内置日期编辑控件，但是显示配置的话样式有问题
+                            valueFormatter = dataTypeDefinitions.date.valueFormatter;
+                            //如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
+                            valueGetter = dataTypeDefinitions.date.valueGetter;
+                            break;
                         case 'datetime':
-                            cellDataType = 'dateString';
+                            cellDataType = 'date';
+                            cellEditorParams = {
+                                fieldType: 'datetime'
+                            };
+                            cellEditor = DateTimeEditor;
+                            //因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
+                            //valueGetter = dataTypeDefinitions.date.valueGetter;
                             break;
                         case 'boolean':
                             cellDataType = 'boolean';
@@ -74,20 +159,25 @@
                         field: field.name.toLowerCase(), // 假设字段名需要小写
                         headerName: field.label,
                         cellDataType: cellDataType,
+                        cellEditorParams,
+                        cellEditor,
                         editable: true,
+                        valueFormatter,
+                        valueGetter
                     };
                 });
-                
+
                 // 初始化网格配置
                 gridOptions = {
                     columnDefs: columnDefs,
+                    dataTypeDefinitions,
                     rowData: null, // 初始为空，通过 API 动态加载
                     rowModelType: 'serverSide',
                     paginationPageSize: 20,
                     cacheBlockSize: 20,
                     editType: 'fullRow',
                     cellSelection: {
-                        handle: { 
+                        handle: {
                             mode: 'range',
                         }
                     },
@@ -136,12 +226,12 @@
 
         function getServerSideDatasource() {
             return {
-                getRows: async function(params) {
+                getRows: async function (params) {
                     console.log('Server Side Datasource - Requesting rows from server:', params.request);
                     try {
                         const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
                         const data = await response.json();
-                        
+
                         params.success({
                             rowData: data.data,
                             rowCount: data.totalCount
@@ -196,10 +286,11 @@
 
 
         // 在文档加载后初始化表格
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initializeGrid();
         });
     </script>
 
 </body>
+
 </html>
