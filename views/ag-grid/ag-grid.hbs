@@ -8,6 +8,7 @@
     <!-- 引入 AG Grid 的 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
+    <script src="https://cdn.jsdelivr.net/npm/systemjs@6.10.3/dist/system.min.js"></script>
     <style>
         /* 设置表格的高度和宽度 */
         #myGrid {
@@ -28,330 +29,340 @@
 
     <!-- 引入 AG Grid 的 JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-enterprise/dist/ag-grid-enterprise.noStyle.js"></script>
-    <script>
+    <!-- 引入 Amis Formula -->
+    <script type="module">
+        import { evaluate } from 'https://cdn.skypack.dev/amis-formula';
+        window.evaluate = evaluate;
 
-        const B6_TABLES_API = '/api/tables/v2';
-        const baseId = '{{ baseId }}';
-        const tableId = '{{ tableId }}';
+        const expression = '${1 + 2 * 3}';
+        const result = evaluate(expression);
+        console.log('Result:', result); // Output: 7
+    </script>
+</body>
+<script>
 
-        // 启用 AG Grid 企业版
-        agGrid.LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
+    const B6_TABLES_API = '/api/tables/v2';
+    const baseId = '{{ baseId }}';
+    const tableId = '{{ tableId }}';
 
-        let gridApi; // 提前声明 gridApi 以便全局访问
-        let gridOptions; // 提前声明 gridOptions 以便全局访问
+    // 启用 AG Grid 企业版
+    agGrid.LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
 
-        const padZero = num => num.toString().padStart(2, '0');
-        class DateTimeEditor {
-            init(params) {
-                this.eInput = document.createElement('input');
-                this.eInput.type = 'datetime-local';
-                //this.eInput.value = params.value ? this.formatDate(params.value) : '';
-                const localDate = new Date(params.value);
-                const value = `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
-                this.eInput.value = value;
-                this.eInput.style.width = '100%';
-            }
+    let gridApi; // 提前声明 gridApi 以便全局访问
+    let gridOptions; // 提前声明 gridOptions 以便全局访问
 
-            getGui() {
-                return this.eInput;
-            }
-
-            afterGuiAttached() {
-                this.eInput.focus();
-            }
-
-            getValue() {
-                const value = this.eInput.value;
-                return value ? new Date(value) : null;
-            }
-
-            formatDate(date) {
-                const d = new Date(date);
-                return d.toISOString();
-            }
+    const padZero = num => num.toString().padStart(2, '0');
+    class DateTimeEditor {
+        init(params) {
+            this.eInput = document.createElement('input');
+            this.eInput.type = 'datetime-local';
+            //this.eInput.value = params.value ? this.formatDate(params.value) : '';
+            const localDate = new Date(params.value);
+            const value = `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
+            this.eInput.value = value;
+            this.eInput.style.width = '100%';
         }
 
-        class MultiSelectCellEditor {
-            init(params) {
-                this.eInput = document.createElement('select');
-                this.eInput.setAttribute('multiple', 'true');
-                this.eInput.style.width = '200px';
-                debugger;
-                const options = params.colDef.cellEditorParams.values;
-                options.forEach(option => {
-                    const optionElement = document.createElement('option');
-                    optionElement.text = option;
-                    optionElement.value = option;
-                    this.eInput.appendChild(optionElement);
-                });
+        getGui() {
+            return this.eInput;
+        }
 
-                // 设置初始值
-                const selectedValues = Array.isArray(params.value) ? params.value : [];
-                for (let option of this.eInput.options) {
-                    if (selectedValues.includes(option.value)) {
-                        option.selected = true;
-                    }
+        afterGuiAttached() {
+            this.eInput.focus();
+        }
+
+        getValue() {
+            const value = this.eInput.value;
+            return value ? new Date(value) : null;
+        }
+
+        formatDate(date) {
+            const d = new Date(date);
+            return d.toISOString();
+        }
+    }
+
+    class MultiSelectCellEditor {
+        init(params) {
+            this.eInput = document.createElement('select');
+            this.eInput.setAttribute('multiple', 'true');
+            this.eInput.style.width = '200px';
+            debugger;
+            const options = params.colDef.cellEditorParams.values;
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.text = option;
+                optionElement.value = option;
+                this.eInput.appendChild(optionElement);
+            });
+
+            // 设置初始值
+            const selectedValues = Array.isArray(params.value) ? params.value : [];
+            for (let option of this.eInput.options) {
+                if (selectedValues.includes(option.value)) {
+                    option.selected = true;
                 }
             }
-
-            getGui() {
-                return this.eInput;
-            }
-
-            afterGuiAttached() {
-                this.eInput.focus();
-            }
-
-            getValue() {
-                const selectedOptions = Array.from(this.eInput.selectedOptions);
-                return selectedOptions.map(option => option.value);
-            }
-
-            destroy() { }
-
-            isPopup() {
-                return true;
-            }
         }
-        // 创建一个异步函数来初始化表格
-        async function initializeGrid() {
-            try {
-                // 获取列定义
-                const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, { credentials: 'include' });
-                const table = await tableResponse.json();
-                console.log(table);
 
-                const dataTypeDefinitions = {
-                    date: {
-                        baseDataType: 'date',
-                        extendsDataType: 'date',
-                        valueGetter: params => {
-                            const fieldType = params.colDef.cellEditorParams.fieldType;
-                            const fieldName = params.colDef.field;
-                            const fieldValue = params.data[fieldName];
-                            if (!fieldValue) return null;
+        getGui() {
+            return this.eInput;
+        }
 
-                            const date = new Date(fieldValue);
-                            return date;
-                        },
-                        valueFormatter: params => {
-                            const fieldType = params.colDef.cellEditorParams.fieldType;
-                            const date = new Date(params.value);
+        afterGuiAttached() {
+            this.eInput.focus();
+        }
 
-                            if (!params.value) return "";
+        getValue() {
+            const selectedOptions = Array.from(this.eInput.selectedOptions);
+            return selectedOptions.map(option => option.value);
+        }
 
-                            if (fieldType === "date") {
-                                return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
-                            } else if (fieldType === "datetime") {
-                                // Convert to local time considering timezone
-                                const localDate = new Date(date.getTime());
-                                return `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
-                            }
+        destroy() { }
 
-                            return "";
+        isPopup() {
+            return true;
+        }
+    }
+    // 创建一个异步函数来初始化表格
+    async function initializeGrid() {
+        try {
+            // 获取列定义
+            const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, { credentials: 'include' });
+            const table = await tableResponse.json();
+            console.log(table);
+
+            const dataTypeDefinitions = {
+                date: {
+                    baseDataType: 'date',
+                    extendsDataType: 'date',
+                    valueGetter: params => {
+                        const fieldType = params.colDef.cellEditorParams.fieldType;
+                        const fieldName = params.colDef.field;
+                        const fieldValue = params.data[fieldName];
+                        if (!fieldValue) return null;
+
+                        const date = new Date(fieldValue);
+                        return date;
+                    },
+                    valueFormatter: params => {
+                        const fieldType = params.colDef.cellEditorParams.fieldType;
+                        const date = new Date(params.value);
+
+                        if (!params.value) return "";
+
+                        if (fieldType === "date") {
+                            return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+                        } else if (fieldType === "datetime") {
+                            // Convert to local time considering timezone
+                            const localDate = new Date(date.getTime());
+                            return `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
                         }
-                    }
-                };
 
-                const columnDefs = table.fields.map(field => {
-                    let cellDataType;
-                    let cellEditorParams;
-                    let cellEditor;
-                    let valueFormatter;
-                    let valueGetter;
-                    let fieldOptions;
-
-                    // 根据字段类型设置 dataType
-                    switch (field.type) {
-                        case 'text':
-                            cellDataType = 'text';
-                            break;
-                        case 'number':
-                            cellDataType = 'number';
-                            cellEditorParams = {
-                                precision: field.precision ?? 0
-                            };
-                            break;
-                        case 'select':
-                            cellDataType = 'text';
-                            fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
-                            fieldOptions.unshift("");
-                            cellEditorParams = {
-                                values: fieldOptions
-                            };
-                            cellEditor = "agSelectCellEditor";
-                            break;
-                        case 'select-multiple':
-                            cellDataType = 'object';
-                            fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
-                            cellEditorParams = {
-                                values: fieldOptions
-                            };
-                            cellEditor = MultiSelectCellEditor;
-                            break;
-                        case 'date':
-                            cellDataType = 'date';
-                            cellEditorParams = {
-                                fieldType: 'date'
-                            };
-                            //cellEditor = "agDateInput";//ag-grid内置日期编辑控件，但是显示配置的话样式有问题
-                            valueFormatter = dataTypeDefinitions.date.valueFormatter;
-                            //如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
-                            valueGetter = dataTypeDefinitions.date.valueGetter;
-                            break;
-                        case 'datetime':
-                            cellDataType = 'date';
-                            cellEditorParams = {
-                                fieldType: 'datetime'
-                            };
-                            cellEditor = DateTimeEditor;
-                            //因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
-                            //valueGetter = dataTypeDefinitions.date.valueGetter;
-                            break;
-                        case 'boolean':
-                            cellDataType = 'boolean';
-                            break;
-                        default:
-                            cellDataType = 'text'; // 默认类型
-                    }
-
-                    return {
-                        field: field.name.toLowerCase(), // 假设字段名需要小写
-                        headerName: field.label,
-                        cellDataType: cellDataType,
-                        cellEditorParams,
-                        cellEditor,
-                        editable: true,
-                        valueFormatter,
-                        valueGetter
-                    };
-                });
-
-                console.log("===columnDefs===", columnDefs);
-
-                // 初始化网格配置
-                gridOptions = {
-                    columnDefs: columnDefs,
-                    dataTypeDefinitions,
-                    rowData: null, // 初始为空，通过 API 动态加载
-                    rowModelType: 'serverSide',
-                    paginationPageSize: 20,
-                    cacheBlockSize: 20,
-                    editType: 'fullRow',
-                    cellSelection: {
-                        handle: {
-                            mode: 'range',
-                        }
-                    },
-                    onRowValueChanged: onRowValueChanged,
-                    //datasource: getDataSource(),
-                    defaultColDef: {
-                        flex: 1,
-                        minWidth: 100,
-                        resizable: true,
-                    },
-                    serverSideDatasource: getServerSideDatasource(),
-                };
-
-                // 渲染网格
-                const gridDiv = document.querySelector('#myGrid');
-                gridApi = agGrid.createGrid(gridDiv, gridOptions);
-
-                // 设置新增行按钮的事件
-                document.getElementById('addRowBtn').addEventListener('click', addNewRow);
-
-            } catch (error) {
-                console.error('Error initializing grid:', error);
-            }
-        }
-
-        // 监听行数据改变事件
-        async function onRowValueChanged(event) {
-            const data = event.data;
-            console.log('Saving updated data to server:', data);
-            try {
-                // 保存更新的数据到服务端
-                const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + data._id, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                const responseData = await response.json();
-                console.log('Data saved successfully:', responseData);
-            } catch (error) {
-                console.error('Error saving data:', error);
-            }
-        }
-
-
-        function getServerSideDatasource() {
-            return {
-                getRows: async function (params) {
-                    console.log('Server Side Datasource - Requesting rows from server:', params.request);
-                    try {
-                        const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
-                        const data = await response.json();
-
-                        params.success({
-                            rowData: data.data,
-                            rowCount: data.totalCount
-                        });
-                    } catch (error) {
-                        console.error('Error fetching data from server:', error);
-                        params.fail();
+                        return "";
                     }
                 }
             };
-        }
 
-        // 新增行的功能
-        async function addNewRow() {
-            if (!gridOptions) {
-                console.error('Grid options not available. Ensure grid is initialized properly.');
-                return;
-            }
-            const newRow = createNewRowData();
+            const columnDefs = table.fields.map(field => {
+                let cellDataType;
+                let cellEditorParams;
+                let cellEditor;
+                let valueFormatter;
+                let valueGetter;
+                let fieldOptions;
 
-            // 将新增数据发送到服务器
-            try {
-                const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(newRow)
-                });
-
-                if (response.ok) {
-                    console.log('New row added successfully');
-                    // 新增数据成功后刷新网格数据
-                    gridApi.refreshServerSide({ purge: true });
-                } else {
-                    console.error('Failed to add new row:', response.statusText);
+                // 根据字段类型设置 dataType
+                switch (field.type) {
+                    case 'text':
+                        cellDataType = 'text';
+                        break;
+                    case 'number':
+                        cellDataType = 'number';
+                        cellEditorParams = {
+                            precision: field.precision ?? 0
+                        };
+                        break;
+                    case 'select':
+                        cellDataType = 'text';
+                        fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
+                        fieldOptions.unshift("");
+                        cellEditorParams = {
+                            values: fieldOptions
+                        };
+                        cellEditor = "agSelectCellEditor";
+                        break;
+                    case 'select-multiple':
+                        cellDataType = 'object';
+                        fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
+                        cellEditorParams = {
+                            values: fieldOptions
+                        };
+                        cellEditor = MultiSelectCellEditor;
+                        break;
+                    case 'date':
+                        cellDataType = 'date';
+                        cellEditorParams = {
+                            fieldType: 'date'
+                        };
+                        //cellEditor = "agDateInput";//ag-grid内置日期编辑控件，但是显示配置的话样式有问题
+                        valueFormatter = dataTypeDefinitions.date.valueFormatter;
+                        //如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
+                        valueGetter = dataTypeDefinitions.date.valueGetter;
+                        break;
+                    case 'datetime':
+                        cellDataType = 'date';
+                        cellEditorParams = {
+                            fieldType: 'datetime'
+                        };
+                        cellEditor = DateTimeEditor;
+                        //因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
+                        //valueGetter = dataTypeDefinitions.date.valueGetter;
+                        break;
+                    case 'boolean':
+                        cellDataType = 'boolean';
+                        break;
+                    default:
+                        cellDataType = 'text'; // 默认类型
                 }
-            } catch (error) {
-                console.error('Error adding new row:', error);
-            }
-        }
 
-        // 创建一个新行数据，可以初始化为默认值或空值
-        function createNewRowData() {
-            const newRow = {};
-            // 可以给每个字段一个默认值，例如：
-            gridOptions.columnDefs.forEach(colDef => {
-                newRow[colDef.field] = ''; // 设置为空或设置默认值
+                return {
+                    field: field.name.toLowerCase(), // 假设字段名需要小写
+                    headerName: field.label,
+                    cellDataType: cellDataType,
+                    cellEditorParams,
+                    cellEditor,
+                    editable: true,
+                    valueFormatter,
+                    valueGetter
+                };
             });
-            return newRow;
+
+            console.log("===columnDefs===", columnDefs);
+
+            // 初始化网格配置
+            gridOptions = {
+                columnDefs: columnDefs,
+                dataTypeDefinitions,
+                rowData: null, // 初始为空，通过 API 动态加载
+                rowModelType: 'serverSide',
+                paginationPageSize: 20,
+                cacheBlockSize: 20,
+                editType: 'fullRow',
+                cellSelection: {
+                    handle: {
+                        mode: 'range',
+                    }
+                },
+                onRowValueChanged: onRowValueChanged,
+                //datasource: getDataSource(),
+                defaultColDef: {
+                    flex: 1,
+                    minWidth: 100,
+                    resizable: true,
+                },
+                serverSideDatasource: getServerSideDatasource(),
+            };
+
+            // 渲染网格
+            const gridDiv = document.querySelector('#myGrid');
+            gridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+            // 设置新增行按钮的事件
+            document.getElementById('addRowBtn').addEventListener('click', addNewRow);
+
+        } catch (error) {
+            console.error('Error initializing grid:', error);
         }
+    }
+
+    // 监听行数据改变事件
+    async function onRowValueChanged(event) {
+        const data = event.data;
+        console.log('Saving updated data to server:', data);
+        try {
+            // 保存更新的数据到服务端
+            const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + data._id, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            const responseData = await response.json();
+            console.log('Data saved successfully:', responseData);
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    }
 
 
-        // 在文档加载后初始化表格
-        document.addEventListener('DOMContentLoaded', function () {
-            initializeGrid();
+    function getServerSideDatasource() {
+        return {
+            getRows: async function (params) {
+                console.log('Server Side Datasource - Requesting rows from server:', params.request);
+                try {
+                    const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
+                    const data = await response.json();
+
+                    params.success({
+                        rowData: data.data,
+                        rowCount: data.totalCount
+                    });
+                } catch (error) {
+                    console.error('Error fetching data from server:', error);
+                    params.fail();
+                }
+            }
+        };
+    }
+
+    // 新增行的功能
+    async function addNewRow() {
+        if (!gridOptions) {
+            console.error('Grid options not available. Ensure grid is initialized properly.');
+            return;
+        }
+        const newRow = createNewRowData();
+
+        // 将新增数据发送到服务器
+        try {
+            const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newRow)
+            });
+
+            if (response.ok) {
+                console.log('New row added successfully');
+                // 新增数据成功后刷新网格数据
+                gridApi.refreshServerSide({ purge: true });
+            } else {
+                console.error('Failed to add new row:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error adding new row:', error);
+        }
+    }
+
+    // 创建一个新行数据，可以初始化为默认值或空值
+    function createNewRowData() {
+        const newRow = {};
+        // 可以给每个字段一个默认值，例如：
+        gridOptions.columnDefs.forEach(colDef => {
+            newRow[colDef.field] = ''; // 设置为空或设置默认值
         });
-    </script>
+        return newRow;
+    }
+
+
+    // 在文档加载后初始化表格
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeGrid();
+    });
+</script>
 
 </body>
 
