@@ -25,7 +25,7 @@ export class MetaService {
           { _id: 'fld002', name: 'Discount', type: 'number', precision: 2 },
           { _id: 'fld002', name: 'Info', type: 'textarea' },
           { _id: 'fld002', name: 'Company', type: 'select', options: `华炎\n建华\n中国移动` },
-          { _id: 'fld002', name: 'Citys', type: 'select-multiple', options: `上海\n北京\南京\杭州`, multiple: true },
+          { _id: 'fld002', name: 'Citys', type: 'select-multiple', options: `上海\n北京\n南京\n杭州`, multiple: true },
           { _id: 'fld004', name: 'Birthdate', type: 'date' },
           { _id: 'fld004', name: 'Created', type: 'datetime' },
           { _id: 'fld005', name: 'valid', type: 'boolean' },
