@@ -11,7 +11,7 @@ applyExampleRoomId();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <LiveblocksProvider
-      baseUrl="http://localhost:5100/api/liveblocks"
+      baseUrl="http://localhost:5100"
       publicApiKey={import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY}
     >
       <App roomId={roomId} />
