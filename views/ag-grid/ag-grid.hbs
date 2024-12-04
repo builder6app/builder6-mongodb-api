@@ -308,6 +308,7 @@
                         filter = 'agSetColumnFilter';
                         Object.assign(filterParams, {
                             values: [true, false],
+                            suppressSelectAll: true,
                             comparator: (a, b) => {
                                 // 将 true 显示在 false 之前
                                 if (a === true && b === false) return -1;
