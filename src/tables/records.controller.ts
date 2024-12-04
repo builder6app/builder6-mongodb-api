@@ -103,6 +103,23 @@ export class RecordsController {
       });
 
       const loadOptions = { take: top, skip: skip, ...options.loadOptions };
+      if (filters) {
+        loadOptions.filter = JSON.parse(filters);
+      }
+      if (sort) {
+        const sortFields = sort.split(',');
+        loadOptions.sort = sortFields.map((sortField) => {
+          const [field, dir] = sortField.split(' ');
+          return { selector: field, desc: dir === 'desc' };
+        });
+      }
+      if (fields) {
+        try {
+          loadOptions.select = JSON.parse(fields);
+        } catch {
+          loadOptions.select = fields.split(',');
+        }
+      }
       const processingOptions = {
         replaceIds: false,
         ...options.processingOptions,
