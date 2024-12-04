@@ -6,6 +6,7 @@ import { TablesModule } from '@/tables/tables.module';
 import { AuthModule } from './auth/auth.module';
 import { SteedosModule } from './steedos/steedos.module';
 import { RoomsModule } from './rooms/rooms.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RoomsModule } from './rooms/rooms.module';
     TablesModule,
     AuthModule,
     RoomsModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [],
