@@ -419,7 +419,7 @@
                 const colDef = colDefs[k];
                 if (colDef) {
                     const fieldConfig = colDef.cellEditorParams.fieldConfig;
-                    if (fieldConfig.type === "date") {
+                    if (n && fieldConfig.type === "date") {
                         // 设置为选中日期的 UTC 0 点
                         const timezoneOffset = n.getTimezoneOffset();
                         const utcDate = new Date(n.getTime() - timezoneOffset * 60 * 1000);
@@ -618,8 +618,18 @@
                         break;
                     case 'select':
                     case 'select-multiple':
-                        filterItem = [key, "=", value.values.join(",")];
-                        filters.push(filterItem);
+                        // 因为不需要支持多选，这里先不处理，如果要支持多选使用anyof过滤操作符应该就可以了，比如["category", "anyof", selectedCategories]
+                        const filterValues = value.values;
+                        if (filterValues.length) {
+                            let filterItem = [];
+                            for (let i = 0; i < filterValues.length; i++) {
+                                filterItem.push([key, "=", filterValues[i]]);
+                                if (i < filterValues.length - 1) {
+                                    filterItem.push("or");
+                                }
+                            }
+                            filters.push(filterItem);
+                        }
                         break;
                     case 'date':
                     case 'datetime':
