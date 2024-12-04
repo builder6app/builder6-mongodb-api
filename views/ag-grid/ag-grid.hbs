@@ -47,6 +47,7 @@
     <!-- 创建一个容器来放置 AG Grid -->
     <div id="myGrid" class="ag-theme-alpine"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/lodash"></script>
     <!-- 引入 AG Grid 的 JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-enterprise/dist/ag-grid-enterprise.noStyle.js"></script>
     <!-- 引入 Amis Formula -->
@@ -225,20 +226,35 @@
                     valueFormatter,
                     valueGetter,
                     fieldOptions,
-                    editable = true;
+                    editable = true,
+                    filter,
+                    filterParams;
 
                 // 根据字段类型设置 dataType
                 cellEditorParams = {
                     fieldConfig: field
                 };
+                filterParams = {
+                    debounceMs: 200,
+                    maxNumConditions: 1
+                }
                 switch (field.type) {
                     case 'text':
+                    case 'textarea':
                         cellDataType = 'text';
+                        filter = 'agTextColumnFilter';
+                        Object.assign(filterParams, {
+                            filterOptions: ["contains", "notContains", "equals", "startsWith", "endsWith"]
+                        });
                         break;
                     case 'number':
                         cellDataType = 'number';
                         Object.assign(cellEditorParams, {
                             precision: field.precision ?? 0
+                        });
+                        filter = 'agNumberColumnFilter';
+                        Object.assign(filterParams, {
+                            filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
                         });
                         break;
                     case 'select':
@@ -249,6 +265,10 @@
                             values: fieldOptions
                         });
                         cellEditor = "agSelectCellEditor";
+                        filter = 'agSetColumnFilter';
+                        Object.assign(filterParams, {
+                            values: fieldOptions
+                        });
                         break;
                     case 'select-multiple':
                         cellDataType = 'object';
@@ -257,6 +277,10 @@
                             values: fieldOptions
                         });
                         cellEditor = MultiSelectCellEditor;
+                        filter = 'agSetColumnFilter';
+                        Object.assign(filterParams, {
+                            values: fieldOptions
+                        });
                         break;
                     case 'date':
                         cellDataType = 'date';
@@ -264,15 +288,34 @@
                         valueFormatter = dataTypeDefinitions.date.valueFormatter;
                         // 如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
                         valueGetter = dataTypeDefinitions.date.valueGetter;
+                        filter = 'agDateColumnFilter';
+                        Object.assign(filterParams, {
+                            filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                        });
                         break;
                     case 'datetime':
                         cellDataType = 'date';
                         cellEditor = DateTimeEditor;
                         // 因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
                         // valueGetter = dataTypeDefinitions.date.valueGetter;
+                        filter = 'agDateColumnFilter';
+                        Object.assign(filterParams, {
+                            filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                        });
                         break;
                     case 'boolean':
                         cellDataType = 'boolean';
+                        filter = 'agSetColumnFilter';
+                        Object.assign(filterParams, {
+                            values: [true, false],
+                            comparator: (a, b) => {
+                                // 将 true 显示在 false 之前
+                                if (a === true && b === false) return -1;
+                                if (a === false && b === true) return 1;
+                                return 0;
+                            },
+                            valueFormatter: (params) => (params.value ? '是' : '否')
+                        });
                         break;
                     case 'formula':
                         cellDataType = 'formula';
@@ -297,7 +340,9 @@
                     tooltipInteraction: true,
                     tooltipShowDelay: 0,
                     tooltipHideDelay: 8000,
-                    tooltipValueGetter
+                    tooltipValueGetter,
+                    filter,
+                    filterParams
                 };
             });
 
@@ -400,7 +445,28 @@
             getRows: async function (params) {
                 console.log('Server Side Datasource - Requesting rows from server:', params.request);
                 try {
-                    const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
+                    const modelFilters = filterModelToOdataFilters(params.request.filterModel);
+                    console.log('Server Side Datasource - Requesting rows by modelFilters:', modelFilters);
+                    //const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
+                    let url = `${B6_TABLES_API}/${baseId}/${tableId}`;
+                    if (modelFilters.length > 0) {
+                        const separator = url.includes('?') ? '&' : '?';
+                        url += `${separator}filters=${JSON.stringify(modelFilters)}`;
+                    }
+
+                    const sortModel = params.request.sortModel;
+                    let sort = []
+                    _.forEach(sortModel, (sortField) => {
+                        //sort.push([sortField.colId, sortField.sort])
+                        sort.push(`${sortField.colId} ${sortField.sort}`)
+                    });
+                    console.log('Server Side Datasource - Requesting rows by sortModel:', sortModel);
+                    if (sort.length > 0) {
+                        const separator = url.includes('?') ? '&' : '?';
+                        url += `${separator}sort=${sort.join(",")}`;
+                    }
+
+                    const response = await fetch(url);
                     const data = await response.json();
 
                     params.success({
@@ -467,6 +533,58 @@
         if (fieldConfig.type === "boolean") {
             return false;
         }
+    }
+
+    const FilterTypesMap = {
+        'equals': '=',
+        'notEqual': '!=',
+        'contains': 'contains',
+        'notContains': 'notcontains',
+        'startsWith': 'startswith',
+        'endsWith': '=', //TODO 不支持
+        'lessThan': '<',
+        'lessThanOrEqual': '<=',
+        'greaterThan': '>',
+        'greaterThanOrEqual': '>=',
+        'empty': 'empty' //TODO 不支持
+    }
+
+    /**
+     * 把ag-grid filterModel 转为魔方filters格式
+     * @param filterModel 
+     */
+    function filterModelToOdataFilters(filterModel) {
+        const filters = [];
+        _.forEach(filterModel, (value, key) => {
+            if (value.type === 'between') {
+                if (value.filterType === "number") {
+                    filters.push([key, "between", [value.numberFrom, value.numberTo]]);
+                } else {
+                    if (value.filter) {
+                        filters.push([key, value.type, value.filter]);
+                    } else {
+                        filters.push([key, "between", [value.dateFrom, value.dateTo]]);
+                    }
+                }
+
+            } else {
+                if (!_.isEmpty(value.filter) || ["boolean", "toggle"].indexOf(value.filterType) > -1) {
+                    const filter = [key, FilterTypesMap[value.type], value.filter];
+                    filters.push(filter);
+                } else if (value.operator) {
+                    const filter = [];
+                    if (value.condition1) {
+                        filter.push([key, FilterTypesMap[value.condition1.type], value.condition1.filter]);
+                    }
+                    filter.push(value.operator.toLocaleLowerCase());
+                    if (value.condition2) {
+                        filter.push([key, FilterTypesMap[value.condition2.type], value.condition2.filter]);
+                    }
+                    filters.push(filter);
+                }
+            }
+        })
+        return filters;
     }
 
     // 在文档加载后初始化表格
