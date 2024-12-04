@@ -180,6 +180,24 @@
                 date: {
                     baseDataType: 'date',
                     extendsDataType: 'date',
+                    valueParser: params => {
+                        // ag-grid官网明确说valueParser是用来实现保存数据前数据转换的，但是实测这个函数并不会被触发，包括修改字段值触发保存在内任何时候都不会触发
+                        // 另外valueSetter也能实现类似功能，但是一样实测不会被触发
+                        // 所以只能手动在调用保存接口前实现相关转换逻辑
+                        // 见：
+                        // https://www.ag-grid.com/javascript-data-grid/column-properties/#reference-editing-valueParser
+                        // https://www.ag-grid.com/javascript-data-grid/cell-data-types/#overriding-the-pre-defined-cell-data-type-definitions
+                        console.log("valueParser:", params.newValue);
+                        const fieldName = params.colDef.field;
+                        const fieldValue = params.newValue;
+                        if (!fieldValue) return null;
+                        const newDate = new Date(fieldValue);
+
+                        // 设置为选中日期的 UTC 0 点
+                        newDate.setUTCHours(0, 0, 0, 0);
+
+                        return newDate;
+                    },
                     valueGetter: params => {
                         const fieldType = params.colDef.cellEditorParams.fieldConfig.type;
                         const fieldName = params.colDef.field;
@@ -284,7 +302,7 @@
                         break;
                     case 'date':
                         cellDataType = 'date';
-                        // cellEditor = "agDateInput"; // ag-grid内置日期编辑控件，但是显示配置的话样式有问题
+                        cellEditor = "agDateCellEditor";
                         valueFormatter = dataTypeDefinitions.date.valueFormatter;
                         // 如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
                         valueGetter = dataTypeDefinitions.date.valueGetter;
@@ -394,6 +412,20 @@
         const data = event.data;
         console.log('Saving updated data to server:', data);
         try {
+            const allGridColumns = event.api.getAllGridColumns();
+            const colDefs = _.keyBy(_.map(allGridColumns, "colDef"), "field");
+            _.each(data, function (n, k) {
+                const colDef = colDefs[k];
+                if (colDef) {
+                    const fieldConfig = colDef.cellEditorParams.fieldConfig;
+                    if (fieldConfig.type === "date") {
+                        // 设置为选中日期的 UTC 0 点
+                        const timezoneOffset = n.getTimezoneOffset();
+                        const utcDate = new Date(n.getTime() - timezoneOffset * 60 * 1000);
+                        data[k] = utcDate;
+                    }
+                }
+            });
             // 校验
             const rowNode = event.node;
             let validated = true;
@@ -410,7 +442,7 @@
                 console.log("The table verifications is not passed for the row data:", verifications, data);
                 event.api.startEditingCell({
                     rowIndex: event.rowIndex,
-                    colKey: event.api.getAllGridColumns()[0].colId
+                    colKey: allGridColumns[0].colId
                 });
                 rowNode.setData(Object.assign({}, data, { __verificationErrors: verificationErrors }));
                 alert(verificationErrors);
