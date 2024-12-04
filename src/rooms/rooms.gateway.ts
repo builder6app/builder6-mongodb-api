@@ -19,9 +19,9 @@ export class RoomsGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  afterInit(server: Server) {
-    console.log('WebSocket server initialized');
-  }
+  // afterInit(server: Server) {
+  //   console.log('WebSocket server initialized');
+  // }
 
   handleConnection(client: WebSocket, req: any) {
     const parsedUrl = url.parse(req.url, true);
@@ -42,9 +42,9 @@ export class RoomsGateway implements OnGatewayConnection {
     client.send(JSON.stringify(msg));
   }
 
-  handleDisconnect(client: WebSocket) {
-    console.log('Client disconnected');
-  }
+  // handleDisconnect(client: WebSocket) {
+  //   console.log('Client disconnected');
+  // }
 
   @SubscribeMessage('message')
   handleMessage(@MessageBody() data: string, client: Socket): void {
