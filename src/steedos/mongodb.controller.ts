@@ -111,7 +111,7 @@ export class MongodbController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.objectqlUpdate(
+      const result = await this.mongodbService.findOneAndUpdate(
         objectName,
         id,
         body,

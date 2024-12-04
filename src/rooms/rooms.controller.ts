@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -101,5 +102,35 @@ export class RoomsController {
       userId: userId,
     });
     return newComment;
+  }
+
+  @UseGuards(RoomsGuard)
+  @Post('rooms/:roomId/threads/:threadId/comments/:commentId')
+  async updateComment(
+    @Req() req: Request,
+    @Param('roomId') roomId: string,
+    @Param('threadId') threadId: string,
+    @Param('commentId') commentId: string,
+    @Body() record: Record<string, any>,
+  ) {
+    const userId = req['jwt'].uid;
+    const newComment = this.roomsService.updateComment(commentId, {
+      attachmentIds: record.attachmentIds,
+      body: record.body,
+      userId,
+    });
+    return newComment;
+  }
+
+  @UseGuards(RoomsGuard)
+  @Delete('rooms/:roomId/threads/:threadId/comments/:commentId')
+  async deleteComment(
+    @Req() req: Request,
+    @Param('roomId') roomId: string,
+    @Param('threadId') threadId: string,
+    @Param('commentId') commentId: string,
+  ) {
+    this.roomsService.deleteComment(commentId);
+    return {};
   }
 }

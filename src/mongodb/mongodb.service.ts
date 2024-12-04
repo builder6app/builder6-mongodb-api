@@ -92,7 +92,7 @@ export class MongodbService {
     }
   }
 
-  async objectqlUpdate(collectionName: string, id: string, data: any) {
+  async findOneAndUpdate(collectionName: string, id: string, data: any) {
     const collection = this.db.collection(collectionName);
     const result = await collection.findOneAndUpdate(
       { _id: id as any },

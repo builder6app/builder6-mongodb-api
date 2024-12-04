@@ -70,7 +70,7 @@ export class AuthService {
     }
     user['services']['resume']['loginTokens'].push(hashedToken);
     const data = { services: user['services'] };
-    await this.mongodbService.objectqlUpdate('users', user._id, data);
+    await this.mongodbService.findOneAndUpdate('users', user._id, data);
 
     return {
       authToken: authToken,

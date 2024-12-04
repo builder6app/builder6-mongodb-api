@@ -2,7 +2,7 @@ import { MongodbService } from '@/mongodb/mongodb.service';
 import { Injectable } from '@nestjs/common';
 
 export interface CreateThreadParams {
-  id: string;
+  id?: string;
   comment: CreateCommentParams;
   metadata: object;
   resolved: boolean;
@@ -11,7 +11,7 @@ export interface CreateThreadParams {
 }
 
 export interface CreateCommentParams {
-  id: string;
+  id?: string;
   attachmentIds: string[];
   body: object;
   roomId?: string;
@@ -146,6 +146,46 @@ export class RoomsService {
 
     delete result['_id'];
     delete result['attachmentIds'];
+    return result;
+  }
+
+  async updateComment(
+    commentId,
+    { attachmentIds, body, userId }: CreateCommentParams,
+  ) {
+    const newComment = {
+      updatedAt: new Date().toISOString(),
+      type: 'comment',
+      attachmentIds,
+      body,
+      userId,
+    };
+
+    const result = await this.mongodbService.findOneAndUpdate(
+      'b6_comments',
+      commentId,
+      newComment,
+    );
+    result.attachments = [];
+
+    for (const attachmentId of attachmentIds) {
+      const attachment = await this.getAttachmentById(attachmentId);
+      result.attachments.push(attachment);
+    }
+
+    delete result['_id'];
+    delete result['attachmentIds'];
+    return result;
+  }
+
+  async deleteComment(commentId) {
+    // TODO: 应该先删除附件。
+
+    const result = await this.mongodbService.deleteOne(
+      'b6_comments',
+      commentId,
+    );
+
     return result;
   }
 }

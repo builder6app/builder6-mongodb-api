@@ -7,8 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { WebSocket, Server, Socket } from 'ws';
 import * as url from 'url';
-import * as querystring from 'querystring';
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 
 @WebSocketGateway({
   path: '/v7',
@@ -25,7 +24,6 @@ export class RoomsGateway implements OnGatewayConnection {
   }
 
   handleConnection(client: WebSocket, req: any) {
-
     const parsedUrl = url.parse(req.url, true);
 
     const roomId = parsedUrl.query['roomId'];
