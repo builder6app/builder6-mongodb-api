@@ -411,7 +411,8 @@
                     rowIndex: event.rowIndex,
                     colKey: event.api.getAllGridColumns()[0].colId
                 });
-                rowNode.setData(Object.assign({}, data, { __verificationErrors: verificationErrors }))
+                rowNode.setData(Object.assign({}, data, { __verificationErrors: verificationErrors }));
+                alert(verificationErrors);
                 return;
             }
             // 循环所有公式字段执行公式计算并设置值到data中
