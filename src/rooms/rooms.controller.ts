@@ -1,17 +1,51 @@
+import { AuthGuard } from '@/auth/auth.guard';
 import { RoomsService } from './rooms.service';
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { RoomsGuard } from './rooms.guard';
 
 @Controller('v2/c/')
 export class RoomsController {
-  constructor(private roomsService: RoomsService) {}
+  constructor(
+    private roomsService: RoomsService,
+    private jwtService: JwtService,
+  ) {}
 
+  @UseGuards(AuthGuard)
+  @Post('auth')
+  async getAuthToken(@Body() body: { room: string }, @Req() req: Request) {
+    const user = req['user'];
+    const { room = 'undefined' } = body;
+    const payload = {
+      k: 'acc',
+      pid: user.space,
+      uid: user.user,
+      mcpr: 10,
+      perms: {},
+      jti: 'S4EMiESTDe6k',
+    };
+    payload.perms[room] = ['room:write', 'comments:write'];
+    const token = await this.jwtService.signAsync(payload);
+    return { token };
+  }
+
+  @UseGuards(AuthGuard)
   @Get('users')
   async getUsers(@Query('userIds') userIds: string | string[]) {
     const users = await this.roomsService.getUsers(userIds);
-    console.log('getUsers', userIds, users);
     return users;
   }
 
+  @UseGuards(RoomsGuard)
   @Get('rooms/:roomId/threads')
   async getThreads(@Param('roomId') roomId: string) {
     const threads = await this.roomsService.getThreads(roomId);
@@ -30,12 +64,14 @@ export class RoomsController {
     };
   }
 
+  @UseGuards(RoomsGuard)
   @Post('rooms/:roomId/threads')
   async createThread(
+    @Req() req: Request,
     @Param('roomId') roomId: string,
     @Body() record: Record<string, any>,
   ) {
-    const userId = 'test';
+    const userId = req['jwt'].uid;
     const newThread = this.roomsService.createThread({
       id: record.id,
       comment: record.comment,
@@ -47,13 +83,15 @@ export class RoomsController {
     return newThread;
   }
 
+  @UseGuards(RoomsGuard)
   @Post('rooms/:roomId/threads/:threadId/comments')
   async createComment(
+    @Req() req: Request,
     @Param('roomId') roomId: string,
     @Param('threadId') threadId: string,
     @Body() record: Record<string, any>,
   ) {
-    const userId = 'test';
+    const userId = req['jwt'].uid;
     const newComment = this.roomsService.createComment({
       id: record.id,
       attachmentIds: record.attachmentIds,

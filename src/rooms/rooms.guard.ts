@@ -4,24 +4,32 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { RoomsService } from './rooms.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService) {}
+export class RoomsGuard implements CanActivate {
+  constructor(
+    private roomsService: RoomsService,
+    private jwtService: JwtService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.authService.extractTokenFromHeaderOrCookie(request);
+    const [type, bearerToken] = request.headers.authorization?.split(' ') ?? [];
+    const token = type === 'Bearer' ? bearerToken : undefined;
     if (!token) {
       console.error('Token not found', token);
+      throw new UnauthorizedException();
+    }
+    if (this.jwtService.verify(token) === false) {
       throw new UnauthorizedException();
     }
     try {
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      const user = await this.authService.getUserByToken(token);
-      request['user'] = user;
+      const jwt = await this.jwtService.decode(token);
+      request['jwt'] = jwt;
     } catch {
       throw new UnauthorizedException();
     }

@@ -6,9 +6,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import * as compression from 'compression';
 import { urlencoded, json } from 'express';
+import { WsAdapter } from '@nestjs/platform-ws';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useWebSocketAdapter(new WsAdapter(app));
   app.enableCors({
     origin: function (origin, callback) {
       callback(null, true);
