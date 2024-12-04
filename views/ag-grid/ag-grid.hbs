@@ -446,7 +446,8 @@
             getRows: async function (params) {
                 console.log('Server Side Datasource - Requesting rows from server:', params.request);
                 try {
-                    const modelFilters = filterModelToOdataFilters(params.request.filterModel);
+                    const colDefs = _.keyBy(_.map(params.api.getAllGridColumns(), "colDef"), "field");
+                    const modelFilters = filterModelToOdataFilters(params.request.filterModel, colDefs);
                     console.log('Server Side Datasource - Requesting rows by modelFilters:', modelFilters);
                     //const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
                     let url = `${B6_TABLES_API}/${baseId}/${tableId}`;
@@ -542,7 +543,7 @@
         'contains': 'contains',
         'notContains': 'notcontains',
         'startsWith': 'startswith',
-        'endsWith': '=', //TODO 不支持
+        'endsWith': 'endswith',
         'lessThan': '<',
         'lessThanOrEqual': '<=',
         'greaterThan': '>',
@@ -554,9 +555,10 @@
      * 把ag-grid filterModel 转为魔方filters格式
      * @param filterModel 
      */
-    function filterModelToOdataFilters(filterModel) {
+    function filterModelToOdataFilters(filterModel, colDefs) {
         const filters = [];
         _.forEach(filterModel, (value, key) => {
+            const fieldConfig = colDefs[key].cellEditorParams.fieldConfig;
             if (value.type === 'between') {
                 if (value.filterType === "number") {
                     filters.push([key, "between", [value.numberFrom, value.numberTo]]);
@@ -569,19 +571,38 @@
                 }
 
             } else {
-                if (!_.isEmpty(value.filter) || ["boolean", "toggle"].indexOf(value.filterType) > -1) {
-                    const filter = [key, FilterTypesMap[value.type], value.filter];
-                    filters.push(filter);
-                } else if (value.operator) {
-                    const filter = [];
-                    if (value.condition1) {
-                        filter.push([key, FilterTypesMap[value.condition1.type], value.condition1.filter]);
-                    }
-                    filter.push(value.operator.toLocaleLowerCase());
-                    if (value.condition2) {
-                        filter.push([key, FilterTypesMap[value.condition2.type], value.condition2.filter]);
-                    }
-                    filters.push(filter);
+                let filterItem;
+                switch (fieldConfig.type) {
+                    case 'text':
+                    case 'textarea':
+                        filterItem = [key, FilterTypesMap[value.type], value.filter];
+                        filters.push(filterItem);
+                        break;
+                    case 'number':
+                        filterItem = [key, FilterTypesMap[value.type], value.filter];
+                        filters.push(filterItem);
+                        break;
+                    case 'select':
+                    case 'select-multiple':
+                        filterItem = [key, "=", value.values.join(",")];
+                        filters.push(filterItem);
+                        break;
+                    case 'date':
+                    case 'datetime':
+                        filterItem = [key, FilterTypesMap[value.type], value.dateFrom];
+                        filters.push(filterItem);
+                        break;
+                    case 'boolean':
+                        let filterValue = value.values[0];
+                        if (typeof filterValue !== "boolean") {
+                            filterValue = filterValue === "true"
+                        }
+                        filterItem = [key, "=", filterValue];
+                        filters.push(filterItem);
+                        break;
+                    case 'formula':
+                        // 不支持公式字段过滤
+                        break;
                 }
             }
         })
