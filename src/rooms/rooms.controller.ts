@@ -85,6 +85,32 @@ export class RoomsController {
   }
 
   @UseGuards(RoomsGuard)
+  @Post('rooms/:roomId/threads/:threadId/mark-as-resolved')
+  async threadMarkasResolved(
+    @Req() req: Request,
+    @Param('roomId') roomId: string,
+    @Param('threadId') threadId: string,
+  ) {
+    const newThread = this.roomsService.updateThread(threadId, {
+      resolved: true,
+    });
+    return newThread;
+  }
+
+  @UseGuards(RoomsGuard)
+  @Post('rooms/:roomId/threads/:threadId/mark-as-unresolved')
+  async threadMarkasUnResolved(
+    @Req() req: Request,
+    @Param('roomId') roomId: string,
+    @Param('threadId') threadId: string,
+  ) {
+    const newThread = this.roomsService.updateThread(threadId, {
+      resolved: false,
+    });
+    return newThread;
+  }
+
+  @UseGuards(RoomsGuard)
   @Post('rooms/:roomId/threads/:threadId/comments')
   async createComment(
     @Req() req: Request,

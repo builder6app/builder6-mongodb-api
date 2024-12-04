@@ -3,11 +3,11 @@ import { Injectable } from '@nestjs/common';
 
 export interface CreateThreadParams {
   id?: string;
-  comment: CreateCommentParams;
-  metadata: object;
+  comment?: CreateCommentParams;
+  metadata?: object;
   resolved: boolean;
-  roomId: string;
-  userId: string;
+  roomId?: string;
+  userId?: string;
 }
 
 export interface CreateCommentParams {
@@ -108,6 +108,26 @@ export class RoomsService {
       userId,
     });
     result.comments = [newComment];
+
+    return result;
+  }
+
+  async updateThread(
+    threadId,
+    { metadata, resolved = false, userId }: CreateThreadParams,
+  ) {
+    const newThread = {
+      updatedAt: new Date().toISOString(),
+      resolved,
+      metadata,
+      userId,
+    };
+
+    const result = await this.mongodbService.findOneAndUpdate(
+      'b6_threads',
+      threadId,
+      newThread,
+    );
 
     return result;
   }
