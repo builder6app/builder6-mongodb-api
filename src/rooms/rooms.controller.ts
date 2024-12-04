@@ -10,14 +10,21 @@ import {
   Query,
   Req,
   UseGuards,
+  Put,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RoomsGuard } from './rooms.guard';
+import * as rawBody from 'raw-body';
+import { Request } from 'express';
+import { FilesService } from '@/files/files.service';
 
 @Controller('v2/c/')
 export class RoomsController {
   constructor(
     private roomsService: RoomsService,
+    private filesService: FilesService,
     private jwtService: JwtService,
   ) {}
 
@@ -158,5 +165,57 @@ export class RoomsController {
   ) {
     this.roomsService.deleteComment(commentId);
     return {};
+  }
+
+  @Post('rooms/:roomId/attachments/presigned-urls')
+  async presignedUrls(@Body('attachmentIds') attachmentIds: string[]) {
+    const urls = await Promise.all(
+      attachmentIds.map(async (attachmentId) => {
+        return this.filesService.getPreSignedUrl(
+          'cfs.files.filerecord',
+          attachmentId,
+        );
+      }),
+    );
+    return { urls };
+  }
+
+  @Put('rooms/:roomId/attachments/:attachmentId/upload/:fileName')
+  async uploadFile(
+    @Param('roomId') roomId: string,
+    @Param('attachmentId') attachmentId: string,
+    @Param('fileName') fileName: string,
+    @Query('fileSize') fileSize: number,
+    @Req() req: Request,
+  ) {
+    // 检查 content-type 是否为 application/octet-stream
+    if (req.headers['content-type'] !== 'application/octet-stream') {
+      throw new HttpException('Invalid content type', HttpStatus.BAD_REQUEST);
+    }
+
+    const fileBuffer = await rawBody(req);
+
+    // 构造类似 Express.Multer.File 的对象
+    const file = {
+      buffer: fileBuffer,
+      originalname: fileName,
+      size: fileSize,
+    };
+
+    const metadata = {
+      _id: attachmentId,
+      objectName: 'b6_rooms',
+      recordId: roomId,
+    };
+
+    if (!file) {
+      throw new Error('未找到上传的文件');
+    }
+    const fileRecord = await this.filesService.uploadFile(
+      'cfs.files.filerecord',
+      file,
+      metadata,
+    );
+    return fileRecord;
   }
 }

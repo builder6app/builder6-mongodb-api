@@ -48,7 +48,12 @@ export class MetaService {
           { _id: 'fld007', name: 'Birthdate', type: 'date' },
           // { _id: 'fld008', name: 'Created', type: 'datetime' },
           { _id: 'fld009', name: 'valid', type: 'boolean' },
-          { _id: 'fld010', name: 'Formula', type: 'formula', formula: 'name + "sss"' },
+          {
+            _id: 'fld010',
+            name: 'Formula',
+            type: 'formula',
+            formula: 'name + "sss"',
+          },
         ],
         verifications: [
           {

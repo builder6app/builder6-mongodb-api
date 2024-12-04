@@ -27,10 +27,10 @@ export class RoomsGateway implements OnGatewayConnection {
     const parsedUrl = url.parse(req.url, true);
 
     const roomId = parsedUrl.query['roomId'];
-    const token = parsedUrl.query['tok'];
+    // const token = parsedUrl.query['tok'];
 
     console.log(`Client connected to room: ${roomId}`);
-    console.log(`Token: ${token}`);
+    // console.log(`Token: ${token}`);
 
     const msg = {
       type: 104,

@@ -21,7 +21,10 @@ export interface CreateCommentParams {
 
 export interface Attachment {
   id: string;
-  // 其他属性
+  mimeType: string;
+  name: string;
+  size: number;
+  type: string;
 }
 
 @Injectable()
@@ -31,7 +34,20 @@ export class RoomsService {
   async getAttachmentById(attachmentId: string): Promise<Attachment> {
     // 模拟从数据库获取附件
     // 实际实现中应替换为数据库查询
-    return { id: attachmentId };
+
+    const attachment = await this.mongodbService.findOne(
+      'cfs.files.filerecord',
+      {
+        _id: attachmentId,
+      },
+    );
+    return {
+      id: attachmentId,
+      mimeType: attachment.original.type,
+      name: attachment.original.name,
+      size: attachment.original.size,
+      type: 'attachment',
+    };
   }
 
   async getUsers(userIds: string | string[]) {
@@ -73,6 +89,10 @@ export class RoomsService {
 
     for (const comment of comments) {
       comment.attachments = [];
+      for (const attachmentId of comment.attachmentIds) {
+        const attachment = await this.getAttachmentById(attachmentId);
+        comment.attachments.push(attachment);
+      }
     }
     return comments;
   }
