@@ -413,6 +413,7 @@
         console.log('Saving updated data to server:', data);
         try {
             const allGridColumns = event.api.getAllGridColumns();
+            // 字段类型值转换
             const colDefs = _.keyBy(_.map(allGridColumns, "colDef"), "field");
             _.each(data, function (n, k) {
                 const colDef = colDefs[k];
@@ -622,7 +623,13 @@
                         break;
                     case 'date':
                     case 'datetime':
-                        filterItem = [key, FilterTypesMap[value.type], value.dateFrom];
+                        let dateValue = new Date(value.dateFrom);
+                        if (fieldConfig.type === "date") {
+                            // 设置为日期的 UTC 0 点
+                            const timezoneOffset = dateValue.getTimezoneOffset();
+                            dateValue = new Date(dateValue.getTime() - timezoneOffset * 60 * 1000);
+                        }
+                        filterItem = [key, FilterTypesMap[value.type], dateValue];
                         filters.push(filterItem);
                         break;
                     case 'boolean':
