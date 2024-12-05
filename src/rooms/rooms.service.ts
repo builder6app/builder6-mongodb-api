@@ -228,4 +228,64 @@ export class RoomsService {
 
     return result;
   }
+
+  /* 评论点赞 
+  保存在 comments 中，格式如下： 
+  comment: {
+    _id,
+    reactions: [
+      {
+          "emoji": "🥵",
+          "createdAt": "2024-12-05T01:49:22.395Z",
+          "users": [
+              {
+                  "id": "user-5"
+              }
+              {
+                  "id": "user-6"
+              }
+          ]
+      },
+    ]
+    reactions 数组中的每个元素表示一个用户的点赞，其中 emoji 为表情，createdAt 为点赞时间，users 为点赞用户列表。
+    创建时，如果 reactions 中已经有相同 emoji 的点赞，则直接添加到 users 中，否则创建一个新的点赞。
+  }
+  */
+  async createReaction(
+    commentId: string,
+    { userId, emoji }: { userId: string; emoji: string },
+  ) {
+    const comment = await this.mongodbService.findOne('b6_comments', {
+      _id: commentId,
+    });
+    if (!comment) {
+      throw new Error('Comment not found');
+    }
+
+    let reaction = comment.reactions.find(
+      (reaction) => reaction.emoji === emoji,
+    );
+    if (reaction) {
+      reaction.users.push({ id: userId });
+    } else {
+      reaction = {
+        emoji,
+        createdAt: new Date().toISOString(),
+        users: [{ id: userId }],
+      };
+    }
+    comment.reactions.push(reaction);
+
+    await this.mongodbService.findOneAndUpdate(
+      'b6_comments',
+      commentId,
+      comment,
+    );
+
+    return {
+      emoji,
+      createdAt: reaction.createdAt,
+      userId,
+    };
+  }
 }

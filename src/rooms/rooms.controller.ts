@@ -117,6 +117,7 @@ export class RoomsController {
     return newThread;
   }
 
+  // 创建回复
   @UseGuards(RoomsGuard)
   @Post('rooms/:roomId/threads/:threadId/comments')
   async createComment(
@@ -167,6 +168,7 @@ export class RoomsController {
     return {};
   }
 
+  // 获取下载Url
   @Post('rooms/:roomId/attachments/presigned-urls')
   async presignedUrls(@Body('attachmentIds') attachmentIds: string[]) {
     const urls = await Promise.all(
@@ -180,6 +182,7 @@ export class RoomsController {
     return { urls };
   }
 
+  // 上传文件
   @Put('rooms/:roomId/attachments/:attachmentId/upload/:fileName')
   async uploadFile(
     @Param('roomId') roomId: string,
@@ -217,5 +220,23 @@ export class RoomsController {
       metadata,
     );
     return fileRecord;
+  }
+
+  // 创建Reaction
+  @UseGuards(RoomsGuard)
+  @Post('rooms/:roomId/threads/:threadId/comments/:commentId/reactions')
+  async createReaction(
+    @Req() req: Request,
+    @Param('roomId') roomId: string,
+    @Param('threadId') threadId: string,
+    @Param('commentId') commentId: string,
+    @Body('emoji') emoji: string,
+  ) {
+    const userId = req['jwt'].uid;
+    const newComment = this.roomsService.createReaction(commentId, {
+      userId: userId,
+      emoji: emoji,
+    });
+    return newComment;
   }
 }
