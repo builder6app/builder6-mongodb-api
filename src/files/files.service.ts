@@ -111,9 +111,10 @@ export class FilesService {
     } else if (this.cfsStore === 'S3') {
       // 如果存储配置为 S3
       const bucketName = process.env.STEEDOS_CFS_AWS_S3_BUCKET;
+      const collectionFolderName = this.getCollectionFolderName(collectionName);
 
       // 构造 S3 中的文件路径，例如：objectName/2024/12/uniqueFileName
-      relativeKey = `${objectName}/${year}/${month}/${uniqueFileName}`;
+      relativeKey = `${collectionFolderName}/${objectName}/${year}/${month}/${uniqueFileName}`;
       const params = {
         Bucket: bucketName,
         Key: relativeKey,
