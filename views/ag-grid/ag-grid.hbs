@@ -10,12 +10,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
     <style>
         /* 设置表格的高度和宽度 */
-        html{
+        html {
             overflow: hidden;
         }
-        html, body{
+
+        html,
+        body {
             height: 100%;
         }
+
         #myGrid {
             height: calc(100% - 100px);
             width: 100%;
@@ -401,7 +404,15 @@
                     tooltipComponent: CustomTooltip
                 },
                 getRowId: params => params.data._id,
-                rowSelection: { mode: "multiRow" },
+                selectionColumnDef: {
+                    pinned: 'left'
+                },
+                rowSelection: {
+                    mode: "multiRow",
+                    selectAll: "all",
+                    checkboxes: true,
+                    headerCheckbox: false
+                },
                 serverSideDatasource: getServerSideDatasource(),
             };
 
