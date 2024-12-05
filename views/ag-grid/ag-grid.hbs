@@ -62,8 +62,9 @@
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-enterprise/dist/ag-grid-enterprise.noStyle.js"></script>
     <!-- 引入 Amis Formula -->
     <script type="module">
-        import { evaluate } from 'https://cdn.skypack.dev/amis-formula';
-        window.evaluate = evaluate;
+        import * as amisFormula from 'https://cdn.skypack.dev/amis-formula';
+        window.amisFormula = amisFormula;
+        window.evaluate = amisFormula.evaluate;
 
         // const expression = '${1 + 2 * 3}';
         // const result = evaluate(expression);
@@ -476,13 +477,7 @@
                 return;
             }
             // 循环所有公式字段执行公式计算并设置值到data中
-            const dataTypeDefinitions = event.api.getGridOption("dataTypeDefinitions");
-            const formulaFields = dataTypeDefinitions.formula.fields;
-            for (var formulaFieldName in formulaFields) {
-                const formulaField = formulaFields[formulaFieldName];
-                const formula = formulaField.formula;
-                data[formulaFieldName] = evaluate(formula, data, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
-            }
+            setRowDataFormulaValues(data);
             // 保存更新的数据到服务端
             delete data.__verificationErrors
             const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + data._id, {
@@ -697,6 +692,17 @@
         }
     }
 
+    function setRowDataFormulaValues(rowData) {
+        // 循环所有公式字段执行公式计算并设置值到rowData中
+        const dataTypeDefinitions = gridApi.getGridOption("dataTypeDefinitions");
+        const formulaFields = dataTypeDefinitions.formula.fields;
+        for (var formulaFieldName in formulaFields) {
+            const formulaField = formulaFields[formulaFieldName];
+            const formula = formulaField.formula;
+            rowData[formulaFieldName] = evaluate(formula, rowData, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
+        }
+    }
+
     // 创建一个新行数据，可以初始化为默认值或空值
     function createNewRowData() {
         const newRow = {};
@@ -707,6 +713,9 @@
                 newRow[colDef.field] = dfValue;
             }
         });
+
+        // 设置默认值后需要进行依赖字段默认值的公式计算
+        setRowDataFormulaValues(newRow);
         return newRow;
     }
 
