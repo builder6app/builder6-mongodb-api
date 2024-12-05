@@ -36,6 +36,7 @@ export class RoomsController {
     const payload = {
       k: 'acc',
       pid: user.space,
+      sid: user.space,
       uid: user.user,
       mcpr: 10,
       perms: {},
@@ -46,10 +47,26 @@ export class RoomsController {
     return { token };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(RoomsGuard)
   @Get('users')
   async getUsers(@Query('userIds') userIds: string | string[]) {
     const users = await this.roomsService.getUsers(userIds);
+    return users;
+  }
+
+  @UseGuards(RoomsGuard)
+  @Get('users/search')
+  async searchUsers(
+    @Req() req: Request,
+    @Query('keyword') keyword: string,
+    @Query('roomdId') roomdId: string,
+  ) {
+    const spaceId = req['jwt'].sid;
+    const users = await this.roomsService.searchUsers(
+      spaceId,
+      keyword,
+      roomdId,
+    );
     return users;
   }
 

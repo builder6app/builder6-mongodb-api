@@ -69,6 +69,24 @@ export class RoomsService {
     return users;
   }
 
+  // 按照 email, name, username 搜索用户, 返回 userId 数组
+  async searchUsers(
+    spaceId: string,
+    keyword: string,
+    roomId: string,
+  ): Promise<string[]> {
+    const spaceUsers = await this.mongodbService.find('space_users', {
+      space: spaceId,
+      $or: [
+        { username: { $regex: keyword, $options: 'i' } },
+        { email: { $regex: keyword, $options: 'i' } },
+        { name: { $regex: keyword, $options: 'i' } },
+      ],
+    });
+
+    return spaceUsers.map((spaceUser) => spaceUser.user as string);
+  }
+
   async getThreads(roomId: string) {
     const threads = await this.mongodbService.find('b6_threads', {
       roomId: roomId,

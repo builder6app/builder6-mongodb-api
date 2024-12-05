@@ -5,6 +5,7 @@ import "./styles/globals.css";
 import { LiveblocksProvider } from "@liveblocks/react";
 
 let roomId = "react-comments";
+let token = "";
 
 applyExampleRoomId();
 
@@ -29,6 +30,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           credentials: 'include'
         });
         const result = await response.json();
+        token = result.token;
 
         return result;
       }}
@@ -38,7 +40,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           userIds.map((userId) => ["userIds", userId])
         );
         const response = await fetch(`http://localhost:5100/v2/c/users?${searchParams}`, {
-          credentials: 'include'
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
         });
 
         if (!response.ok) {
@@ -49,6 +53,24 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         return users;
       }}
       // publicApiKey={import.meta.env.VITE_LIVEBLOCKS_PUBLIC_KEY}
+
+      // Find a list of users that match the current search term
+      resolveMentionSuggestions={async ({ text = "" }) => {
+        const response = await fetch(
+          `http://localhost:5100/v2/c/users/search?keyword=${encodeURIComponent(text)}`, {
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Problem resolving mention suggestions");
+        }
+
+        const userIds = await response.json();
+        return userIds;
+      }}
     >
       <App roomId={roomId} />
     </LiveblocksProvider>
