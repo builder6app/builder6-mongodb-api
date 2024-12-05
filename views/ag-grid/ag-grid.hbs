@@ -366,6 +366,7 @@
                 };
             });
 
+            const pageSize = 3;
             // 初始化网格配置
             gridOptions = {
                 columnDefs: columnDefs,
@@ -375,8 +376,10 @@
                 },
                 rowData: null, // 初始为空，通过 API 动态加载
                 rowModelType: 'serverSide',
-                paginationPageSize: 20,
-                cacheBlockSize: 20,
+                pagination: true,
+                paginationPageSizeSelector: false,
+                paginationPageSize: pageSize,
+                cacheBlockSize: pageSize,
                 editType: 'fullRow',
                 cellSelection: {
                     handle: {
@@ -489,13 +492,22 @@
                     const colDefs = _.keyBy(_.map(params.api.getAllGridColumns(), "colDef"), "field");
                     const modelFilters = filterModelToOdataFilters(params.request.filterModel, colDefs);
                     console.log('Server Side Datasource - Requesting rows by modelFilters:', modelFilters);
-                    //const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '?startRow=' + params.startRow + '&endRow=' + params.endRow);
                     let url = `${B6_TABLES_API}/${baseId}/${tableId}`;
+                    // 翻页
+                    const startRow = params.request.startRow,
+                        endRow = params.request.endRow,
+                        pageSize = params.api.paginationGetPageSize();
+
+                    const separator = url.includes('?') ? '&' : '?';
+                    url += `${separator}skip=${startRow}&top=${pageSize}`;
+
+                    // 过滤
                     if (modelFilters.length > 0) {
                         const separator = url.includes('?') ? '&' : '?';
                         url += `${separator}filters=${JSON.stringify(modelFilters)}`;
                     }
 
+                    // 排序
                     const sortModel = params.request.sortModel;
                     let sort = []
                     _.forEach(sortModel, (sortField) => {
@@ -510,6 +522,7 @@
 
                     const response = await fetch(url);
                     const data = await response.json();
+                    console.log('Server Side Datasource - data:', data);
 
                     params.success({
                         rowData: data.data,
