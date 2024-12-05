@@ -366,7 +366,7 @@
                 };
             });
 
-            const pageSize = 3;
+            const pageSize = 1000;
             // 初始化网格配置
             gridOptions = {
                 columnDefs: columnDefs,
@@ -376,7 +376,7 @@
                 },
                 rowData: null, // 初始为空，通过 API 动态加载
                 rowModelType: 'serverSide',
-                pagination: true,
+                pagination: false,
                 paginationPageSizeSelector: false,
                 paginationPageSize: pageSize,
                 cacheBlockSize: pageSize,
