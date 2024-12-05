@@ -36,10 +36,11 @@ export class FilesController {
     };
   }
 
-  @Get(':collectionName/:fileId')
+  @Get(':collectionName/:fileId/:fileName?')
   async downloadFile(
     @Param('collectionName') collectionName: string,
     @Param('fileId') fileId: string,
+    @Param('fileName') fileName: string,
     @Res() res: Response,
   ): Promise<void> {
     try {

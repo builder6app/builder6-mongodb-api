@@ -22,6 +22,7 @@ export class FilesService {
         accessKeyId: process.env.STEEDOS_CFS_AWS_S3_ACCESS_KEY_ID,
         secretAccessKey: process.env.STEEDOS_CFS_AWS_S3_SECRET_ACCESS_KEY,
         region: process.env.STEEDOS_CFS_AWS_S3_REGION,
+        signatureVersion: 'v4',
       });
     }
   }
@@ -163,7 +164,7 @@ export class FilesService {
     return savedRecord;
   }
 
-  async getFile(collectionName: string, fileId: string): Promise<object> {
+  async getFile(collectionName: string, fileId: string): Promise<any> {
     const fileRecord = await this.mongodbService.findOne(collectionName, {
       _id: fileId,
     });
@@ -206,7 +207,9 @@ export class FilesService {
         '/api/v6/files/' +
         collectionName +
         '/' +
-        fileId
+        fileId +
+        '/' +
+        fileRecord.original.name
       );
     }
 
@@ -254,6 +257,7 @@ export class FilesService {
       const params = {
         Bucket: bucketName,
         Key: key,
+        Expires: 60 * 10, // 10分钟有效期
       };
 
       try {
