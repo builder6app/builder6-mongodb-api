@@ -548,6 +548,17 @@
         };
     }
 
+    function scrollToBottomAfterRefresh() {
+        const rowCount = gridApi.getDisplayedRowCount();
+        if (rowCount > 0) {
+            // Scroll to the last row
+            gridApi.ensureIndexVisible(rowCount - 1, 'bottom');
+        }
+
+        // Remove the event listener to prevent scrolling on subsequent updates
+        gridApi.removeEventListener('storeRefreshed', scrollToBottomAfterRefresh);
+    }
+
     // 新增行的功能
     async function addNewRow() {
         if (!gridOptions) {
@@ -584,7 +595,9 @@
             if (response.ok) {
                 console.log('New row added successfully');
                 // 新增数据成功后刷新网格数据
-                gridApi.refreshServerSide({ purge: true });
+                gridApi.addEventListener('storeRefreshed', scrollToBottomAfterRefresh);
+                gridApi.refreshServerSide({ purge: false });//purge设置为true会造成上面scrollToBottomAfterRefresh不生效
+
             } else {
                 console.error('Failed to add new row:', response.statusText);
             }
