@@ -13,7 +13,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { Response } from 'express';
 
-@Controller('api/files/v2/')
+@Controller('api/v6/files/')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 

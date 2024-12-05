@@ -26,6 +26,21 @@ export class FilesService {
     }
   }
 
+  getCollectionFolderName(collectionName): string {
+    // 兼容 meteor
+    // 如果 collectionName 为 cfs.files.filerecord，则直接返回 files
+    let collectionFolderName = collectionName;
+    const collectionNameParts = collectionName.split('.');
+    if (
+      collectionNameParts.length === 3 &&
+      collectionNameParts[0] === 'cfs' &&
+      collectionNameParts[2] === 'filerecord'
+    ) {
+      collectionFolderName = collectionNameParts[1];
+    }
+    return collectionFolderName;
+  }
+
   async uploadFile(
     collectionName: string = 'cfs.files.filerecord',
     file: {
@@ -57,23 +72,26 @@ export class FilesService {
       mime.lookup(file.originalname) ||
       'application/octet-stream';
     let fileUrl: string;
-    let relativePath: string;
+    let relativeKey: string;
 
     // 获取当前时间并生成路径
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // 补全两位月份
     const uniqueFileName = `${_id}-${file.originalname}`;
+    const collectionFolderName = this.getCollectionFolderName(collectionName);
 
     if (this.cfsStore === 'local') {
       // 构造文件存储路径，例如：objectName/2024/12/uniqueFileName
       const fileDir = path.join(
         this.storageDir,
+        'files',
+        collectionFolderName,
         objectName,
         year.toString(),
         month,
       );
-      relativePath = path.join(
+      relativeKey = path.join(
         objectName,
         year.toString(),
         month,
@@ -95,10 +113,10 @@ export class FilesService {
       const bucketName = process.env.STEEDOS_CFS_AWS_S3_BUCKET;
 
       // 构造 S3 中的文件路径，例如：objectName/2024/12/uniqueFileName
-      relativePath = `${objectName}/${year}/${month}/${uniqueFileName}`;
+      relativeKey = `${objectName}/${year}/${month}/${uniqueFileName}`;
       const params = {
         Bucket: bucketName,
-        Key: relativePath,
+        Key: relativeKey,
         Body: file.buffer,
         ContentType: mimeType,
       };
@@ -133,7 +151,7 @@ export class FilesService {
           name: file.originalname,
           type: mimeType,
           size: file.size,
-          key: relativePath,
+          key: relativeKey,
           updatedAt: new Date(),
           createdAt: new Date(),
         },
@@ -184,7 +202,7 @@ export class FilesService {
     } else if (this.cfsStore === 'local') {
       return (
         process.env.B6_API_URL +
-        '/api/files/v2/' +
+        '/api/v6/files/' +
         collectionName +
         '/' +
         fileId
@@ -211,7 +229,18 @@ export class FilesService {
       try {
         // 构造文件存储路径，例如：objectName/2024/12/uniqueFileName
         const key = fileRecord.copies.files.key;
-        const fileUrl = path.join(this.storageDir, key);
+        const collectionFolderName =
+          this.getCollectionFolderName(collectionName);
+        const fileUrl = path.join(
+          this.storageDir,
+          'files',
+          collectionFolderName,
+          key,
+        );
+        // 检测文件是否存在，否则返回空
+        if (!(await fs.pathExists(fileUrl))) {
+          throw new Error('文件不存在');
+        }
         // 本地存储：从文件系统中创建可读流
         return fs.createReadStream(fileUrl);
       } catch (err) {
