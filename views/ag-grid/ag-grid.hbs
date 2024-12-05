@@ -411,7 +411,7 @@
                     mode: "multiRow",
                     selectAll: "all",
                     checkboxes: true,
-                    headerCheckbox: false
+                    headerCheckbox: true
                 },
                 serverSideDatasource: getServerSideDatasource(),
             };
@@ -598,14 +598,50 @@
         }
     }
 
+    function getAllRowData() {
+        const rowData = [];
+        const rowCount = gridApi.getDisplayedRowCount();
+
+        for (let i = 0; i < rowCount; i++) {
+            const rowNode = gridApi.getDisplayedRowAtIndex(i);
+            rowData.push(rowNode.data);
+        }
+
+        return rowData;
+    }
+
+    function getSelectedRowData() {
+        // Get the selected nodes and extract their data
+        const gridState = gridApi.getState();
+        const rowSelectionState = gridState.rowSelection;
+        const isSelectAll = rowSelectionState.selectAll;
+        const toggledNodes = rowSelectionState.toggledNodes;
+        if (isSelectAll) {
+            // 用户勾选了表头全选勾选框时，gridApi.getSelectedNodes()取不到数据，这里手动获取列表上的行数据
+            // gridApi.getState().rowSelection.toggledNodes 中记录了全选时用户取消了哪些选项的id值集合
+            let allRowData = getAllRowData();
+            if (_.isEmpty(toggledNodes)) {
+                return allRowData;
+            }
+            else {
+                const selectedData = allRowData.filter(dataItem => toggledNodes.indexOf(dataItem._id) < 0);
+                return selectedData;
+            }
+        }
+        else {
+            const selectedNodes = gridApi.getSelectedNodes();
+            const selectedData = selectedNodes.map(node => node.data);
+            return selectedData;
+        }
+    }
+
     async function deleteSelectedRows() {
         if (!gridOptions) {
             console.error('Grid options not available. Ensure grid is initialized properly.');
             return;
         }
-        // Get the selected nodes and extract their data
-        const selectedNodes = gridApi.getSelectedNodes();
-        const selectedData = selectedNodes.map(node => node.data);
+
+        const selectedData = getSelectedRowData();
         const selectedIds = selectedData.map(data => data._id);
         console.log('Deleting Rows:', selectedIds);
 
