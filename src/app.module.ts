@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { SteedosModule } from './steedos/steedos.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { FilesModule } from './files/files.module';
+import { MoleculerModule } from './moleculer/moleculer.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { FilesModule } from './files/files.module';
     AuthModule,
     RoomsModule,
     FilesModule,
+    MoleculerModule,
   ],
   controllers: [],
   providers: [],
