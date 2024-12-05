@@ -18,7 +18,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { AdminGuard } from '@/auth/admin.guard';
 
 // 直接操作 mongodb 数据库 的 API，必须是 admin 用户才能操作。
-@Controller('api/steedos/v6/direct')
+@Controller('api/v6/direct')
 @UseGuards(AdminGuard)
 @ApiBearerAuth()
 export class MongodbController {

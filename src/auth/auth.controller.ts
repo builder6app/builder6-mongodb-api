@@ -11,7 +11,7 @@ import { AuthService } from './auth.service';
 import { ApiBody } from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
 
-@Controller('api/steedos/v6/auth')
+@Controller('api/v6/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
