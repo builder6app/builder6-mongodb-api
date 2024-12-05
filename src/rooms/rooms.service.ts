@@ -288,4 +288,37 @@ export class RoomsService {
       userId,
     };
   }
+
+  async deleteReaction(
+    commentId: string,
+    { userId, emoji }: { userId: string; emoji: string },
+  ) {
+    const comment = await this.mongodbService.findOne('b6_comments', {
+      _id: commentId,
+    });
+    if (!comment) {
+      throw new Error('Comment not found');
+    }
+
+    const reaction = comment.reactions.find(
+      (reaction) => reaction.emoji === emoji,
+    );
+    if (!reaction) {
+      throw new Error('Reaction not found');
+    }
+
+    reaction.users = reaction.users.filter((user) => user.id !== userId);
+
+    comment.reactions = comment.reactions.filter(
+      (reaction) => reaction.users.length > 0,
+    );
+
+    await this.mongodbService.findOneAndUpdate(
+      'b6_comments',
+      commentId,
+      comment,
+    );
+
+    return null;
+  }
 }

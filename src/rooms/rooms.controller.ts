@@ -239,4 +239,21 @@ export class RoomsController {
     });
     return newComment;
   }
+
+  //删除Reaction
+  @UseGuards(RoomsGuard)
+  @Delete(
+    'rooms/:roomId/threads/:threadId/comments/:commentId/reactions/:emoji',
+  )
+  async deleteReaction(
+    @Req() req: Request,
+    @Param('roomId') roomId: string,
+    @Param('threadId') threadId: string,
+    @Param('commentId') commentId: string,
+    @Param('emoji') emoji: string,
+  ) {
+    const userId = req['jwt'].uid;
+    this.roomsService.deleteReaction(commentId, { emoji, userId });
+    return {};
+  }
 }
