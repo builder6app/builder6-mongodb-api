@@ -559,6 +559,21 @@
             console.error('Grid options not available. Ensure grid is initialized properly.');
             return;
         }
+
+        // 有排序和过滤条件情况下不允许新建数据，因为新建后不知道是哪一行
+        const gridState = gridApi.getState();
+        const sortState = gridState.sort;
+        const filterState = gridState.filter;
+        if (!_.isEmpty(sortState)) {
+            alert("请先移除排序");
+            return;
+        }
+
+        if (!_.isEmpty(filterState)) {
+            alert("请先移除过滤条件");
+            return;
+        }
+
         const newRow = createNewRowData();
 
         // 将新增数据发送到服务器
