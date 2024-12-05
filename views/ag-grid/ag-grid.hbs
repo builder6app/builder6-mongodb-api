@@ -43,6 +43,7 @@
     <div class="button-container">
         <!-- 创建一个按钮来添加新行 -->
         <button id="addRowBtn">Add New Row</button>
+        <button id="deleteButton">Delete Selected Rows</button>
     </div>
     <!-- 创建一个容器来放置 AG Grid -->
     <div id="myGrid" class="ag-theme-alpine"></div>
@@ -390,6 +391,8 @@
                     resizable: true,
                     tooltipComponent: CustomTooltip
                 },
+                getRowId: params => params.data._id,
+                rowSelection: { mode: "multiRow" },
                 serverSideDatasource: getServerSideDatasource(),
             };
 
@@ -401,6 +404,9 @@
 
             // 设置新增行按钮的事件
             document.getElementById('addRowBtn').addEventListener('click', addNewRow);
+
+            // Add event listener to the delete button
+            document.getElementById('deleteButton').addEventListener('click', deleteSelectedRows);
 
         } catch (error) {
             console.error('Error initializing grid:', error);
@@ -544,6 +550,69 @@
             }
         } catch (error) {
             console.error('Error adding new row:', error);
+        }
+    }
+
+    async function deleteSelectedRows() {
+        if (!gridOptions) {
+            console.error('Grid options not available. Ensure grid is initialized properly.');
+            return;
+        }
+        // Get the selected nodes and extract their data
+        const selectedNodes = gridApi.getSelectedNodes();
+        const selectedData = selectedNodes.map(node => node.data);
+        const selectedIds = selectedData.map(data => data._id);
+        console.log('Deleting Rows:', selectedIds);
+
+        // Check if any rows are selected
+        if (selectedIds.length === 0) {
+            alert('没有选中任何行！');
+            return;
+        }
+
+        try {
+            /* 后续支持批量删除接口可以改为只调用一次删除接口
+            // Call the API to delete the selected rows
+            const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: selectedIds })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Remove the selected rows from the grid
+                gridApi.applyTransaction({ remove: selectedData });
+            } else {
+                alert('删除行时发生错误');
+            }*/
+
+
+            for (const data of selectedData) {
+                const id = data._id;
+                // Call the API to delete each selected row
+                const response = await fetch(`${B6_TABLES_API}/${baseId}/${tableId}/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.deleted) {
+                    // Remove the row from the grid only if the deletion was successful
+                    gridApi.applyServerSideTransaction({ remove: [data] });
+                } else {
+                    alert(`删除 ID 为 ${id} 的行失败`);
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting rows:', error);
+            alert('删除行时发生错误');
         }
     }
 
