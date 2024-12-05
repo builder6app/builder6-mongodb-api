@@ -70,6 +70,10 @@
         // const result = evaluate(expression);
         // console.log('Result:', result); // Output: 7
     </script>
+    <script type="module">
+        import * as locale from '/ag-grid/locale_zh.js';
+        window.agGridLocale = locale;
+    </script>
 </body>
 <script>
 
@@ -415,6 +419,7 @@
                     headerCheckbox: true
                 },
                 serverSideDatasource: getServerSideDatasource(),
+                localeText: agGridLocale.AG_GRID_LOCALE_CN
             };
 
             console.log("gridOptions:", gridOptions);

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MetaService {
-  constructor(private readonly mongodbService: MongodbService) {}
+  constructor(private readonly mongodbService: MongodbService) { }
 
   async getTableMeta(baseId: string, tableId: string) {
     let table = await this.mongodbService.findOne('b6_tables', {
@@ -25,16 +25,18 @@ export class MetaService {
         fields: [
           {
             _id: 'fld001',
-            name: 'Name',
+            name: 'name',
+            label: '名称',
             type: 'text',
             default_value: '默认文本',
           },
-          { _id: 'fld002', name: 'Age', type: 'number', default_value: 20 },
-          { _id: 'fld003', name: 'Discount', type: 'number', precision: 2 },
-          { _id: 'fld004', name: 'Info', type: 'textarea' },
+          { _id: 'fld002', name: 'age', label: '年龄', type: 'number', default_value: 20 },
+          { _id: 'fld003', name: 'discount', label: '折扣', type: 'number', precision: 2 },
+          { _id: 'fld004', name: 'info', label: '备注', type: 'textarea' },
           {
             _id: 'fld005',
-            name: 'Company',
+            name: 'company',
+            label: '公司',
             type: 'select',
             options: `华炎\n建华\n中国移动`,
           },
@@ -45,12 +47,13 @@ export class MetaService {
           //   options: `上海\n北京\n南京\n杭州`,
           //   multiple: true,
           // },
-          { _id: 'fld007', name: 'Birthdate', type: 'date' },
+          { _id: 'fld007', name: 'birthdate', label: '生日', type: 'date' },
           // { _id: 'fld008', name: 'Created', type: 'datetime' },
-          { _id: 'fld009', name: 'valid', type: 'boolean' },
+          { _id: 'fld009', name: 'valid', label: '启用', type: 'boolean' },
           {
             _id: 'fld010',
-            name: 'Formula',
+            name: 'formula',
+            label: '公式',
             type: 'formula',
             formula: 'name + age',
           },
