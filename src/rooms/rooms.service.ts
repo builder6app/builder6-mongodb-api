@@ -1,5 +1,7 @@
 import { MongodbService } from '@/mongodb/mongodb.service';
 import { Injectable } from '@nestjs/common';
+import { RoomsGateway } from './rooms.gateway';
+import { ServerMsgCode } from './protocol/ServerMsg';
 
 export interface CreateThreadParams {
   id?: string;
@@ -29,7 +31,10 @@ export interface Attachment {
 
 @Injectable()
 export class RoomsService {
-  constructor(private mongodbService: MongodbService) {}
+  constructor(
+    private mongodbService: MongodbService,
+    private roomsGateway: RoomsGateway,
+  ) {}
 
   async getAttachmentById(attachmentId: string): Promise<Attachment> {
     // 模拟从数据库获取附件
@@ -85,6 +90,21 @@ export class RoomsService {
     });
 
     return spaceUsers.map((spaceUser) => spaceUser.user as string);
+  }
+
+  async getThread(roomId: string, threadId: string) {
+    const thread = await this.mongodbService.findOne('b6_threads', {
+      roomId: roomId,
+      _id: threadId,
+    });
+
+    if (!thread) {
+      return null;
+    }
+
+    const comments = await this.getComments(roomId, threadId);
+    thread.comments = comments;
+    return thread;
   }
 
   async getThreads(roomId: string) {
@@ -147,6 +167,11 @@ export class RoomsService {
     });
     result.comments = [newComment];
 
+    // this.roomsGateway.broadcastToRoom(roomId, {
+    //   type: ServerMsgCode.THREAD_CREATED, // 使用 ServerMsgCode 枚举
+    //   threadId: id,
+    // });
+
     return result;
   }
 
@@ -201,6 +226,12 @@ export class RoomsService {
       const attachment = await this.getAttachmentById(attachmentId);
       result.attachments.push(attachment);
     }
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.COMMENT_CREATED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
+      commentId: id,
+    });
 
     delete result['_id'];
     delete result['attachmentIds'];

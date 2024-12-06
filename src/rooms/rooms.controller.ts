@@ -109,6 +109,17 @@ export class RoomsController {
   }
 
   @UseGuards(RoomsGuard)
+  @Get('rooms/:roomId/thread-with-notification/:threadId')
+  async threadWithNotification(
+    @Req() req: Request,
+    @Param('roomId') roomId: string,
+    @Param('threadId') threadId: string,
+  ) {
+    const thread = await this.roomsService.getThread(roomId, threadId);
+    return { thread };
+  }
+
+  @UseGuards(RoomsGuard)
   @Post('rooms/:roomId/threads/:threadId/mark-as-resolved')
   async threadMarkasResolved(
     @Req() req: Request,
