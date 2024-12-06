@@ -229,11 +229,11 @@
                         if (!params.value) return "";
 
                         if (fieldType === "date") {
-                            return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`;
+                            return date.getFullYear() + '-' + padZero(date.getMonth() + 1) + '-' + padZero(date.getDate());
                         } else if (fieldType === "datetime") {
                             // Convert to local time considering timezone
-                            const localDate = new Date(date.getTime());
-                            return `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
+                            var localDate = new Date(date.getTime());
+                            return localDate.getFullYear() + '-' + padZero(localDate.getMonth() + 1) + '-' + padZero(localDate.getDate()) + ' ' + padZero(localDate.getHours()) + ':' + padZero(localDate.getMinutes());
                         }
 
                         return "";
@@ -500,59 +500,67 @@
         }
     }
 
-
     function getServerSideDatasource() {
         return {
-            getRows: async function (params) {
+            getRows: function (params) {
                 console.log('Server Side Datasource - Requesting rows from server:', params.request);
-                try {
-                    const colDefs = _.keyBy(_.map(params.api.getAllGridColumns(), "colDef"), "field");
-                    const modelFilters = filterModelToOdataFilters(params.request.filterModel, colDefs);
-                    console.log('Server Side Datasource - Requesting rows by modelFilters:', modelFilters);
-                    let url = `${B6_TABLES_API}/${baseId}/${tableId}`;
-                    // 翻页
-                    const startRow = params.request.startRow,
-                        endRow = params.request.endRow,
-                        pageSize = params.api.paginationGetPageSize();
+                // 模拟Promise来处理异步流程，尽量贴近async/await效果
+                return new Promise(function (resolve, reject) {
+                    try {
+                        var colDefs = _.keyBy(_.map(params.api.getAllGridColumns(), function (col) { return col.colDef; }), "field");
+                        var modelFilters = filterModelToOdataFilters(params.request.filterModel, colDefs);
+                        console.log('Server Side Datasource - Requesting rows by modelFilters:', modelFilters);
+                        var url = B6_TABLES_API + '/' + baseId + '/' + tableId;
+                        // 翻页
+                        var startRow = params.request.startRow;
+                        var endRow = params.request.endRow;
+                        var pageSize = params.api.paginationGetPageSize();
 
-                    const separator = url.includes('?') ? '&' : '?';
-                    url += `${separator}skip=${startRow}&top=${pageSize}`;
+                        var separator = url.indexOf('?') !== -1 ? '&' : '?';
+                        url += separator + 'skip=' + startRow + '&top=' + pageSize;
 
-                    // 过滤
-                    if (modelFilters.length > 0) {
-                        const separator = url.includes('?') ? '&' : '?';
-                        url += `${separator}filters=${JSON.stringify(modelFilters)}`;
+                        // 过滤
+                        if (modelFilters.length > 0) {
+                            separator = url.indexOf('?') !== -1 ? '&' : '?';
+                            url += separator + 'filters=' + JSON.stringify(modelFilters);
+                        }
+
+                        // 排序
+                        var sortModel = params.request.sortModel;
+                        var sort = [];
+                        _.forEach(sortModel, function (sortField) {
+                            sort.push(sortField.colId + ' ' + sortField.sort);
+                        });
+                        console.log('Server Side Datasource - Requesting rows by sortModel:', sortModel);
+                        if (sort.length > 0) {
+                            separator = url.indexOf('?') !== -1 ? '&' : '?';
+                            url += separator + 'sort=' + sort.join(",");
+                        }
+
+                        fetch(url).then(function (response) {
+                            return response.json();
+                        }).then(function (data) {
+                            console.log('Server Side Datasource - data:', data);
+                            params.success({
+                                rowData: data.data,
+                                rowCount: data.totalCount
+                            });
+                            resolve();
+                        }).catch(function (error) {
+                            console.error('Error fetching data from server:', error);
+                            params.fail();
+                            reject(error);
+                        });
+                    } catch (error) {
+                        console.error('Error fetching data from server:', error);
+                        params.fail();
+                        reject(error);
                     }
-
-                    // 排序
-                    const sortModel = params.request.sortModel;
-                    let sort = []
-                    _.forEach(sortModel, (sortField) => {
-                        //sort.push([sortField.colId, sortField.sort])
-                        sort.push(`${sortField.colId} ${sortField.sort}`)
-                    });
-                    console.log('Server Side Datasource - Requesting rows by sortModel:', sortModel);
-                    if (sort.length > 0) {
-                        const separator = url.includes('?') ? '&' : '?';
-                        url += `${separator}sort=${sort.join(",")}`;
-                    }
-
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    console.log('Server Side Datasource - data:', data);
-
-                    params.success({
-                        rowData: data.data,
-                        rowCount: data.totalCount
-                    });
-                } catch (error) {
-                    console.error('Error fetching data from server:', error);
-                    params.fail();
-                }
+                });
             }
         };
     }
-
+    
     function scrollToBottomAfterRefresh() {
         const rowCount = gridApi.getDisplayedRowCount();
         if (rowCount > 0) {
@@ -688,9 +696,9 @@
             for (const data of selectedData) {
                 const id = data._id;
                 // Call the API to delete each selected row
-                const response = await fetch(`${B6_TABLES_API}/${baseId}/${tableId}/${id}`, {
+                const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + id, {
                     method: 'DELETE',
-                    headers: {
+                        headers: {
                         'Content-Type': 'application/json'
                     }
                 });
@@ -701,7 +709,7 @@
                     // Remove the row from the grid only if the deletion was successful
                     gridApi.applyServerSideTransaction({ remove: [data] });
                 } else {
-                    alert(`删除 ID 为 ${id} 的行失败`);
+                    alert("删除 ID 为 " + id + " 的行失败");
                 }
             }
         } catch (error) {
