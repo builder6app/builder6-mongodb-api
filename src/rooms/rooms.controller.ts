@@ -217,6 +217,7 @@ export class RoomsController {
     return newComment;
   }
 
+  // 编辑回复
   @UseGuards(RoomsGuard)
   @Post('rooms/:roomId/threads/:threadId/comments/:commentId')
   async updateComment(
@@ -241,6 +242,7 @@ export class RoomsController {
     return newComment;
   }
 
+  // 删除回复
   @UseGuards(RoomsGuard)
   @Delete('rooms/:roomId/threads/:threadId/comments/:commentId')
   async deleteComment(

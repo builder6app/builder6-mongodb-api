@@ -65,19 +65,44 @@ export class RoomsGateway implements OnGatewayConnection {
     const userId = jwt.uid;
 
     if (userId && roomId) {
-      // Add ping/pong support to keep the connection alive
-      client.on('ping', () => {
-        client.pong();
-      });
 
-      const connectionId = await this.handleJoinRoom(client, { roomId, userId });
+      client.on('message', (message: Buffer) => {
+        const messageStr = message.toString();
+        console.log('Received message from client: ', messageStr);
+
+        // Add ping/pong support to keep the connection alive
+        if (messageStr === 'ping') {
+          client.send('pong'); // 响应客户端的 ping，回复 pong 消息
+          return;
+        }
+
+        const parsedMessage = JSON.parse(messageStr);
+        // 判断如果是数组，则循环调用 handleClientMessage
+        if (Array.isArray(parsedMessage)) {
+          parsedMessage.forEach((msg) => {
+            this.handleClientMessage(client, msg);
+          });
+        } else if (typeof parsedMessage === 'object') {
+          this.handleClientMessage(client, parsedMessage);
+        }
+       
+      });
 
       // 监听客户端关闭事件，执行离开房间的操作
       client.on('close', () => {
         this.handleLeaveRoom(client, { roomId, userId });
       });
+
+      await this.handleJoinRoom(client, { roomId, userId });
     } else {
       client.close();
+    }
+  }
+
+  async handleClientMessage(client: WebSocket, parsedMessage: any) {
+    console.log('Received message from client: ', parsedMessage);
+    if (parsedMessage.type === ServerMsgCode.UPDATE_PRESENCE) {
+      this.handleUpdatePresence(client, parsedMessage);
     }
   }
 
@@ -198,12 +223,12 @@ export class RoomsGateway implements OnGatewayConnection {
     client: WebSocket,
     payload: { roomId: string; connectionId: number; data: any },
   ) {
-    const { roomId, connectionId, data } = payload;
-    this.broadcastToRoom(roomId, {
-      type: ServerMsgCode.UPDATE_PRESENCE, // 使用 ServerMsgCode 枚举
-      actor: connectionId,
-      data,
-    });
+    // const { roomId, connectionId, data } = payload;
+    // this.broadcastToRoom(roomId, {
+    //   type: ServerMsgCode.UPDATE_PRESENCE, // 使用 ServerMsgCode 枚举
+    //   actor: connectionId,
+    //   data,
+    // });
   }
 
   public broadcastToRoom(
