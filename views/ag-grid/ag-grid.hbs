@@ -560,7 +560,7 @@
             }
         };
     }
-    
+
     function scrollToBottomAfterRefresh() {
         const rowCount = gridApi.getDisplayedRowCount();
         if (rowCount > 0) {
@@ -698,7 +698,7 @@
                 // Call the API to delete each selected row
                 const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + id, {
                     method: 'DELETE',
-                        headers: {
+                    headers: {
                         'Content-Type': 'application/json'
                     }
                 });
@@ -720,12 +720,15 @@
 
     function setRowDataFormulaValues(rowData) {
         // 循环所有公式字段执行公式计算并设置值到rowData中
-        const dataTypeDefinitions = gridApi.getGridOption("dataTypeDefinitions");
-        const formulaFields = dataTypeDefinitions.formula.fields;
+        var dataTypeDefinitions = gridApi.getGridOption("dataTypeDefinitions");
+        var formulaFields = dataTypeDefinitions.formula.fields;
+
         for (var formulaFieldName in formulaFields) {
-            const formulaField = formulaFields[formulaFieldName];
-            const formula = formulaField.formula;
-            rowData[formulaFieldName] = evaluate(formula, rowData, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
+            if (formulaFields.hasOwnProperty(formulaFieldName)) {
+                var formulaField = formulaFields[formulaFieldName];
+                var formula = formulaField.formula;
+                rowData[formulaFieldName] = evaluate(formula, rowData, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
+            }
         }
     }
 
