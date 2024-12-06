@@ -14,7 +14,9 @@ import { JwtService } from '@nestjs/jwt';
 interface RoomState {
   roomId: string;
   connections: {
-    [connectionId: number]: { userId: string; nonce: string; roomId: string };
+    [connectionId: number]: { userId: string; nonce: string; roomId: string,
+      client: WebSocket;  // 新增字段，保存客户端连接对象 
+    };
   };
 }
 
@@ -62,20 +64,23 @@ export class RoomsGateway implements OnGatewayConnection {
     const jwt = await this.jwtService.decode(token);
     const userId = jwt.uid;
 
-    console.log(`user connected to room: ${roomId}`, userId);
-
     if (userId && roomId) {
       // Add ping/pong support to keep the connection alive
       client.on('ping', () => {
         client.pong();
       });
-      await this.handleJoinRoom(client, { roomId, userId });
+
+      const connectionId = await this.handleJoinRoom(client, { roomId, userId });
+
+      // 监听客户端关闭事件，执行离开房间的操作
+      client.on('close', () => {
+        this.handleLeaveRoom(client, { roomId, userId });
+      });
     } else {
       client.close();
     }
   }
 
-  @SubscribeMessage('joinRoom')
   async handleJoinRoom(
     client: WebSocket,
     payload: { roomId: string; userId: string },
@@ -93,7 +98,7 @@ export class RoomsGateway implements OnGatewayConnection {
       `room:${roomId}:connectionId`,
     );
     const nonce = uuidv4();
-    roomState.connections[connectionId] = { userId, nonce, roomId };
+    roomState.connections[connectionId] = { userId, nonce, roomId, client }; // 保存 client
 
     // Store client connection information in Redis for future communication
     await this.pubRedis.hset(
@@ -145,30 +150,47 @@ export class RoomsGateway implements OnGatewayConnection {
         actor: connectionId,
         userId,
       },
-      connectionId,
     );
+
+    console.log(`User ${connectionId},${userId} has join room: ${roomId}`);
+    return connectionId;
   }
 
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(
     client: WebSocket,
-    payload: { roomId: string; connectionId: number },
+    payload: { roomId: string; userId: string },
   ) {
-    const { roomId, connectionId } = payload;
-    const roomState = this.roomStates.get(roomId);
 
+    const { roomId, userId } = payload;
+    const connectionId = client.connectionId;
+
+    // 获取房间状态
+    const roomState = this.roomStates.get(roomId);
     if (roomState && roomState.connections[connectionId]) {
+      // 移除内存中的连接信息
       delete roomState.connections[connectionId];
+
+      // 同时从 Redis 中删除连接信息
       await this.pubRedis.hdel(
         `room:${roomId}:connections`,
         connectionId.toString(),
       );
-      // Notify other users in the room about the user left
+
+      // 如果房间中已经没有连接，清理房间状态
+      if (Object.keys(roomState.connections).length === 0) {
+        this.roomStates.delete(roomId);
+      }
+
+      // 通知房间内其他用户，该用户已经离开房间
       this.broadcastToRoom(roomId, {
         type: ServerMsgCode.USER_LEFT, // 使用 ServerMsgCode 枚举
         actor: connectionId,
       });
+
+      console.log(`User ${connectionId},${userId} has left room: ${roomId}`);
     }
+
   }
 
   @SubscribeMessage('updatePresence')
@@ -187,31 +209,9 @@ export class RoomsGateway implements OnGatewayConnection {
   public broadcastToRoom(
     roomId: string,
     message: any,
-    excludeConnectionId?: number,
   ) {
     // Publish the message to Redis so that other instances can receive it
     this.pubRedis.publish('rooms_channel', JSON.stringify({ roomId, message }));
-
-    // Send message to connected clients in the current instance
-    const roomState = this.roomStates.get(roomId);
-    if (roomState) {
-      Object.keys(roomState.connections).forEach((connectionId) => {
-        if (
-          excludeConnectionId &&
-          parseInt(connectionId) === excludeConnectionId
-        ) {
-          return;
-        }
-        for (const client of this.server.clients) {
-          if (
-            (client as any).connectionId === parseInt(connectionId) &&
-            client.readyState === WebSocket.OPEN
-          ) {
-            client.send(JSON.stringify(message));
-          }
-        }
-      });
-    }
   }
 
   private handleBroadcastedMessage(parsedMessage: {

@@ -93,6 +93,27 @@ export class RoomsController {
   }
 
   @UseGuards(RoomsGuard)
+  @Get('rooms/:roomId/threads/delta')
+  async getThreadsDelta(@Param('roomId') roomId: string, 
+  @Query('since') since: string,) {
+    const sinceData = new Date(since);
+    const threads = await this.roomsService.getThreads(roomId);
+    return {
+      data: threads,
+      inboxNotifications: [],
+      meta: {
+        nextCursor: null,
+        requestedAt: '2024-12-03T02:06:09.152Z',
+        permissionHints: {
+          'react-comments-RWwFF6OZMiPopsA': ['room:write'],
+        },
+      },
+      deletedThreads: [],
+      deletedInboxNotifications: [],
+    };
+  }
+
+  @UseGuards(RoomsGuard)
   @Post('rooms/:roomId/threads')
   async createThread(
     @Req() req: Request,
@@ -107,6 +128,11 @@ export class RoomsController {
       userId,
       metadata: {},
       resolved: false,
+    });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.THREAD_CREATED, // 使用 ServerMsgCode 枚举
+      threadId: record.id,
     });
 
     this.roomsGateway.broadcastToRoom(roomId, {
@@ -138,6 +164,11 @@ export class RoomsController {
     const newThread = this.roomsService.updateThread(threadId, {
       resolved: true,
     });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.THREAD_UPDATED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
+    });
     return newThread;
   }
 
@@ -150,6 +181,11 @@ export class RoomsController {
   ) {
     const newThread = this.roomsService.updateThread(threadId, {
       resolved: false,
+    });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.THREAD_UPDATED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
     });
     return newThread;
   }
@@ -196,6 +232,12 @@ export class RoomsController {
       body: record.body,
       userId,
     });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.COMMENT_EDITED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
+      commentId: commentId,
+    });
     return newComment;
   }
 
@@ -208,6 +250,13 @@ export class RoomsController {
     @Param('commentId') commentId: string,
   ) {
     this.roomsService.deleteComment(commentId);
+
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.COMMENT_DELETED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
+      commentId: commentId,
+    });
     return {};
   }
 
@@ -280,6 +329,13 @@ export class RoomsController {
       userId: userId,
       emoji: emoji,
     });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.COMMENT_REACTION_ADDED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
+      commentId: commentId,
+      emoji: emoji,
+    });
     return newComment;
   }
 
@@ -297,6 +353,14 @@ export class RoomsController {
   ) {
     const userId = req['jwt'].uid;
     this.roomsService.deleteReaction(commentId, { emoji, userId });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.COMMENT_REACTION_REMOVED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
+      commentId: commentId,
+      emoji: emoji,
+    });
     return {};
   }
+
 }

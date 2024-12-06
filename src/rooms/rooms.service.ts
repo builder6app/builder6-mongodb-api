@@ -104,10 +104,13 @@ export class RoomsService {
     return thread;
   }
 
-  async getThreads(roomId: string) {
-    const threads = await this.mongodbService.find('b6_threads', {
-      roomId: roomId,
-    });
+  async getThreads(roomId: string, since?: Date) {
+    
+    const queryOptions = { roomId: roomId } as any;
+    if (since) {
+      queryOptions.updatedAt = { $gt: since };
+    }
+    const threads = await this.mongodbService.find('b6_threads', queryOptions);
 
     for (const thread of threads) {
       const comments = await this.getComments(roomId, thread.id);
@@ -163,11 +166,6 @@ export class RoomsService {
       userId,
     });
     result.comments = [newComment];
-
-    // this.roomsGateway.broadcastToRoom(roomId, {
-    //   type: ServerMsgCode.THREAD_CREATED, // 使用 ServerMsgCode 枚举
-    //   threadId: id,
-    // });
 
     return result;
   }
