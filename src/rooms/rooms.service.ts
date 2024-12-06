@@ -172,13 +172,11 @@ export class RoomsService {
 
   async updateThread(
     threadId,
-    { metadata, resolved = false, userId }: CreateThreadParams,
+    thread?: CreateThreadParams,
   ) {
     const newThread = {
       updatedAt: new Date().toISOString(),
-      resolved,
-      metadata,
-      userId,
+      ...thread,
     };
 
     const result = await this.mongodbService.findOneAndUpdate(

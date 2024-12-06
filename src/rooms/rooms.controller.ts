@@ -82,9 +82,9 @@ export class RoomsController {
       inboxNotifications: [],
       meta: {
         nextCursor: null,
-        requestedAt: '2024-12-03T02:06:09.152Z',
+        requestedAt: new Date().toISOString() as string,
         permissionHints: {
-          'react-comments-RWwFF6OZMiPopsA': ['room:write'],
+          [roomId]: ['room:write'],
         },
       },
       deletedThreads: [],
@@ -103,9 +103,9 @@ export class RoomsController {
       inboxNotifications: [],
       meta: {
         nextCursor: null,
-        requestedAt: '2024-12-03T02:06:09.152Z',
+        requestedAt: new Date().toISOString() as string,
         permissionHints: {
-          'react-comments-RWwFF6OZMiPopsA': ['room:write'],
+          [roomId]: ['room:write'],
         },
       },
       deletedThreads: [],
@@ -121,7 +121,7 @@ export class RoomsController {
     @Body() record: Record<string, any>,
   ) {
     const userId = req['jwt'].uid;
-    const newThread = this.roomsService.createThread({
+    const newThread = await this.roomsService.createThread({
       id: record.id,
       comment: record.comment,
       roomId,
@@ -161,7 +161,7 @@ export class RoomsController {
     @Param('roomId') roomId: string,
     @Param('threadId') threadId: string,
   ) {
-    const newThread = this.roomsService.updateThread(threadId, {
+    const newThread = await this.roomsService.updateThread(threadId, {
       resolved: true,
     });
 
@@ -179,7 +179,7 @@ export class RoomsController {
     @Param('roomId') roomId: string,
     @Param('threadId') threadId: string,
   ) {
-    const newThread = this.roomsService.updateThread(threadId, {
+    const newThread = await this.roomsService.updateThread(threadId, {
       resolved: false,
     });
 
@@ -200,7 +200,7 @@ export class RoomsController {
     @Body() record: Record<string, any>,
   ) {
     const userId = req['jwt'].uid;
-    const newComment = this.roomsService.createComment({
+    const newComment = await this.roomsService.createComment({
       id: record.id,
       attachmentIds: record.attachmentIds,
       body: record.body,
@@ -209,6 +209,7 @@ export class RoomsController {
       userId: userId,
     });
 
+    await this.roomsService.updateThread(threadId);
     this.roomsGateway.broadcastToRoom(roomId, {
       type: ServerMsgCode.COMMENT_CREATED, // 使用 ServerMsgCode 枚举
       threadId: threadId,
@@ -228,12 +229,13 @@ export class RoomsController {
     @Body() record: Record<string, any>,
   ) {
     const userId = req['jwt'].uid;
-    const newComment = this.roomsService.updateComment(commentId, {
+    const newComment = await this.roomsService.updateComment(commentId, {
       attachmentIds: record.attachmentIds,
       body: record.body,
       userId,
     });
 
+    await this.roomsService.updateThread(threadId);
     this.roomsGateway.broadcastToRoom(roomId, {
       type: ServerMsgCode.COMMENT_EDITED, // 使用 ServerMsgCode 枚举
       threadId: threadId,
@@ -251,9 +253,10 @@ export class RoomsController {
     @Param('threadId') threadId: string,
     @Param('commentId') commentId: string,
   ) {
-    this.roomsService.deleteComment(commentId);
+    await this.roomsService.deleteComment(commentId);
 
 
+    await this.roomsService.updateThread(threadId);
     this.roomsGateway.broadcastToRoom(roomId, {
       type: ServerMsgCode.COMMENT_DELETED, // 使用 ServerMsgCode 枚举
       threadId: threadId,
@@ -327,11 +330,12 @@ export class RoomsController {
     @Body('emoji') emoji: string,
   ) {
     const userId = req['jwt'].uid;
-    const newComment = this.roomsService.createReaction(commentId, {
+    const newComment = await this.roomsService.createReaction(commentId, {
       userId: userId,
       emoji: emoji,
     });
 
+    await this.roomsService.updateThread(threadId);
     this.roomsGateway.broadcastToRoom(roomId, {
       type: ServerMsgCode.COMMENT_REACTION_ADDED, // 使用 ServerMsgCode 枚举
       threadId: threadId,
@@ -354,8 +358,9 @@ export class RoomsController {
     @Param('emoji') emoji: string,
   ) {
     const userId = req['jwt'].uid;
-    this.roomsService.deleteReaction(commentId, { emoji, userId });
+    await this.roomsService.deleteReaction(commentId, { emoji, userId });
 
+    await this.roomsService.updateThread(threadId);
     this.roomsGateway.broadcastToRoom(roomId, {
       type: ServerMsgCode.COMMENT_REACTION_REMOVED, // 使用 ServerMsgCode 枚举
       threadId: threadId,
