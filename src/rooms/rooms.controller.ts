@@ -19,6 +19,8 @@ import { RoomsGuard } from './rooms.guard';
 import * as rawBody from 'raw-body';
 import { Request } from 'express';
 import { FilesService } from '@/files/files.service';
+import { RoomsGateway } from './rooms.gateway';
+import { ServerMsgCode } from './protocol/ServerMsg';
 
 @Controller('v2/c/')
 export class RoomsController {
@@ -26,6 +28,7 @@ export class RoomsController {
     private roomsService: RoomsService,
     private filesService: FilesService,
     private jwtService: JwtService,
+    private roomsGateway: RoomsGateway,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -105,6 +108,12 @@ export class RoomsController {
       metadata: {},
       resolved: false,
     });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.COMMENT_CREATED, // 使用 ServerMsgCode 枚举
+      threadId: record.id,
+      commentId: record.comment.id,
+    });
     return newThread;
   }
 
@@ -162,6 +171,12 @@ export class RoomsController {
       roomId,
       threadId: threadId,
       userId: userId,
+    });
+
+    this.roomsGateway.broadcastToRoom(roomId, {
+      type: ServerMsgCode.COMMENT_CREATED, // 使用 ServerMsgCode 枚举
+      threadId: threadId,
+      commentId: record.id,
     });
     return newComment;
   }

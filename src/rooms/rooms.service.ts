@@ -31,10 +31,7 @@ export interface Attachment {
 
 @Injectable()
 export class RoomsService {
-  constructor(
-    private mongodbService: MongodbService,
-    private roomsGateway: RoomsGateway,
-  ) {}
+  constructor(private mongodbService: MongodbService) {}
 
   async getAttachmentById(attachmentId: string): Promise<Attachment> {
     // 模拟从数据库获取附件
@@ -226,12 +223,6 @@ export class RoomsService {
       const attachment = await this.getAttachmentById(attachmentId);
       result.attachments.push(attachment);
     }
-
-    this.roomsGateway.broadcastToRoom(roomId, {
-      type: ServerMsgCode.COMMENT_CREATED, // 使用 ServerMsgCode 枚举
-      threadId: threadId,
-      commentId: id,
-    });
 
     delete result['_id'];
     delete result['attachmentIds'];
