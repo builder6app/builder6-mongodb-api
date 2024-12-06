@@ -314,7 +314,7 @@
             case 'select':
                 cellDataType = 'text';
                 fieldOptions = field.options && field.options.split("\n").map(function (n) { return n.trim(); }) || [];
-                fieldOptions.unshift("");
+                fieldOptions.unshift(null);
                 Object.assign(cellEditorParams, {
                     values: fieldOptions
                 });
