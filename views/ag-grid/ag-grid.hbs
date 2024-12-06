@@ -184,259 +184,288 @@
     }
 
     // 创建一个异步函数来初始化表格
-    async function initializeGrid() {
-        try {
-            // 获取列定义
-            const tableResponse = await fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, { credentials: 'include' });
-            table = await tableResponse.json();
-            console.log(table);
-
-            const dataTypeDefinitions = {
-                date: {
-                    baseDataType: 'date',
-                    extendsDataType: 'date',
-                    valueParser: params => {
-                        // ag-grid官网明确说valueParser是用来实现保存数据前数据转换的，但是实测这个函数并不会被触发，包括修改字段值触发保存在内任何时候都不会触发
-                        // 另外valueSetter也能实现类似功能，但是一样实测不会被触发
-                        // 所以只能手动在调用保存接口前实现相关转换逻辑
-                        // 见：
-                        // https://www.ag-grid.com/javascript-data-grid/column-properties/#reference-editing-valueParser
-                        // https://www.ag-grid.com/javascript-data-grid/cell-data-types/#overriding-the-pre-defined-cell-data-type-definitions
-                        console.log("valueParser:", params.newValue);
-                        const fieldName = params.colDef.field;
-                        const fieldValue = params.newValue;
-                        if (!fieldValue) return null;
-                        const newDate = new Date(fieldValue);
-
-                        // 设置为选中日期的 UTC 0 点
-                        newDate.setUTCHours(0, 0, 0, 0);
-
-                        return newDate;
-                    },
-                    valueGetter: params => {
-                        const fieldType = params.colDef.cellEditorParams.fieldConfig.type;
-                        const fieldName = params.colDef.field;
-                        const fieldValue = params.data[fieldName];
-                        if (!fieldValue) return null;
-
-                        const date = new Date(fieldValue);
-                        return date;
-                    },
-                    valueFormatter: params => {
-                        const fieldType = params.colDef.cellEditorParams.fieldConfig.type;
-                        const date = new Date(params.value);
-
-                        if (!params.value) return "";
-
-                        if (fieldType === "date") {
-                            return date.getFullYear() + '-' + padZero(date.getMonth() + 1) + '-' + padZero(date.getDate());
-                        } else if (fieldType === "datetime") {
-                            // Convert to local time considering timezone
-                            var localDate = new Date(date.getTime());
-                            return localDate.getFullYear() + '-' + padZero(localDate.getMonth() + 1) + '-' + padZero(localDate.getDate()) + ' ' + padZero(localDate.getHours()) + ':' + padZero(localDate.getMinutes());
-                        }
-
-                        return "";
-                    }
-                },
-                formula: {
-                    baseDataType: 'text',
-                    extendsDataType: 'text',
-                    fields: {}
-                }
-            };
-
-            const tooltipValueGetter = params => {
-                if (params.data.__verificationErrors && params.data.__verificationErrors.length) {
-                    return params.data.__verificationErrors;
-                }
+    function initializeGrid() {
+        return new Promise(function (resolve, reject) {
+            try {
+                // 获取列定义
+                fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, { credentials: 'include' })
+                    .then(function (response) {
+                        return response.json().then(function (data) {
+                            table = data;
+                            console.log(table);
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        initGridOptionsAndRender(data, resolve, reject);
+                    })
+                    .catch(function (error) {
+                        console.error('Error initializing grid:', error);
+                        reject(error);
+                    });
+            } catch (error) {
+                console.error('Error initializing grid:', error);
+                reject(error);
             }
+        });
+    }
 
-            const columnDefs = table.fields.map(field => {
-                let cellDataType,
-                    cellEditorParams,
-                    cellEditor,
-                    valueFormatter,
-                    valueGetter,
-                    fieldOptions,
-                    editable = true,
-                    filter,
-                    filterParams;
+    function getDataTypeDefinitions() {
+        return {
+            date: {
+                baseDataType: 'date',
+                extendsDataType: 'date',
+                valueParser: function (params) {
+                    // ag-grid官网明确说valueParser是用来实现保存数据前数据转换的，但是实测这个函数并不会被触发，包括修改字段值触发保存在内任何时候都不会触发
+                    // 另外valueSetter也能实现类似功能，但是一样实测不会被触发
+                    // 所以只能手动在调用保存接口前实现相关转换逻辑
+                    // 见：
+                    // https://www.ag-grid.com/javascript-data-grid/column-properties/#reference-editing-valueParser
+                    // https://www.ag-grid.com/javascript-data-grid/cell-data-types/#overriding-the-pre-defined-cell-data-type-definitions
+                    console.log("valueParser:", params.newValue);
+                    var fieldName = params.colDef.field;
+                    var fieldValue = params.newValue;
+                    if (!fieldValue) return null;
+                    var newDate = new Date(fieldValue);
 
-                // 根据字段类型设置 dataType
-                cellEditorParams = {
-                    fieldConfig: field
-                };
-                filterParams = {
-                    debounceMs: 200,
-                    maxNumConditions: 1
-                }
-                switch (field.type) {
-                    case 'text':
-                    case 'textarea':
-                        cellDataType = 'text';
-                        filter = 'agTextColumnFilter';
-                        Object.assign(filterParams, {
-                            filterOptions: ["contains", "notContains", "equals", "startsWith", "endsWith"]
-                        });
-                        break;
-                    case 'number':
-                        cellDataType = 'number';
-                        Object.assign(cellEditorParams, {
-                            precision: field.precision ?? 0
-                        });
-                        filter = 'agNumberColumnFilter';
-                        Object.assign(filterParams, {
-                            filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
-                        });
-                        break;
-                    case 'select':
-                        cellDataType = 'text';
-                        fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
-                        fieldOptions.unshift("");
-                        Object.assign(cellEditorParams, {
-                            values: fieldOptions
-                        });
-                        cellEditor = "agSelectCellEditor";
-                        filter = 'agSetColumnFilter';
-                        Object.assign(filterParams, {
-                            values: fieldOptions
-                        });
-                        break;
-                    case 'select-multiple':
-                        cellDataType = 'object';
-                        fieldOptions = field.options && field.options.split("\n").map((n) => { return n.trim() }) || [];
-                        Object.assign(cellEditorParams, {
-                            values: fieldOptions
-                        });
-                        cellEditor = MultiSelectCellEditor;
-                        filter = 'agSetColumnFilter';
-                        Object.assign(filterParams, {
-                            values: fieldOptions
-                        });
-                        break;
-                    case 'date':
-                        cellDataType = 'date';
-                        cellEditor = "agDateCellEditor";
-                        valueFormatter = dataTypeDefinitions.date.valueFormatter;
-                        // 如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
-                        valueGetter = dataTypeDefinitions.date.valueGetter;
-                        filter = 'agDateColumnFilter';
-                        Object.assign(filterParams, {
-                            filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
-                        });
-                        break;
-                    case 'datetime':
-                        cellDataType = 'date';
-                        cellEditor = DateTimeEditor;
-                        // 因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
-                        // valueGetter = dataTypeDefinitions.date.valueGetter;
-                        filter = 'agDateColumnFilter';
-                        Object.assign(filterParams, {
-                            filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
-                        });
-                        break;
-                    case 'boolean':
-                        cellDataType = 'boolean';
-                        filter = 'agSetColumnFilter';
-                        Object.assign(filterParams, {
-                            values: [true, false],
-                            suppressSelectAll: true,
-                            comparator: (a, b) => {
-                                // 将 true 显示在 false 之前
-                                if (a === true && b === false) return -1;
-                                if (a === false && b === true) return 1;
-                                return 0;
-                            },
-                            valueFormatter: (params) => (params.value ? '是' : '否')
-                        });
-                        break;
-                    case 'formula':
-                        cellDataType = 'formula';
-                        editable = false;
-                        // 记录所有公式字段配置方便取出来用
-                        dataTypeDefinitions.formula.fields[field.name.toLocaleLowerCase()] = field;
-                        break;
-                    default:
-                        cellDataType = 'text'; // 默认类型
-                }
+                    // 设置为选中日期的 UTC 0 点
+                    newDate.setUTCHours(0, 0, 0, 0);
 
-                return {
-                    field: field.name.toLowerCase(), // 假设字段名需要小写
-                    headerName: field.label,
-                    cellDataType: cellDataType,
-                    cellEditorParams,
-                    cellEditor,
-                    editable,
-                    valueFormatter,
-                    valueGetter,
-                    tooltipMouseTrack: true,
-                    tooltipInteraction: true,
-                    tooltipShowDelay: 0,
-                    tooltipHideDelay: 8000,
-                    tooltipValueGetter,
-                    filter,
-                    filterParams
-                };
-            });
-
-            const pageSize = 1000;
-            // 初始化网格配置
-            gridOptions = {
-                columnDefs: columnDefs,
-                dataTypeDefinitions,
-                rowClassRules: {
-                    'verification-errors-row': (params) => { return params.data && params.data.__verificationErrors && params.data.__verificationErrors.length; }
+                    return newDate;
                 },
-                rowData: null, // 初始为空，通过 API 动态加载
-                rowModelType: 'serverSide',
-                pagination: false,
-                paginationPageSizeSelector: false,
-                paginationPageSize: pageSize,
-                cacheBlockSize: pageSize,
-                editType: 'fullRow',
-                cellSelection: {
-                    handle: {
-                        mode: 'range',
+                valueGetter: function (params) {
+                    var fieldType = params.colDef.cellEditorParams.fieldConfig.type;
+                    var fieldName = params.colDef.field;
+                    var fieldValue = params.data[fieldName];
+                    if (!fieldValue) return null;
+
+                    var date = new Date(fieldValue);
+                    return date;
+                },
+                valueFormatter: function (params) {
+                    var fieldType = params.colDef.cellEditorParams.fieldConfig.type;
+                    var date = new Date(params.value);
+
+                    if (!params.value) return "";
+
+                    if (fieldType === "date") {
+                        return date.getFullYear() + '-' + padZero(date.getMonth() + 1) + '-' + padZero(date.getDate());
+                    } else if (fieldType === "datetime") {
+                        // Convert to local time considering timezone
+                        var localDate = new Date(date.getTime());
+                        return localDate.getFullYear() + '-' + padZero(localDate.getMonth() + 1) + '-' + padZero(localDate.getDate()) + ' ' + padZero(localDate.getHours()) + ':' + padZero(localDate.getMinutes());
                     }
-                },
-                onRowValueChanged: onRowValueChanged,
-                //datasource: getDataSource(),
-                defaultColDef: {
-                    flex: 1,
-                    minWidth: 100,
-                    resizable: true,
-                    tooltipComponent: CustomTooltip
-                },
-                getRowId: params => params.data._id,
-                selectionColumnDef: {
-                    pinned: 'left'
-                },
-                rowSelection: {
-                    mode: "multiRow",
-                    selectAll: "all",
-                    checkboxes: true,
-                    headerCheckbox: true
-                },
-                serverSideDatasource: getServerSideDatasource(),
-                localeText: agGridLocale.AG_GRID_LOCALE_CN
-            };
 
-            console.log("gridOptions:", gridOptions);
+                    return "";
+                }
+            },
+            formula: {
+                baseDataType: 'text',
+                extendsDataType: 'text',
+                fields: {}
+            }
+        };
+    }
 
-            // 渲染网格
-            const gridDiv = document.querySelector('#myGrid');
-            gridApi = agGrid.createGrid(gridDiv, gridOptions);
-
-            // 设置新增行按钮的事件
-            document.getElementById('addRowBtn').addEventListener('click', addNewRow);
-
-            // Add event listener to the delete button
-            document.getElementById('deleteButton').addEventListener('click', deleteSelectedRows);
-
-        } catch (error) {
-            console.error('Error initializing grid:', error);
+    function tooltipValueGetter(params) {
+        if (params.data.__verificationErrors && params.data.__verificationErrors.length) {
+            return params.data.__verificationErrors;
         }
+    }
+
+    function getColumnDef(field, dataTypeDefinitions) {
+        var cellDataType,
+            cellEditorParams,
+            cellEditor,
+            valueFormatter,
+            valueGetter,
+            fieldOptions,
+            editable = true,
+            filter,
+            filterParams;
+
+        // 根据字段类型设置 dataType
+        cellEditorParams = {
+            fieldConfig: field
+        };
+        filterParams = {
+            debounceMs: 200,
+            maxNumConditions: 1
+        };
+        switch (field.type) {
+            case 'text':
+            case 'textarea':
+                cellDataType = 'text';
+                filter = 'agTextColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["contains", "notContains", "equals", "startsWith", "endsWith"]
+                });
+                break;
+            case 'number':
+                cellDataType = 'number';
+                Object.assign(cellEditorParams, {
+                    precision: field.precision || 0
+                });
+                filter = 'agNumberColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                });
+                break;
+            case 'select':
+                cellDataType = 'text';
+                fieldOptions = field.options && field.options.split("\n").map(function (n) { return n.trim(); }) || [];
+                fieldOptions.unshift("");
+                Object.assign(cellEditorParams, {
+                    values: fieldOptions
+                });
+                cellEditor = "agSelectCellEditor";
+                filter = 'agSetColumnFilter';
+                Object.assign(filterParams, {
+                    values: fieldOptions
+                });
+                break;
+            case 'select-multiple':
+                cellDataType = 'object';
+                fieldOptions = field.options && field.options.split("\n").map(function (n) { return n.trim(); }) || [];
+                Object.assign(cellEditorParams, {
+                    values: fieldOptions
+                });
+                cellEditor = MultiSelectCellEditor;
+                filter = 'agSetColumnFilter';
+                Object.assign(filterParams, {
+                    values: fieldOptions
+                });
+                break;
+            case 'date':
+                cellDataType = 'date';
+                cellEditor = "agDateCellEditor";
+                valueFormatter = dataTypeDefinitions.date.valueFormatter;
+                // 如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
+                valueGetter = dataTypeDefinitions.date.valueGetter;
+                filter = 'agDateColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                });
+                break;
+            case 'datetime':
+                cellDataType = 'date';
+                cellEditor = DateTimeEditor;
+                // 因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
+                // valueGetter = dataTypeDefinitions.date.valueGetter;
+                filter = 'agDateColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                });
+                break;
+            case 'boolean':
+                cellDataType = 'boolean';
+                filter = 'agSetColumnFilter';
+                Object.assign(filterParams, {
+                    values: [true, false],
+                    suppressSelectAll: true,
+                    comparator: function (a, b) {
+                        // 将 true 显示在 false 之前
+                        if (a === true && b === false) return -1;
+                        if (a === false && b === true) return 1;
+                        return 0;
+                    },
+                    valueFormatter: function (params) {
+                        return params.value ? '是' : '否';
+                    }
+                });
+                break;
+            case 'formula':
+                cellDataType = 'formula';
+                editable = false;
+                // 记录所有公式字段配置方便取出来用
+                dataTypeDefinitions.formula.fields[field.name.toLowerCase()] = field;
+                break;
+            default:
+                cellDataType = 'text'; // 默认类型
+        }
+
+        return {
+            field: field.name.toLowerCase(),
+            headerName: field.label,
+            cellDataType: cellDataType,
+            cellEditorParams: cellEditorParams,
+            cellEditor: cellEditor,
+            editable: editable,
+            valueFormatter: valueFormatter,
+            valueGetter: valueGetter,
+            tooltipMouseTrack: true,
+            tooltipInteraction: true,
+            tooltipShowDelay: 0,
+            tooltipHideDelay: 8000,
+            tooltipValueGetter: tooltipValueGetter,
+            filter: filter,
+            filterParams: filterParams
+        };
+
+    }
+
+    function initGridOptionsAndRender(data, resolve, reject) {
+        var dataTypeDefinitions = getDataTypeDefinitions();
+
+        var columnDefs = data.fields.map(function (field) {
+            return getColumnDef(field, dataTypeDefinitions);
+        });
+
+        var pageSize = 1000;
+        // 初始化网格配置
+        gridOptions = {
+            columnDefs: columnDefs,
+            dataTypeDefinitions: dataTypeDefinitions,
+            rowClassRules: {
+                'verification-errors-row': function (params) { return params.data && params.data.__verificationErrors && params.data.__verificationErrors.length; }
+            },
+            rowData: null, // 初始为空，通过 API 动态加载
+            rowModelType: 'serverSide',
+            pagination: false,
+            paginationPageSizeSelector: false,
+            paginationPageSize: pageSize,
+            cacheBlockSize: pageSize,
+            editType: 'fullRow',
+            cellSelection: {
+                handle: {
+                    mode: 'range',
+                }
+            },
+            onRowValueChanged: onRowValueChanged,
+            //datasource: getDataSource(),
+            defaultColDef: {
+                flex: 1,
+                minWidth: 100,
+                resizable: true,
+                tooltipComponent: CustomTooltip
+            },
+            getRowId: function (params) { return params.data._id; },
+            selectionColumnDef: {
+                pinned: 'left'
+            },
+            rowSelection: {
+                mode: "multiRow",
+                selectAll: "all",
+                checkboxes: true,
+                headerCheckbox: true
+            },
+            serverSideDatasource: getServerSideDatasource(),
+            localeText: agGridLocale.AG_GRID_LOCALE_CN
+        };
+
+        console.log("gridOptions:", gridOptions);
+
+        // 渲染网格
+        var gridDiv = document.querySelector('#myGrid');
+        gridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+        // 设置新增行按钮的事件
+        document.getElementById('addRowBtn').addEventListener('click', addNewRow);
+
+        // Add event listener to the delete button
+        document.getElementById('deleteButton').addEventListener('click', deleteSelectedRows);
+
+        resolve();
     }
 
     // 监听行数据改变事件
