@@ -286,44 +286,50 @@ export class RoomsService {
     reactions 数组中的每个元素表示一个用户的点赞，其中 emoji 为表情，createdAt 为点赞时间，users 为点赞用户列表。
     创建时，如果 reactions 中已经有相同 emoji 的点赞，则直接添加到 users 中，否则创建一个新的点赞。
   }
-  */
-  async createReaction(
-    commentId: string,
-    { userId, emoji }: { userId: string; emoji: string },
-  ) {
-    const comment = await this.mongodbService.findOne('b6_comments', {
-      _id: commentId,
-    });
-    if (!comment) {
-      throw new Error('Comment not found');
-    }
-
-    let reaction = comment.reactions.find(
-      (reaction) => reaction.emoji === emoji,
-    );
-    if (reaction) {
-      reaction.users.push({ id: userId });
-    } else {
-      reaction = {
-        emoji,
-        createdAt: new Date().toISOString(),
-        users: [{ id: userId }],
-      };
-    }
-    comment.reactions.push(reaction);
-
-    await this.mongodbService.findOneAndUpdate(
-      'b6_comments',
-      commentId,
-      comment,
-    );
-
-    return {
-      emoji,
-      createdAt: reaction.createdAt,
-      userId,
-    };
+  */async createReaction(
+  commentId: string,
+  { userId, emoji }: { userId: string; emoji: string },
+) {
+  const comment = await this.mongodbService.findOne('b6_comments', {
+    _id: commentId,
+  });
+  if (!comment) {
+    throw new Error('Comment not found');
   }
+
+  // 查找是否已经存在相同 emoji 的 reaction
+  let reaction = comment.reactions.find(
+    (reaction) => reaction.emoji === emoji,
+  );
+  if (reaction) {
+    // 如果存在，检查用户是否已经点赞，避免重复添加
+    const userExists = reaction.users.some((user) => user.id === userId);
+    if (!userExists) {
+      reaction.users.push({ id: userId });
+    }
+  } else {
+    // 如果不存在，创建新的 reaction 并推入 reactions 数组
+    reaction = {
+      emoji,
+      createdAt: new Date().toISOString(),
+      users: [{ id: userId }],
+    };
+    comment.reactions.push(reaction);
+  }
+
+  // 更新数据库
+  await this.mongodbService.findOneAndUpdate(
+    'b6_comments',
+    commentId,
+    comment,
+  );
+
+  return {
+    emoji,
+    createdAt: reaction.createdAt,
+    userId,
+  };
+}
 
   async deleteReaction(
     commentId: string,
