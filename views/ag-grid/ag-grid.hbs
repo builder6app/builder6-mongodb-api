@@ -500,7 +500,7 @@
         // 定义正则表达式，匹配不同的日期格式
         // 格式：YYYY-MM-DD、YYYY/MM/DD 和 YYYY-MM-DDTHH:MM:SS.SSSZ 
         // 最后一种TZ格式是服务端返回的格式值，复制其它列字段值时会把这种格式值提交到接口，必须兼容
-        var regex = /^(\d{4})([-\/])(0?[1-9]|1[0-2])\2(0?[1-9]|[12][0-9]|3[01])(T(\d{2}):(\d{2}):(\d{2})(\.\d{3})?Z)?$/;
+        var regex = new RegExp('^(\\d{4})([-\\/])(0?[1-9]|1[0-2])\\2(0?[1-9]|[12][0-9]|3[01])(T(\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{3})?Z)?$');
 
         // 检查是否匹配正则表达式
         var match = str.match(regex);
@@ -515,7 +515,7 @@
 
         // 如果有时间部分，提取时间
         var timePart = match[5] ? match[5] : '';
-        var standardizedDateStr = `${year}-${month}-${day}${timePart}`;
+        var standardizedDateStr = year + '-' + month + '-' + day + timePart;
 
         // 使用 Date 对象验证日期是否合法
         // 这里 standardizedDateStr 必须经过上面的补充前导零操作，否则new Date执行的结果会差8小时
