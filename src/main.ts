@@ -40,6 +40,6 @@ async function bootstrap() {
   );
   app.use(compression());
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.B6_PORT ?? 5100);
 }
 bootstrap();
