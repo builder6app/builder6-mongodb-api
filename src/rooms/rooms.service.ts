@@ -241,7 +241,7 @@ export class RoomsService {
       'b6_comments',
       commentId,
       newComment,
-    );
+    ) as any;
     result.attachments = [];
 
     for (const attachmentId of attachmentIds) {

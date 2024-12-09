@@ -93,8 +93,8 @@ export class RecordsController {
     @Query('fields') fields?: any,
     @Query('filters') filters?: any,
     @Query('sort') sort?: any,
-    @Query('skip', new ParseIntPipe({ optional: true })) skip: number = 0,
-    @Query('top', new ParseIntPipe({ optional: true })) top: number = 20,
+    @Query('skip', new ParseIntPipe()) skip: number = 0,
+    @Query('top', new ParseIntPipe()) top: number = 20,
   ) {
     try {
       const options = getOptions(req.query, {
@@ -180,8 +180,8 @@ export class RecordsController {
     @Query('sort') sort?: any,
     @Query('orderBy') orderBy?: string,
     @Query('orderDir') orderDir?: string,
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('perPage', new ParseIntPipe({ optional: true }))
+    @Query('page', new ParseIntPipe()) page: number = 1,
+    @Query('perPage', new ParseIntPipe())
     perPage: number = 10,
   ) {
     try {

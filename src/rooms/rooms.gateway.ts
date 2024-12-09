@@ -61,7 +61,7 @@ export class RoomsGateway implements OnGatewayConnection {
 
     const roomId = parsedUrl.query['roomId'] as string;
     const token = parsedUrl.query['tok'] as string;
-    const jwt = await this.jwtService.decode(token);
+    const jwt = await this.jwtService.decode(token) as any;
     const userId = jwt.uid;
 
     if (userId && roomId) {
