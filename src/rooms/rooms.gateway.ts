@@ -246,16 +246,15 @@ export class RoomsGateway implements OnGatewayConnection {
     const { roomId, message } = parsedMessage;
     const roomState = this.roomStates.get(roomId);
 
+    
     if (roomState) {
       Object.keys(roomState.connections).forEach((connectionId) => {
-        Array.from(this.server.clients).forEach((client: any) => {
-          if (
-            client.connectionId === parseInt(connectionId) &&
-            client.readyState === WebSocket.OPEN
-          ) {
-            client.send(JSON.stringify(message));
-          }
-        });
+        const client = roomState.connections[connectionId].client;
+        if (
+          client.readyState === WebSocket.OPEN
+        ) {
+          client.send(JSON.stringify(message));
+        }
       });
     }
   }
