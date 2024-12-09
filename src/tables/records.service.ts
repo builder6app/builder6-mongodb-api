@@ -10,7 +10,7 @@ export class RecordsService {
   private db: Db;
 
   constructor() {
-    const client = new MongoClient(process.env.B6_TABLES_MONGO_URL, {
+    const client = new MongoClient(process.env.TABLES_MONGO_URL, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
     });
