@@ -19,7 +19,7 @@ import { ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@/auth/auth.guard';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
-@Controller('api/tables/v2/')
+@Controller('api/v6/tables/')
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class RecordsController {

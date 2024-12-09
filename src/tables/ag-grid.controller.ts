@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 
-@Controller('/api/tables/v2/ag-grid/')
+@Controller('/api/v6/tables/ag-grid/')
 export class AgGridController {
   @Get('ag-grid/:baseId/:tableId')
   @Render('ag-grid/ag-grid')
