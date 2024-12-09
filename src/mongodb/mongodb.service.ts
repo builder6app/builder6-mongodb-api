@@ -11,7 +11,7 @@ export class MongodbService {
   private client: MongoClient;
 
   constructor() {
-    this.client = new MongoClient(process.env.STEEDOS_MONGO_URL, {
+    this.client = new MongoClient(process.env.MONGO_URL, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
     });

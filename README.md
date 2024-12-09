@@ -4,7 +4,7 @@
 
 ```
 B6_TABLES_MONGO_URL=mongodb://root:steedos@localhost:27017/b6_records?authSource=admin
-STEEDOS_MONGO_URL=mongodb://root:steedos@localhost:27017/steedos?authSource=admin
+MONGO_URL=mongodb://root:steedos@localhost:27017/steedos?authSource=admin
 ```
 
 ## 启动服务

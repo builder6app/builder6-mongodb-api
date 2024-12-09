@@ -203,7 +203,7 @@ export class FilesService {
       }
     } else if (this.cfsStore === 'local') {
       return (
-        process.env.B6_API_URL +
+        process.env.ROOT_URL +
         '/api/v6/files/' +
         collectionName +
         '/' +
