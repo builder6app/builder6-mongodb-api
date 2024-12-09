@@ -87,6 +87,8 @@
     let gridApi; // 提前声明 gridApi 以便全局访问
     let gridOptions; // 提前声明 gridOptions 以便全局访问
     let table;
+    const mode = "edit";//edit/readonly/design
+    const isReadonly = mode === "readonly";
 
     const padZero = num => num.toString().padStart(2, '0');
     class DateTimeEditor {
@@ -392,7 +394,7 @@
             cellEditor: cellEditor,
             cellRendererParams: cellRendererParams,
             cellRenderer: cellRenderer,
-            editable: editable,
+            editable: isReadonly ? false : editable,
             valueFormatter: valueFormatter,
             valueGetter: valueGetter,
             tooltipValueGetter: tooltipValueGetter,
@@ -429,7 +431,7 @@
                     mode: 'range',
                 }
             },
-            onRowValueChanged: onRowValueChanged,
+            onRowValueChanged: isReadonly ? null : onRowValueChanged,
             //datasource: getDataSource(),
             defaultColDef: {
                 flex: 1,
@@ -441,7 +443,7 @@
             selectionColumnDef: {
                 pinned: 'left'
             },
-            rowSelection: {
+            rowSelection: isReadonly ? null : {
                 mode: "multiRow",
                 selectAll: "all",
                 checkboxes: true,
