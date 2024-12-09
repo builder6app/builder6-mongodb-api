@@ -270,6 +270,8 @@
         var cellDataType,
             cellEditorParams,
             cellEditor,
+            cellRendererParams,
+            cellRenderer,
             valueFormatter,
             valueGetter,
             fieldOptions,
@@ -281,6 +283,7 @@
         cellEditorParams = {
             fieldConfig: field
         };
+        cellRendererParams = {};
         filterParams = {
             debounceMs: 200,
             maxNumConditions: 1
@@ -352,6 +355,10 @@
                 break;
             case 'boolean':
                 cellDataType = 'boolean';
+                Object.assign(cellRendererParams, {
+                    disabled: true
+                });
+                cellRenderer = "agCheckboxCellRenderer";
                 filter = 'agSetColumnFilter';
                 Object.assign(filterParams, {
                     values: [true, false],
@@ -383,6 +390,8 @@
             cellDataType: cellDataType,
             cellEditorParams: cellEditorParams,
             cellEditor: cellEditor,
+            cellRendererParams: cellRendererParams,
+            cellRenderer: cellRenderer,
             editable: editable,
             valueFormatter: valueFormatter,
             valueGetter: valueGetter,
