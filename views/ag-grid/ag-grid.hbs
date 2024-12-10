@@ -417,13 +417,13 @@
             columnDefs: columnDefs,
             dataTypeDefinitions: dataTypeDefinitions,
             rowClassRules: {
-                'verification-errors-row': function (params) { 
-                    if(!params.data){
+                'verification-errors-row': function (params) {
+                    if (!params.data) {
                         return false;
                     }
                     const hasVerificationErrors = params.data.__verificationErrors && params.data.__verificationErrors.length;
                     const isFormulaError = params.data.__isFormulaFieldRunError;
-                    return hasVerificationErrors || isFormulaError; 
+                    return hasVerificationErrors || isFormulaError;
                 }
             },
             rowData: null, // 初始为空，通过 API 动态加载
@@ -552,6 +552,9 @@
 
     // 判断一个js变量是否一个合法的Date变量
     function isValidDate(date) {
+        if (_.isNil(n)) {
+            return true;
+        }
         return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.getTime());
     }
 
