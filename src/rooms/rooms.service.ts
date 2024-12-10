@@ -259,7 +259,7 @@ export class RoomsService {
 
     const result = await this.mongodbService.deleteOne(
       'b6_comments',
-      commentId,
+      { _id: commentId },
     );
 
     return result;

@@ -302,15 +302,63 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteRecord(
+      const result = await this.recordsService.deleteOne(
         baseId,
         tableId,
-        recordId,
+        {_id: recordId},
       );
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
       res.status(200).send({ deleted: true, _id: recordId });
+    } catch (error) {
+      console.error('Query error', error);
+      res.status(500).send(error);
+    }
+  }
+
+  /* 
+  Body: {records: ['rec560UJdUtocSouk', 'rec3lbPRG4aVqkeOQ']}
+  Response: {
+    "records": [
+      {
+        "deleted": true,
+        "_id": "rec560UJdUtocSouk"
+      },
+      {
+        "deleted": true,
+        "_id": "rec3lbPRG4aVqkeOQ"
+      }
+    ]
+  } */
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        records: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  })
+  @Delete(':objectName')
+  async deleteMultiple(
+    @Param('baseId') baseId: string,
+    @Param('tableId') tableId: string,
+    @Body('records') records: [string],
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.recordsService.deleteMany(
+        baseId,
+        tableId, {_id: { $in: records }});
+      if (result.deletedCount === 0) {
+        return res.status(404).send();
+      }
+      res.status(200).send({ records: records.map(_id => ({ deleted: true, _id })) });
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);

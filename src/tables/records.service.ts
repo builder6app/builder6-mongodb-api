@@ -10,7 +10,7 @@ export class RecordsService {
   private db: Db;
 
   constructor() {
-    const client = new MongoClient(process.env.TABLES_MONGO_URL, {
+    const client = new MongoClient(process.env.STEEDOS_TABLES_MONGO_URL, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
     });
@@ -64,9 +64,15 @@ export class RecordsService {
     return result;
   }
 
-  async deleteRecord(baseId: string, tableId: string, id: string) {
+  async deleteOne(baseId: string, tableId: string, query: object) {
     const collection = this.getCollection(baseId, tableId);
-    const result = await collection.deleteOne({ _id: id as any });
+    const result = await collection.deleteOne(query);
+    return result;
+  }
+
+  async deleteMany(baseId: string, tableId: string, query: object) {
+    const collection = this.getCollection(baseId, tableId);
+    const result = await collection.deleteMany(query);
     return result;
   }
 }

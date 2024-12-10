@@ -133,11 +133,41 @@ export class MongodbController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.deleteOne(objectName, id);
+      const result = await this.mongodbService.deleteOne(objectName, {_id: id});
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
-      res.status(200).send({ message: 'Item deleted' });
+      res.status(200).send({ deleted: true, _id: id });
+    } catch (error) {
+      console.error('Query error', error);
+      res.status(500).send(error);
+    }
+  }
+
+  /* 返回 {
+    "records": [
+      {
+        "deleted": true,
+        "_id": "rec560UJdUtocSouk"
+      },
+      {
+        "deleted": true,
+        "_id": "rec3lbPRG4aVqkeOQ"
+      }
+    ]
+  } */
+  @Delete(':objectName')
+  async deleteMultiple(
+    @Param('objectName') objectName: string,
+    @Body('records') records: [string],
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.mongodbService.deleteMany(objectName, {_id: { $in: records }});
+      if (result.deletedCount === 0) {
+        return res.status(404).send();
+      }
+      res.status(200).send({ records: records.map(_id => ({ deleted: true, _id })) });
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);

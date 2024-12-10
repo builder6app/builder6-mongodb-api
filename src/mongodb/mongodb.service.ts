@@ -102,9 +102,15 @@ export class MongodbService {
     return result;
   }
 
-  async deleteOne(collectionName: string, id: string) {
+  async deleteOne(collectionName: string, query: object) {
     const collection = this.db.collection(collectionName);
-    const result = await collection.deleteOne({ _id: id as any });
+    const result = await collection.deleteOne(query);
+    return result;
+  }
+
+  async deleteMany(collectionName: string, query: object) {
+    const collection = this.db.collection(collectionName);
+    const result = await collection.deleteOne(query);
     return result;
   }
 }
