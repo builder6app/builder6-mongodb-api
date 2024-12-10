@@ -1,6 +1,6 @@
 {
   "name": "@builder6/mongodb-api",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "",
   "author": "",
   "license": "AGPL-3.0-only",
@@ -48,7 +48,7 @@
     "ioredis": "^5.4.1",
     "mime-types": "^2.1.35",
     "moleculer": "^0.14.35",
-    "mongodb": "^5.9.2",
+    "mongodb": "^3.7.3",
     "multer": "^1.4.5-lts.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
