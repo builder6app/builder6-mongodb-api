@@ -884,6 +884,7 @@
                     // 四舍五入并保留两位小数
                     formulaValue = Math.round(formulaValue * 100) / 100;
                 }
+                console.log("setRowDataFormulaValues:", formulaField.label, formula, formulaValue);
                 rowData[formulaFieldName] = formulaValue;
             }
         }
