@@ -417,7 +417,14 @@
             columnDefs: columnDefs,
             dataTypeDefinitions: dataTypeDefinitions,
             rowClassRules: {
-                'verification-errors-row': function (params) { return params.data && params.data.__verificationErrors && params.data.__verificationErrors.length; }
+                'verification-errors-row': function (params) { 
+                    if(!params.data){
+                        return false;
+                    }
+                    const hasVerificationErrors = params.data.__verificationErrors && params.data.__verificationErrors.length;
+                    const isFormulaError = params.data.__isFormulaFieldRunError;
+                    return hasVerificationErrors || isFormulaError; 
+                }
             },
             rowData: null, // 初始为空，通过 API 动态加载
             rowModelType: 'serverSide',
@@ -470,11 +477,15 @@
 
     // 校验数据表中配置的Verifications并返回错误信息
     function getTableVerificationErrors(data, tableVerifications) {
+        let validated = true;
         const verificationErrors = [];
         // verification校验
         const verifications = tableVerifications || [];
         verifications.forEach(function (verification) {
-            validated = evaluate(verification.rule, data, { evalMode: true });
+            validated = runAmisFormula(verification.rule, data, function (ex) {
+                console.warn("执行校验规则“" + verification.rule + "”公式出错了，请检查校验规则公式配置：", ex);
+                alert("执行校验规则“" + verification.rule + "”公式出错了，请检查校验规则公式配置：" + (ex && ex.toString()));
+            });
             if (!validated) {
                 verificationErrors.push(verification.alert);
             }
@@ -613,7 +624,6 @@
             });
             // verifications校验
             const rowNode = event.node;
-            let validated = true;
             const tableVerificationErrors = getTableVerificationErrors(data, table.verifications);
             const verificationErrors = _.union(fieldsVerificationErrors, tableVerificationErrors);
             let allValidated = verificationErrors.length === 0;
@@ -633,9 +643,14 @@
                 return;
             }
             // 循环所有公式字段执行公式计算并设置值到data中
-            setRowDataFormulaValues(data);
+            const isFormulaRunSuccess = setRowDataFormulaValues(data);
+            rowNode.setData(Object.assign({}, data, { __isFormulaFieldRunError: !isFormulaRunSuccess }));
+            if (!isFormulaRunSuccess) {
+                return;
+            }
             // 保存更新的数据到服务端
-            delete data.__verificationErrors
+            delete data.__verificationErrors;
+            delete data.__isFormulaFieldRunError;
             const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + data._id, {
                 method: 'PUT',
                 headers: {
@@ -745,6 +760,9 @@
         }
 
         const newRow = createNewRowData();
+        if (!newRow) {
+            return;
+        }
 
         // 将新增数据发送到服务器
         try {
@@ -869,25 +887,42 @@
         }
     }
 
+    function runAmisFormula(formula, data, catchBack, options) {
+        // evalMode为true表示公式表达式中不需要写外层${}
+        try {
+            return evaluate(formula, data, Object.assign({ evalMode: true }, options));
+        }
+        catch (ex) {
+            typeof catchBack === "function" && catchBack(ex);
+        }
+    }
+
     function setRowDataFormulaValues(rowData) {
         // 循环所有公式字段执行公式计算并设置值到rowData中
         var dataTypeDefinitions = gridApi.getGridOption("dataTypeDefinitions");
         var formulaFields = dataTypeDefinitions.formula.fields;
+        var success = true;
 
         for (var formulaFieldName in formulaFields) {
             if (formulaFields.hasOwnProperty(formulaFieldName)) {
                 var formulaField = formulaFields[formulaFieldName];
                 var formula = formulaField.formula;
-                var formulaValue = evaluate(formula, rowData, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
+                var formulaValue = runAmisFormula(formula, rowData, function (ex) {
+                    console.warn("公式字段“" + formulaField.label + "”执行公式”" + formula + "“出错了，请检查公式配置：", ex);
+                    alert("公式字段“" + formulaField.label + "”执行公式”" + formula + "“出错了，请检查公式配置：" + (ex && ex.toString()));
+                    success = false;
+                });
                 // 检查结果是否为数值
                 if (typeof formulaValue === 'number') {
                     // 四舍五入并保留两位小数
                     formulaValue = Math.round(formulaValue * 100) / 100;
                 }
-                console.log("setRowDataFormulaValues:", formulaField.label, formula, formulaValue);
+                console.log("ag-grid amis formula run:", formulaField.label, formula, formulaValue);
                 rowData[formulaFieldName] = formulaValue;
             }
         }
+
+        return success;
     }
 
     // 创建一个新行数据，可以初始化为默认值或空值
@@ -902,7 +937,10 @@
         });
 
         // 设置默认值后需要进行依赖字段默认值的公式计算
-        setRowDataFormulaValues(newRow);
+        const isFormulaRunSuccess = setRowDataFormulaValues(newRow);
+        if (!isFormulaRunSuccess) {
+            return;
+        }
         return newRow;
     }
 
