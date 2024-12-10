@@ -878,7 +878,13 @@
             if (formulaFields.hasOwnProperty(formulaFieldName)) {
                 var formulaField = formulaFields[formulaFieldName];
                 var formula = formulaField.formula;
-                rowData[formulaFieldName] = evaluate(formula, rowData, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
+                var formulaValue = evaluate(formula, rowData, { evalMode: true });// evalMode为true表示公式表达式中不需要写外层${}
+                // 检查结果是否为数值
+                if (typeof formulaValue === 'number') {
+                    // 四舍五入并保留两位小数
+                    formulaValue = Math.round(formulaValue * 100) / 100;
+                }
+                rowData[formulaFieldName] = formulaValue;
             }
         }
     }
