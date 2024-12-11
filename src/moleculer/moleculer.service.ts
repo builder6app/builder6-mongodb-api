@@ -5,9 +5,9 @@ import { ServiceBroker } from 'moleculer';
 export class MoleculerService {
   private broker;
   constructor() {
-    if (process.env.STEEDOS_TRANSPORTER) {
+    if (process.env.TRANSPORTER) {
       this.broker = new ServiceBroker({
-        transporter: process.env.STEEDOS_TRANSPORTER,
+        transporter: process.env.TRANSPORTER,
       });
     }
   }

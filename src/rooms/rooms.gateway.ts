@@ -61,7 +61,7 @@ export class RoomsGateway implements OnGatewayConnection {
 
     const roomId = parsedUrl.query['roomId'] as string;
     const token = parsedUrl.query['tok'] as string;
-    const jwt = await this.jwtService.decode(token);
+    const jwt = await this.jwtService.decode(token) as any;
     const userId = jwt.uid;
 
     if (userId && roomId) {
@@ -246,16 +246,15 @@ export class RoomsGateway implements OnGatewayConnection {
     const { roomId, message } = parsedMessage;
     const roomState = this.roomStates.get(roomId);
 
+    
     if (roomState) {
       Object.keys(roomState.connections).forEach((connectionId) => {
-        Array.from(this.server.clients).forEach((client: any) => {
-          if (
-            client.connectionId === parseInt(connectionId) &&
-            client.readyState === WebSocket.OPEN
-          ) {
-            client.send(JSON.stringify(message));
-          }
-        });
+        const client = roomState.connections[connectionId].client;
+        if (
+          client.readyState === WebSocket.OPEN
+        ) {
+          client.send(JSON.stringify(message));
+        }
       });
     }
   }

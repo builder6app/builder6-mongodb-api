@@ -11,7 +11,7 @@ export class MongodbService {
   private client: MongoClient;
 
   constructor() {
-    this.client = new MongoClient(process.env.STEEDOS_MONGO_URL, {
+    this.client = new MongoClient(process.env.MONGO_URL, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
     });
@@ -99,12 +99,18 @@ export class MongodbService {
       { $set: data },
       { returnDocument: 'after' },
     );
+    return result.value;
+  }
+
+  async deleteOne(collectionName: string, query: object) {
+    const collection = this.db.collection(collectionName);
+    const result = await collection.deleteOne(query);
     return result;
   }
 
-  async deleteOne(collectionName: string, id: string) {
+  async deleteMany(collectionName: string, query: object) {
     const collection = this.db.collection(collectionName);
-    const result = await collection.deleteOne({ _id: id as any });
+    const result = await collection.deleteOne(query);
     return result;
   }
 }

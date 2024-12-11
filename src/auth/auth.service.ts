@@ -103,7 +103,7 @@ export class AuthService {
     });
 
     if (spaceUser) {
-      delete spaceUser['_id'];
+      spaceUser['_id'] = userId;
       delete spaceUser['password'];
     }
 

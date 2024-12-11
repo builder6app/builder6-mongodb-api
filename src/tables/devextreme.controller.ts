@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Render } from '@nestjs/common';
 
-@Controller('/api/tables/v2/devextreme/')
+@Controller('/api/v6/tables/devextreme/')
 export class DevExtremeController {
   @Get('datagrid/:baseId/:tableId')
   @Render('devextreme/datagrid')

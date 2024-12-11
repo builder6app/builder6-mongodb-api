@@ -3,7 +3,7 @@ import { MetaService } from './meta.service';
 import { Response } from 'express';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
-@Controller('api/tables/v2/meta/')
+@Controller('api/v6/tables/meta/')
 export class MetaController {
   constructor(private readonly metaService: MetaService) {}
 

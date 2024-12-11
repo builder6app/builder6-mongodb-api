@@ -19,7 +19,7 @@ import { ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@/auth/auth.guard';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
-@Controller('api/tables/v2/')
+@Controller('api/v6/tables/')
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class RecordsController {
@@ -93,8 +93,8 @@ export class RecordsController {
     @Query('fields') fields?: any,
     @Query('filters') filters?: any,
     @Query('sort') sort?: any,
-    @Query('skip', new ParseIntPipe({ optional: true })) skip: number = 0,
-    @Query('top', new ParseIntPipe({ optional: true })) top: number = 20,
+    @Query('skip', new ParseIntPipe()) skip: number = 0,
+    @Query('top', new ParseIntPipe()) top: number = 20,
   ) {
     try {
       const options = getOptions(req.query, {
@@ -180,8 +180,8 @@ export class RecordsController {
     @Query('sort') sort?: any,
     @Query('orderBy') orderBy?: string,
     @Query('orderDir') orderDir?: string,
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('perPage', new ParseIntPipe({ optional: true }))
+    @Query('page', new ParseIntPipe()) page: number = 1,
+    @Query('perPage', new ParseIntPipe())
     perPage: number = 10,
   ) {
     try {
@@ -302,15 +302,63 @@ export class RecordsController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteRecord(
+      const result = await this.recordsService.deleteOne(
         baseId,
         tableId,
-        recordId,
+        {_id: recordId},
       );
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
       res.status(200).send({ deleted: true, _id: recordId });
+    } catch (error) {
+      console.error('Query error', error);
+      res.status(500).send(error);
+    }
+  }
+
+  /* 
+  Body: {records: ['rec560UJdUtocSouk', 'rec3lbPRG4aVqkeOQ']}
+  Response: {
+    "records": [
+      {
+        "deleted": true,
+        "_id": "rec560UJdUtocSouk"
+      },
+      {
+        "deleted": true,
+        "_id": "rec3lbPRG4aVqkeOQ"
+      }
+    ]
+  } */
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        records: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  })
+  @Delete(':objectName')
+  async deleteMultiple(
+    @Param('baseId') baseId: string,
+    @Param('tableId') tableId: string,
+    @Body('records') records: [string],
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.recordsService.deleteMany(
+        baseId,
+        tableId, {_id: { $in: records }});
+      if (result.deletedCount === 0) {
+        return res.status(404).send();
+      }
+      res.status(200).send({ records: records.map(_id => ({ deleted: true, _id })) });
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);

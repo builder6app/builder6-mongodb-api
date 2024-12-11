@@ -27,7 +27,7 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('', app, documentFactory);
+  SwaggerModule.setup('api/v6', app, documentFactory);
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
@@ -40,6 +40,6 @@ async function bootstrap() {
   );
   app.use(compression());
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.B6_PORT ?? 5100);
 }
 bootstrap();
