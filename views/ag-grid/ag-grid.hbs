@@ -397,7 +397,7 @@
             editable: isReadonly ? false : editable,
             valueFormatter: valueFormatter,
             valueGetter: valueGetter,
-            // tooltipValueGetter: tooltipValueGetter,
+            tooltipValueGetter: tooltipValueGetter,
             filter: filter,
             filterParams: filterParams
         };
@@ -432,19 +432,19 @@
             paginationPageSizeSelector: false,
             paginationPageSize: pageSize,
             cacheBlockSize: pageSize,
-            editType: 'fullRow',
+            // editType: 'fullRow',
             cellSelection: {
                 handle: {
                     mode: 'range',
                 }
             },
-            onRowValueChanged: isReadonly ? null : onRowValueChanged,
+            // onRowValueChanged: isReadonly ? null : onRowValueChanged,
+            onCellValueChanged: isReadonly ? null : onCellValueChanged,
             //datasource: getDataSource(),
             defaultColDef: {
                 flex: 1,
                 minWidth: 100,
-                resizable: true,
-                tooltipComponent: CustomTooltip
+                resizable: true
             },
             getRowId: function (params) { return params.data._id; },
             selectionColumnDef: {
@@ -563,6 +563,31 @@
         return (options || []).indexOf(value) > -1;
     }
 
+    const changeQueue = new Map();
+
+    function processChangeQueue() {
+        changeQueue.forEach((event, rowIndex) => {
+            onRowValueChanged(event);
+        });
+        changeQueue.clear();
+    }
+
+    const debouncedProcessChangeQueue = _.debounce(processChangeQueue, 200);
+
+    function onCellValueChanged(event) {
+        const rowIndex = event.node.rowIndex;
+
+        if (!changeQueue.has(rowIndex)) {
+            changeQueue.set(rowIndex, event);
+        } else {
+            const existingEvent = changeQueue.get(rowIndex);
+            // 更新现有的 event 对象中的数据
+            existingEvent.data = { ...existingEvent.data, ...event.data };
+        }
+
+        debouncedProcessChangeQueue();
+    }
+
     // 监听行数据改变事件
     async function onRowValueChanged(event) {
         const data = event.data;
@@ -635,10 +660,12 @@
                 let editingCellsCount = event.api.getEditingCells().length;
                 if (editingCellsCount === 0) {
                     // 多行校验不通过时只开启第一行编辑状态
+                    /*
+                    // 从行编辑改为单元格编辑后，不再需要自动开启编辑状态
                     event.api.startEditingCell({
                         rowIndex: event.rowIndex,
                         colKey: allGridColumns[0].colId
-                    });
+                    });*/
                 }
                 rowNode.setData(Object.assign({}, data, { __verificationErrors: verificationErrors }));
                 alert(verificationErrors.join(`\n`));
