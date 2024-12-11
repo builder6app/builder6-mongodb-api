@@ -10,6 +10,7 @@ import {
   Req,
   Query,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { MongodbService } from '../mongodb/mongodb.service';
 import { Request, Response } from 'express';
@@ -82,6 +83,9 @@ export class MongodbController {
     @Res() res: Response,
     @Query('fields') fields?: any,
     @Query('filters') filters?: any,
+    @Query('sort') sort?: any,
+    @Query('skip', new ParseIntPipe()) skip: number = 0,
+    @Query('top', new ParseIntPipe()) top: number = 20,
   ) {
     try {
       const options = getOptions(req.query, {
@@ -89,14 +93,17 @@ export class MongodbController {
         population: 'int',
       });
 
-      const loadOptions = { take: 20, skip: 0, ...options.loadOptions };
-
+      const loadOptions = { take: top, skip: skip, ...options.loadOptions };
       if (filters) {
-        try {
-          loadOptions.filter = JSON.parse(loadOptions.filters as string);
-        } catch {}
+        loadOptions.filter = JSON.parse(filters);
       }
-
+      if (sort) {
+        const sortFields = sort.split(',');
+        loadOptions.sort = sortFields.map((sortField) => {
+          const [field, dir] = sortField.split(' ');
+          return { selector: field, desc: dir === 'desc' };
+        });
+      }
       if (fields) {
         try {
           loadOptions.select = JSON.parse(fields);
@@ -104,7 +111,6 @@ export class MongodbController {
           loadOptions.select = fields.split(',');
         }
       }
-
       const processingOptions = {
         replaceIds: false,
         ...options.processingOptions,
