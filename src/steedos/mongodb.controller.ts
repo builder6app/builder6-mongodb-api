@@ -203,6 +203,19 @@ export class MongodbController {
     ]
   } */
   @Delete(':objectName')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        records: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  })
   async deleteMultiple(
     @Param('objectName') objectName: string,
     @Body('records') records: [string],
