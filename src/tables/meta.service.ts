@@ -48,7 +48,7 @@ export class MetaService {
           //   multiple: true,
           // },
           { _id: 'fld007', name: 'birthdate', label: '生日', type: 'date' },
-          // { _id: 'fld008', name: 'Created', type: 'datetime' },
+          { _id: 'fld008', name: 'created', label: '创建时间', type: 'datetime', default_value: '2024-12-11T09:22:09.045Z' },
           { _id: 'fld009', name: 'valid', label: '启用', type: 'boolean' },
           {
             _id: 'fld010',

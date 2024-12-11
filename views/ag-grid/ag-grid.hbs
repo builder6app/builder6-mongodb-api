@@ -347,13 +347,15 @@
                 break;
             case 'datetime':
                 cellDataType = 'date';
-                cellEditor = DateTimeEditor;
+                editable = false;
+                // cellEditor = DateTimeEditor;
                 // 因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
                 // valueGetter = dataTypeDefinitions.date.valueGetter;
+                /*
                 filter = 'agDateColumnFilter';
                 Object.assign(filterParams, {
                     filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
-                });
+                });*/
                 break;
             case 'boolean':
                 cellDataType = 'boolean';
