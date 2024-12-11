@@ -688,11 +688,15 @@
                 },
                 body: JSON.stringify(data)
             });
+            if (!response.ok) {
+                throw new Error('Server error! Status: ' + response.status);
+            }
             const responseData = await response.json();
             console.log('Data saved successfully:', responseData);
             rowNode.setData(responseData);
         } catch (error) {
             console.error('Error saving data:', error);
+            alert('保存数据失败，请刷新浏览器以查看最新数据状态，并稍后重试。');
         }
     }
 
@@ -734,6 +738,9 @@
                         }
 
                         fetch(url).then(function (response) {
+                            if (!response.ok) {
+                                throw new Error('Server error! Status: ' + response.status);
+                            }
                             return response.json();
                         }).then(function (data) {
                             console.log('Server Side Datasource - data:', data);
@@ -744,11 +751,13 @@
                             resolve();
                         }).catch(function (error) {
                             console.error('Error fetching data from server:', error);
+                            alert('无法从服务器获取数据，请检查网络连接并重试。如果问题持续，请联系技术支持。');
                             params.fail();
                             reject(error);
                         });
                     } catch (error) {
                         console.error('Error fetching data from server:', error);
+                        alert('发生了意外错误。请重试或联系技术支持。');
                         params.fail();
                         reject(error);
                     }
@@ -804,17 +813,17 @@
                 body: JSON.stringify(newRow)
             });
 
-            if (response.ok) {
-                console.log('New row added successfully');
-                // 新增数据成功后刷新网格数据
-                gridApi.addEventListener('storeRefreshed', scrollToBottomAfterRefresh);
-                gridApi.refreshServerSide({ purge: false });//purge设置为true会造成上面scrollToBottomAfterRefresh不生效
-
-            } else {
-                console.error('Failed to add new row:', response.statusText);
+            if (!response.ok) {
+                throw new Error('Server error! Status: ' + response.status);
             }
+            console.log('New row added successfully');
+            // 新增数据成功后刷新网格数据
+            gridApi.addEventListener('storeRefreshed', scrollToBottomAfterRefresh);
+            gridApi.refreshServerSide({ purge: false });//purge设置为true会造成上面scrollToBottomAfterRefresh不生效
+
         } catch (error) {
             console.error('Error adding new row:', error);
+            alert('新增行时发生错误，请稍后重试。');
         }
     }
 
@@ -902,6 +911,10 @@
                     }
                 });
 
+                if (!response.ok) {
+                    throw new Error('Server error! Status: ' + response.status);
+                }
+
                 const result = await response.json();
 
                 if (result.deleted) {
@@ -913,7 +926,7 @@
             }
         } catch (error) {
             console.error('Error deleting rows:', error);
-            alert('删除行时发生错误');
+            alert('删除行时发生错误，请稍后重试。');
         }
     }
 
