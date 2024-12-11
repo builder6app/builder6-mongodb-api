@@ -61,7 +61,7 @@ export class RecordsService {
       { $set: data },
       { returnDocument: 'after' },
     );
-    return result;
+    return result.value;
   }
 
   async deleteOne(baseId: string, tableId: string, query: object) {

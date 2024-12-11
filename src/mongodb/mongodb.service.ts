@@ -99,7 +99,7 @@ export class MongodbService {
       { $set: data },
       { returnDocument: 'after' },
     );
-    return result;
+    return result.value;
   }
 
   async deleteOne(collectionName: string, query: object) {
