@@ -1,5 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { v4 as uuid } from 'uuid';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { MongodbService } from '@/mongodb/mongodb.service';
 import { JwtService } from '@nestjs/jwt';
@@ -57,9 +58,10 @@ export class AuthService {
       space: spaceId,
       profile: space_user.profile,
     };
-    const authToken = this.jwtService.sign(payload);
+    const access_token = this.jwtService.sign(payload);
+    const auth_token = uuid();
 
-    const stampedAuthToken = this.generateStampedLoginToken(authToken);
+    const stampedAuthToken = this.generateStampedLoginToken(auth_token);
     const hashedToken = this.hashStampedToken(stampedAuthToken);
 
     if (!user['services']) {
@@ -73,7 +75,8 @@ export class AuthService {
     await this.mongodbService.findOneAndUpdate('users', user._id, data);
 
     return {
-      authToken: authToken,
+      access_token: access_token,
+      auth_token: auth_token,
       ...space_user,
     };
   }
@@ -112,19 +115,44 @@ export class AuthService {
 
   async getUserByToken(token: string): Promise<any> {
     const tokenArray = token.split(',');
-    if (tokenArray.length !== 2) {
-      throw new UnauthorizedException();
+    let userId = null;
+    let spaceId = null;
+    if (tokenArray.length === 1) {
+      // It's a normal JWT token
+      const payload = this.jwtService.decode(token) as any;
+      console.log('payload', payload);
+      const user = (await this.mongodbService.findOne('users', {
+        '_id': payload.sub,
+      })) as any;
+      if (user) {
+        userId = user._id;
+        spaceId = payload.space;
+      }
+    } else if (tokenArray.length === 2 && tokenArray[0] === 'apikey') {
+      // It's an API key
+      const apiKeyString = tokenArray[1] as string;
+
+      const apiKey = await this.mongodbService.findOne('api_keys', { api_key: apiKeyString, active: true });
+      if (apiKey) {
+        userId = apiKey.owner;
+        spaceId = apiKey.space; 
+        await this.mongodbService.findOneAndUpdate('api_keys', apiKey._id, { last_use_time: new Date() });
+      }
+    } else if (tokenArray.length === 2) {
+      spaceId = tokenArray[0];
+      const authToken = tokenArray[1];
+      const hashedStampedToken = this.hashLoginToken(authToken);
+      const user = (await this.mongodbService.findOne('users', {
+        'services.resume.loginTokens.hashedToken': hashedStampedToken,
+      })) as any;
+      if (user) userId = user._id;
     }
-    const spaceId = tokenArray[0];
-    const authToken = tokenArray[1];
-    const hashedStampedToken = this.hashLoginToken(authToken);
-    const user = (await this.mongodbService.findOne('users', {
-      'services.resume.loginTokens.hashedToken': hashedStampedToken,
-    })) as any;
-    if (user) {
-      const space_user = await this.getSpaceUser(user._id, spaceId);
+    if (userId && spaceId) {
+      const space_user = await this.getSpaceUser(userId, spaceId);
       return space_user;
     }
+    
+    throw new UnauthorizedException();
   }
 
   extractTokenFromHeaderOrCookie(request: Request): string | undefined {
