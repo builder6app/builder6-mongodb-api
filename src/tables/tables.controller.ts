@@ -11,19 +11,21 @@ import {
   Query,
   ParseIntPipe,
   UseGuards,
+  Render,
 } from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 import { ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@/auth/auth.guard';
+import { MetaService } from '@/tables/meta.service';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/v6/tables/')
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
-export class RecordsController {
-  constructor(private readonly recordsService: RecordsService) {}
+export class TablesController {
+  constructor(private readonly recordsService: RecordsService, private readonly metaService: MetaService) {}
 
   /**
    * Create a new record
@@ -363,5 +365,46 @@ export class RecordsController {
       console.error('Query error', error);
       res.status(500).send(error);
     }
+  }
+
+  @Get('meta/bases/:baseId/tables/:tableId')
+  @ApiBearerAuth()
+  async getTableMeta(
+    @Param('baseId') baseId: string,
+    @Param('tableId') tableId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const table = await this.metaService.getTableMeta(baseId, tableId);
+      res.status(200).send(table);
+    } catch (error) {
+      console.error('Query error', error);
+      res.status(500).send(error);
+    }
+  }
+
+
+  @Get('devextreme/datagrid/:baseId/:tableId')
+  @Render('devextreme/datagrid')
+  async getDemo(
+    @Param('baseId') baseId: string,
+    @Param('tableId') tableId: string,
+  ) {
+    return {
+      baseId,
+      tableId,
+    };
+  }
+
+  @Get('ag-grid/ag-grid/:baseId/:tableId')
+  @Render('ag-grid/ag-grid')
+  async AgGrid(
+    @Param('baseId') baseId: string,
+    @Param('tableId') tableId: string,
+  ) {
+    return {
+      baseId,
+      tableId,
+    };
   }
 }
