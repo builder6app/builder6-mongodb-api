@@ -1,23 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/builder6-api/src",
+  "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true,
-    "webpack": true,
-    "tsConfigPath": "apps/builder6-api/tsconfig.app.json"
-  },
-  "monorepo": true,
-  "root": "apps/builder6-api",
-  "projects": {
-    "builder6-api": {
-      "type": "application",
-      "root": "apps/builder6-api",
-      "entryFile": "main",
-      "sourceRoot": "apps/builder6-api/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/builder6-api/tsconfig.app.json"
-      }
-    }
+    "deleteOutDir": true
   }
 }

@@ -19,11 +19,11 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@/*": [
-        "apps/builder6-api/src/*"
+        "src/*"
       ]
-    }
+    },
   },
   "exclude": [
-    "examples"
+    "examples",
   ]
 }
