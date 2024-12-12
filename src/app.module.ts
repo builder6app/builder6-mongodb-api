@@ -17,10 +17,10 @@ import { OidcModule } from './oidc/oidc.module';
       envFilePath: ['.env.local', '.env'],
       isGlobal: true, // 使配置在整个应用中可用
     }),
+    AuthModule,
     MongodbModule,
     SteedosModule,
     TablesModule,
-    AuthModule,
     RoomsModule,
     FilesModule,
     MoleculerModule,

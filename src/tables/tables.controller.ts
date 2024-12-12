@@ -12,11 +12,12 @@ import {
   ParseIntPipe,
   UseGuards,
   Render,
+  Patch,
 } from '@nestjs/common';
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
-import { ApiBody, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@/auth/auth.guard';
 import { MetaService } from '@/tables/meta.service';
 
@@ -33,6 +34,7 @@ export class TablesController {
    * @remarks This operation allows you to create a new record.
    *
    */
+  @ApiOperation({ summary: 'Create a record' })
   @Post(':baseId/:tableId')
   @ApiBody({
     schema: {
@@ -65,6 +67,7 @@ export class TablesController {
   }
 
   // loadOptions: https://github.com/oliversturm/devextreme-query-mongodb/wiki/loadOptions
+  @ApiOperation({ summary: 'List records' })
   @Get(':baseId/:tableId')
   @ApiQuery({
     name: 'fields',
@@ -140,6 +143,7 @@ export class TablesController {
   }
 
   // 兼容 amis 格式的数据返回接口
+  @ApiOperation({ summary: 'List records (deprecated)' })
   @Get(':baseId/:tableId/amis')
   @ApiQuery({
     name: 'fields',
@@ -238,6 +242,7 @@ export class TablesController {
   }
 
   @Get(':baseId/:tableId/:recordId')
+  @ApiOperation({ summary: 'Get record' })
   async findOne(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
@@ -260,7 +265,9 @@ export class TablesController {
     }
   }
 
+  @ApiOperation({ summary: 'Update record' })
   @Put(':baseId/:tableId/:recordId')
+  @Patch(':baseId/:tableId/:recordId')
   @ApiBody({
     schema: {
       type: 'object',
@@ -297,6 +304,7 @@ export class TablesController {
   }
 
   @Delete(':baseId/:tableId/:recordId')
+  @ApiOperation({ summary: 'Delete record' })
   async remove(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
@@ -346,7 +354,8 @@ export class TablesController {
       },
     },
   })
-  @Delete(':objectName')
+  @Delete(':baseId/:tableId')
+  @ApiOperation({ summary: 'Delete multiple records' })
   async deleteMultiple(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
@@ -408,3 +417,4 @@ export class TablesController {
     };
   }
 }
+
