@@ -9,6 +9,7 @@ import { RoomsModule } from './rooms/rooms.module';
 import { FilesModule } from './files/files.module';
 import { MoleculerModule } from './moleculer/moleculer.module';
 import { Microsoft365Module } from './microsoft365/microsoft365.module';
+import { OidcModule } from './oidc/oidc.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { Microsoft365Module } from './microsoft365/microsoft365.module';
     FilesModule,
     MoleculerModule,
     Microsoft365Module,
+    ...(process.env.OIDC_ISSUER ? [OidcModule] : []),
   ],
   controllers: [],
   providers: [],

@@ -49,11 +49,14 @@ export class AuthController {
 
       const cookieOptions: CookieOptions = {
         httpOnly: true,
-        sameSite: 'none',
+        sameSite: 'strict',
         maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
-        secure: true,
       };
 
+      if (process.env.STEEDOS_AUTH_COOKIES_USE_SAMESITE == 'None') {
+        cookieOptions.sameSite = 'none';
+        cookieOptions.secure = true;
+      }
       res.cookie('X-Auth-Token', authToken, cookieOptions);
       res.cookie('X-User-Id', user, cookieOptions);
       res.cookie('X-Space-Id', space, cookieOptions);

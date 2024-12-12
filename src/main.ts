@@ -8,6 +8,8 @@ import * as compression from 'compression';
 import { urlencoded, json } from 'express';
 import { WsAdapter } from '@nestjs/platform-ws';
 
+import * as session from 'express-session';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useWebSocketAdapter(new WsAdapter(app));
@@ -18,6 +20,11 @@ async function bootstrap() {
     methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
     credentials: true,
   });
+  app.use(session({
+    secret: 'your_session_secret',
+    resave: false,
+    saveUninitialized: false,
+  }));
 
   const config = new DocumentBuilder()
     .setTitle('Builder6 API')
