@@ -28,8 +28,8 @@ export class Microsoft365Controller {
     }
   }
 
-  @Get('site')
-  async getSite() {
+  @Get('sites')
+  async getSites() {
 
     try {
 
@@ -46,4 +46,5 @@ export class Microsoft365Controller {
       throw new HttpException(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 }
