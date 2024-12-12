@@ -8,6 +8,7 @@ import { SteedosModule } from './steedos/steedos.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { FilesModule } from './files/files.module';
 import { MoleculerModule } from './moleculer/moleculer.module';
+import { Microsoft365Module } from './microsoft365/microsoft365.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { MoleculerModule } from './moleculer/moleculer.module';
     RoomsModule,
     FilesModule,
     MoleculerModule,
+    Microsoft365Module,
   ],
   controllers: [],
   providers: [],
