@@ -134,7 +134,9 @@ export class MongodbController {
     @Param('id') id: string,
   ) {
     try {
-      const result = await this.mongodbService.objectqlFindOne(objectName, id);
+      const result = await this.mongodbService.findOne(objectName, {
+        _id: id,
+      });
       if (!result) {
         return res.status(404).send();
       }

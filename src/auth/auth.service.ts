@@ -59,9 +59,9 @@ export class AuthService {
       profile: space_user.profile,
     };
     const access_token = this.jwtService.sign(payload);
-    const auth_token = uuid();
+    const authToken = uuid();
 
-    const stampedAuthToken = this.generateStampedLoginToken(auth_token);
+    const stampedAuthToken = this.generateStampedLoginToken(authToken);
     const hashedToken = this.hashStampedToken(stampedAuthToken);
 
     if (!user['services']) {
@@ -76,7 +76,7 @@ export class AuthService {
 
     return {
       access_token: access_token,
-      auth_token: auth_token,
+      authToken: authToken,
       ...space_user,
     };
   }
@@ -98,11 +98,9 @@ export class AuthService {
   }
 
   async getSpaceUser(userId: string, spaceId: string): Promise<any> {
-    const spaceUser = await this.mongodbService.objectqlFindOne('space_users', {
-      filters: [
-        ['user', '=', userId],
-        ['space', '=', spaceId],
-      ],
+    const spaceUser = await this.mongodbService.findOne('space_users', {
+      user: userId,
+      space: spaceId,
     });
 
     if (spaceUser) {

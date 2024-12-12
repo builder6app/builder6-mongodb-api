@@ -12,12 +12,35 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { Response } from 'express';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
 
 @Controller('api/v6/files/')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post(':collectionName')
+  @ApiOperation({ summary: 'Upload a file' })
+  @ApiParam({
+    name: 'collectionName',
+    required: true,
+    type: 'string',
+    schema: {
+      type: 'string',
+      default: 'cfs.files.record', // 设置默认值
+    },
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @Param('collectionName') collectionName: string,
@@ -26,14 +49,12 @@ export class FilesController {
     if (!file) {
       throw new Error('未找到上传的文件');
     }
-    const fileUrl = await this.filesService.uploadFile(
+    const fileRecord = await this.filesService.uploadFile(
       collectionName,
       file,
       {},
     );
-    return {
-      url: fileUrl,
-    };
+    return fileRecord;
   }
 
   @Get(':collectionName/:fileId/:fileName?')
