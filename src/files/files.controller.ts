@@ -58,6 +58,21 @@ export class FilesController {
   }
 
   @Get(':collectionName/:fileId/:fileName?')
+  @ApiOperation({ summary: 'Download a file' })
+  @ApiParam({
+    name: 'collectionName',
+    required: true,
+    type: 'string',
+    schema: {
+      type: 'string',
+      default: 'cfs.files.record', // 设置默认值
+    },
+  })
+  @ApiParam({
+    name: 'fileName',
+    required: false,
+    type: 'string',
+  })
   async downloadFile(
     @Param('collectionName') collectionName: string,
     @Param('fileId') fileId: string,

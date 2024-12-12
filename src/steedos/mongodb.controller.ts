@@ -11,11 +11,12 @@ import {
   Query,
   UseGuards,
   ParseIntPipe,
+  Patch,
 } from '@nestjs/common';
 import { MongodbService } from '../mongodb/mongodb.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
-import { ApiBearerAuth, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AdminGuard } from '@/auth/admin.guard';
 
 // 直接操作 mongodb 数据库 的 API，必须是 admin 用户才能操作。
@@ -26,6 +27,7 @@ export class MongodbController {
   constructor(private readonly mongodbService: MongodbService) {}
 
   @Post(':objectName')
+  @ApiOperation({ summary: 'Create a record' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -56,6 +58,7 @@ export class MongodbController {
   }
 
   @Get(':objectName')
+  @ApiOperation({ summary: 'List records' })
   @ApiQuery({
     name: 'fields',
     required: false,
@@ -128,6 +131,7 @@ export class MongodbController {
   }
 
   @Get(':objectName/:id')
+  @ApiOperation({ summary: 'Get record' })
   async findOne(
     @Res() res: Response,
     @Param('objectName') objectName: string,
@@ -147,7 +151,8 @@ export class MongodbController {
     }
   }
 
-  @Put(':objectName/:id')
+  @Patch(':objectName/:id')
+  @ApiOperation({ summary: 'Update record' })
   @ApiBody({
     schema: {
       type: 'object',
@@ -180,7 +185,115 @@ export class MongodbController {
     }
   }
 
+
+  @Patch(':objectName')
+  @ApiOperation({ summary: 'Update multiple records' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        records: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string', example: 'rec560UJdUtocSouk' },
+            },
+            required: ['_id'], // 根据需要设置必填字段
+          },
+        },
+      },
+    },
+  })
+  async updateMultiple(
+    @Param('objectName') objectName: string,
+    @Body('records') records: object[],
+    @Body('performUpsert') performUpsert: boolean,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      if (performUpsert) {
+        
+        const createdRecords = [];
+        const updatedRecords = [];
+        const resultRecords = [];
+        for (const record of records) {
+          const { _id, ...rest } = record as any;
+          if (_id) {
+            const result = await this.mongodbService.findOneAndUpdate(
+              objectName,
+              _id,
+              {
+                ...rest,
+                modified_by: req['user']._id,
+                modified: new Date(),
+              },
+            );
+            if (!result) {  
+              throw new Error(`Record not found ${_id}`);
+            }
+              
+            updatedRecords.push(result._id);
+            resultRecords.push(result);
+          } else {
+
+            const result = await this.mongodbService.insertOne(
+              objectName,
+              {
+                ...rest,
+                created_by: req['user']._id,
+                created: new Date(),
+                modified_by: req['user']._id,
+                modified: new Date(),
+              },
+            );
+            createdRecords.push(result._id);
+            resultRecords.push(result);
+          }
+          res.status(200).send({
+            createdRecords,
+            updatedRecords,
+            records: resultRecords,
+          });
+        }
+          
+      } else {
+
+        const resultRecords = [];
+        for (const record of records) {
+          const { _id, ...rest } = record as any;
+          if (!_id) {  
+            throw new Error(`_id is required`);
+          }
+          if (_id) {
+            const result = await this.mongodbService.findOneAndUpdate(
+              objectName,
+              _id,
+              {
+                ...rest,
+                modified_by: req['user']._id,
+                modified: new Date(),
+              },
+            );
+            if (!result) {  
+              throw new Error(`Record not found ${_id}`);
+            }
+            resultRecords.push(result);
+          }
+          res.status(200).send({
+            records: resultRecords,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Update error', error);
+      res.status(500).send(error);
+    }
+  }
+
   @Delete(':objectName/:id')
+  @ApiOperation({ summary: 'Delete record' })
   async remove(
     @Param('objectName') objectName: string,
     @Param('id') id: string,
@@ -211,6 +324,7 @@ export class MongodbController {
     ]
   } */
   @Delete(':objectName')
+  @ApiOperation({ summary: 'Delete multiple records' })
   @ApiBody({
     schema: {
       type: 'object',
