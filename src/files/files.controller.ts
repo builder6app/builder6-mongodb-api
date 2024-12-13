@@ -26,7 +26,7 @@ export class FilesController {
     type: 'string',
     schema: {
       type: 'string',
-      default: 'cfs.files.record', // 设置默认值
+      default: 'cfs.files.filerecord', // 设置默认值
     },
   })
   @ApiConsumes('multipart/form-data')
@@ -65,7 +65,7 @@ export class FilesController {
     type: 'string',
     schema: {
       type: 'string',
-      default: 'cfs.files.record', // 设置默认值
+      default: 'cfs.files.filerecord', // 设置默认值
     },
   })
   @ApiParam({
