@@ -69,8 +69,8 @@ export class OidcController {
         code_verifier: storedVerifier, 
         nonce: storedNonce 
       });
-    console.log('received and validated tokens %j', tokenSet);
-    console.log('validated ID Token claims %j', tokenSet.claims());
+    // console.log('received and validated tokens %j', tokenSet);
+    // console.log('validated ID Token claims %j', tokenSet.claims());
     
     delete req.session[`oidc_${providerId}_state`];
     delete req.session[`oidc_${providerId}_code_verifier`];
