@@ -25,7 +25,7 @@ import { OidcModule } from './oidc/oidc.module';
     FilesModule,
     MoleculerModule,
     Microsoft365Module,
-    ...(process.env.OIDC_ISSUER ? [OidcModule] : []),
+    ...(process.env.STEEDOS_IDENTITY_OIDC_ENABLED ? [OidcModule] : []),
   ],
   controllers: [],
   providers: [],

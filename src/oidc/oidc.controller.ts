@@ -26,6 +26,7 @@ export class OidcController {
 
     const redirectTo = client.authorizationUrl({
       scope: provider.scope,
+      state: 'some_state_value',
       // resource: 'https://my.api.example.com/resource/32178',
       code_challenge: provider.code_challenge,
       code_challenge_method: provider.code_challenge_method,
