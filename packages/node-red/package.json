@@ -1,6 +1,9 @@
 {
   "name": "@builder6/node-red",
   "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT"
+  "main": "dist/ndex.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  }
 }
