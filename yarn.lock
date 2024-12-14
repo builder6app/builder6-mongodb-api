@@ -7665,7 +7665,7 @@ number-allocator@^1.0.14:
     debug "^4.3.1"
     js-sdsl "4.3.0"
 
-"nx@>=17.1.2 < 21":
+nx@20.2.2, "nx@>=17.1.2 < 21":
   version "20.2.2"
   resolved "https://registry.npmjs.org/nx/-/nx-20.2.2.tgz#ade48dc648570f747b8f75c60cd8767548188af0"
   integrity sha512-wHgC/NQ82Q3LOeUZXPI2j/JhpZwb7JjRc0uDn3kQU+lN/ulySCJHTHCf4CIglW4NjZeN1WZZ7YMeddtFWETGGA==

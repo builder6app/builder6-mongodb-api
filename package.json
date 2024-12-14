@@ -8,17 +8,17 @@
   "repository": "https://github.com/builder6app/builder6-mongodb-api.git",
   "author": "Jack Zhuang <9340100@qq.com>",
   "scripts": {
-    "start": "lerna run start",
-    "start:dev": "lerna run start:dev",
-    "start:debug": "lerna run start:debug",
-    "start:prod": "lerna run start:prod",
-    "build": "lerna run build",
-    "clean": "lerna clean",
-    "format": "lerna run format",
-    "lint": "lerna run lint"
+    "start": "nx start @builder6/server",
+    "start:dev": "nx start:dev @builder6/server",
+    "start:debug": "nx start:debug @builder6/server",
+    "start:prod": "nx start:prod @builder6/server",
+    "build": "nx run-many -t build",
+    "clean": "nx run-many -t clean",
+    "format": "nx run-many -t format",
+    "lint": "nx run-many -t lint"
   },
   "license": "MIT",
-  "dependencies": {
-    "lerna": "^8.1.9"
+  "devDependencies": {
+    "nx": "20.2.2"
   }
 }

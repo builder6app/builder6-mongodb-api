@@ -188,7 +188,7 @@ export class RoomsGateway implements OnGatewayConnection {
   ) {
 
     const { roomId, userId } = payload;
-    const connectionId = client.connectionId;
+    const connectionId = (client as any).connectionId;
 
     // 获取房间状态
     const roomState = this.roomStates.get(roomId);
