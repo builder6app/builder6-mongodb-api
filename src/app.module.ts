@@ -10,6 +10,7 @@ import { FilesModule } from './files/files.module';
 import { MoleculerModule } from './moleculer/moleculer.module';
 import { Microsoft365Module } from './microsoft365/microsoft365.module';
 import { OidcModule } from './oidc/oidc.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { OidcModule } from './oidc/oidc.module';
     Microsoft365Module,
     ...(process.env.STEEDOS_IDENTITY_OIDC_ENABLED ? [OidcModule] : []),
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}
