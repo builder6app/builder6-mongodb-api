@@ -1,3 +1,9 @@
+/*
+ * @Author: 殷亮辉 yinlianghui@hotoa.com
+ * @Date: 2024-12-13 18:43:25
+ * @LastEditors: 殷亮辉 yinlianghui@hotoa.com
+ * @LastEditTime: 2024-12-14 11:02:46
+ */
 import { MongodbService } from '@/mongodb/mongodb.service';
 import { Injectable } from '@nestjs/common';
 
@@ -12,7 +18,7 @@ export class MetaService {
     if (table) {
       table.fields = await this.mongodbService.find('b6_fields', {
         table_id: tableId,
-      });
+      }, { sort: { sort_no: 1 } });
       table.verifications = await this.mongodbService.find('b6_verification', {
         table: tableId,
       });
