@@ -2,20 +2,29 @@
 
 ## 配置环境变量
 
-```
-TABLES_MONGO_URL=mongodb://root:steedos@localhost:27017/b6_records?authSource=admin
-MONGO_URL=mongodb://root:steedos@localhost:27017/steedos?authSource=admin
+```bash
+ROOT_URL=http://localhost:5100
+B6_PORT=5100
+MONGO_URL=mongodb://127.0.0.1:27017/steedos
+TRANSPORTER=redis://127.0.0.1:6379
 ```
 
-## 启动服务
+## 启动开发服务
 
-```
+```bash
 yarn 
-yarn start
+yarn start:dev
 ```
 
-## 访问 demo
+## 编译 
 
+```bash
+yarn build
 ```
-http://localhost:5100/demo/grid/:baseId/:tableId/
+
+## 发版本
+
+```bash
+npm login
+npm release --access public
 ```

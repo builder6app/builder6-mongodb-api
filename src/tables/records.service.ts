@@ -10,7 +10,8 @@ export class RecordsService {
   private db: Db;
 
   constructor() {
-    const client = new MongoClient(process.env.STEEDOS_TABLES_MONGO_URL, {
+    const mongoUrl = process.env.STEEDOS_TABLES_MONGO_URL || process.env.B6_TABLES_MONGO_URL || process.env.MONGO_URL;
+    const client = new MongoClient(mongoUrl, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
     });
