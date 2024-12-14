@@ -1,0 +1,6 @@
+{
+  "name": "@builder6/node-red",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT"
+}
