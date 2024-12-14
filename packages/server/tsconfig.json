@@ -22,8 +22,5 @@
         "src/*"
       ]
     },
-  },
-  "exclude": [
-    "examples",
-  ]
+  }
 }

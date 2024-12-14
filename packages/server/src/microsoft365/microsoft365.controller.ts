@@ -11,7 +11,7 @@ export class Microsoft365Controller {
   @Get('onedrive')
   async getUserOneDriveInfo() {
 
-    const userPrincipalName = process.env.MICROSOFT365_USERNAME;
+    const userPrincipalName = process.env.B6_MICROSOFT365_USERNAME;
     try {
 
       const accessToken = await this.microsoft365Service.getAccessToken();

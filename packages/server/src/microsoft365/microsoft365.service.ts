@@ -5,9 +5,9 @@ import { default as axios } from 'axios';
 export class Microsoft365Service {
 
   async getAccessToken() {
-    const tenantId = process.env.MICROSOFT365_TENANT_ID;
-    const clientId = process.env.MICROSOFT365_CLIENT_ID;
-    const clientSecret = process.env.MICROSOFT365_CLIENT_SECRET;
+    const tenantId = process.env.B6_MICROSOFT365_TENANT_ID;
+    const clientId = process.env.B6_MICROSOFT365_CLIENT_ID;
+    const clientSecret = process.env.B6_MICROSOFT365_CLIENT_SECRET;
 
       // 获取访问令牌
       const tokenResponse = await axios.post(
