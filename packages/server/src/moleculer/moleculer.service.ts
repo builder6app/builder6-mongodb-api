@@ -24,7 +24,7 @@ export class MoleculerService {
     this.broker.start();
   }
 
-  async loadPlugins() {
+  loadPlugins() {
     // @builder6/plugin-tables@0.5.6,@builder6/plugin-pages@0.5.1,
     const plugins = this.configService.get("plugin.packages");
     if (plugins) {
@@ -33,12 +33,12 @@ export class MoleculerService {
         // 检测 npm 包是否存在
         // 检测 npm 包中是否包含 './dist/package.service.ts'
         // 引入此文件，并创建包服务
-        await this.startPlugin(plugin);
+        this.loadPlugin(plugin);
       }
     }
   }
 
-  async startPlugin(plugin) {
+  loadPlugin(plugin) {
     try {
       // 解析插件名称和版本号
       const match = plugin.match(/^(.*?)(?:@([\d.]+))?$/);
@@ -68,7 +68,7 @@ export class MoleculerService {
       }
 
       // 动态引入并创建服务
-      const serviceModule = await import(packageServicePath);
+      const serviceModule = require(packageServicePath);
       const serviceSchema = serviceModule.default? serviceModule.default : serviceModule
       if (serviceSchema) {
         this.broker.createService(serviceSchema);
