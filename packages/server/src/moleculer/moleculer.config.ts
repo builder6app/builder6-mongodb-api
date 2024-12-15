@@ -111,8 +111,6 @@ const defaultConfig = {
 
 const envConfig = config();
 
-console.log('Loading env config', envConfig);
-
 export default {
     ...defaultConfig,
     ...envConfig

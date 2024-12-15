@@ -15,9 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  **/
+
+import { Logger } from '@nestjs/common';
+
 import ExpressApplication from './app.express';
 import * as project from '../package.json';
 
+const childProcess = require('child_process')
 
 var semver = require('semver');
 if (!semver.satisfies(process.version, ">=14.0.0")) {
@@ -32,10 +36,6 @@ var path = require("path");
 const os = require("os")
 import * as fs from 'fs-extra';
 
-
-var config;
-var configFile;
-var plugins;
 
 var knownOpts = {
     "help": Boolean,
@@ -65,110 +65,251 @@ nopt.invalidHandler = function(k,v,t) {
 
 var parsedArgs = nopt(knownOpts,shortHands,process.argv,2)
 
-if (parsedArgs.help) {
-    console.log("Builder6 Server v" + project.version);
-    console.log("Usage: b6server [-v] [-?] [--config b6.config.js] [--userDir DIR]");
-    console.log("                [--port PORT] [--title TITLE] [--safe] [plugins]");
-    console.log("");
-    console.log("Options:");
-    console.log("  -p, --port     PORT  port to listen on");
-    console.log("  -s, --config FILE  use specified config file");
-    console.log("  -u, --userDir  DIR   use specified user directory");
-    console.log("  -v, --verbose        enable verbose output");
-    console.log("      --safe           enable safe mode");
-    console.log("      --version        show version information");
-    console.log("  -?, --help           show this help");
-    console.log("");
-    console.log("Documentation can be found at https://builder6.com");
-    process.exit();
-}
-
-if (parsedArgs.version) {
-    console.log("Builder6 Server v"+project.version)
-    console.log("Node.js "+process.version)
-    console.log(os.type()+" "+os.release()+" "+os.arch()+" "+os.endianness())
-    process.exit()
-}
-
-if (parsedArgs.argv.remain.length > 0) {
-    plugins = parsedArgs.argv.remain[0];
-}
-
 process.env.B6_HOME = process.env.B6_HOME || __dirname;
 
-if (parsedArgs.config) {
-    // User-specified config file
-    configFile = parsedArgs.config;
-} else if (parsedArgs.userDir && fs.existsSync(path.join(parsedArgs.userDir,"b6.config.js"))) {
-    // User-specified userDir that contains a b6.config.js
-    configFile = path.join(parsedArgs.userDir,"b6.config.js");
-} else {
-    if (fs.existsSync(path.join(process.env.B6_HOME,"b6.config.js"))) {
-        // B6_HOME contains user data - use its b6.config.js
-        configFile = path.join(process.env.B6_HOME,"b6.config.js");
+
+const States = {
+    STOPPED: 'stopped',
+    LOADING: 'loading',
+    INSTALLING: 'installing',
+    STARTING: 'starting',
+    RUNNING: 'running',
+    SAFE: 'safe',
+    CRASHED: 'crashed',
+    STOPPING: 'stopping'
+}
+
+class B6Server {
+    userDir: string = process.cwd();
+    configFile: string;
+    config: any;
+
+    state: any;
+    targetState: any;
+    startTimes: any[];
+    runDurations: any[];
+    exitCallback: null;
+    healthPoll: null;
+    resourcePoll: null;
+    parsedArgs: any;
+    cpuAuditLogged: number;
+    memoryAuditLogged: number;
+    private readonly logger = new Logger(B6Server.name);
+    
+    constructor (parsedArgs) {
+        this.state = States.STOPPED
+        this.parsedArgs = parsedArgs || {}
+        // Assume we want to start NR unless told otherwise via loadSettings
+        this.targetState = States.RUNNING
+       
+        this.config = {}
+
+        // Array of times and run durations for monitoring boot loops
+        this.startTimes = []
+        this.runDurations = []
+
+        // A callback function that will be set if the launcher is waiting
+        // for Node-RED to exit
+        this.exitCallback = null
+
+        this.healthPoll = null
+        this.resourcePoll = null
+
+        this.cpuAuditLogged = 0
+        this.memoryAuditLogged = 0
+    }
+
+    async loadConfig() {
+
+      if (this.parsedArgs.help) {
+        console.log("B6 Server v" + project.version);
+        console.log("Usage: b6server [-v] [-?] [--config b6.config.js] [--userDir DIR]");
+        console.log("                [--port PORT] [--title TITLE] [--safe] [plugins]");
+        console.log("");
+        console.log("Options:");
+        console.log("  -p, --port     PORT  port to listen on");
+        console.log("  -s, --config FILE  use specified config file");
+        console.log("  -u, --userDir  DIR   use specified user directory");
+        console.log("  -v, --verbose        enable verbose output");
+        console.log("      --safe           enable safe mode");
+        console.log("      --version        show version information");
+        console.log("  -?, --help           show this help");
+        console.log("");
+        console.log("Documentation can be found at https://builder6.com");
+        process.exit();
+    }
+    
+    if (this.parsedArgs.version) {
+        console.log("Builder6 Server v"+project.version)
+        console.log("Node.js "+process.version)
+        console.log(os.type()+" "+os.release()+" "+os.arch()+" "+os.endianness())
+        process.exit()
+    }
+    
+    if (this.parsedArgs.config) {
+        // User-specified config file
+        this.configFile = this.parsedArgs.config;
+    } else if (this.parsedArgs.userDir && fs.existsSync(path.join(this.parsedArgs.userDir,"b6.config.js"))) {
+        // User-specified userDir that contains a b6.config.js
+        this.configFile = path.join(this.parsedArgs.userDir,"b6.config.js");
     } else {
-        if (!parsedArgs.userDir && !(process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH)) {
-            console.log("Could not find user directory. Ensure $HOME is set for the current user, or use --userDir option")
-            process.exit(1)
-        }
-        var userDir = parsedArgs.userDir || path.join(process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH,".node-red");
-        var userconfigFile = path.join(userDir,"b6.config.js");
-        if (fs.existsSync(userconfigFile)) {
-            // $HOME/.node-red/b6.config.js exists
-            configFile = userconfigFile;
+        if (fs.existsSync(path.join(process.env.B6_HOME,".config.json"))) {
+            // B6_HOME contains user data - use its b6.config.js
+            this.configFile = path.join(process.env.B6_HOME,"b6.config.js");
         } else {
-            var defaultconfig = path.join(__dirname,"b6.config.js");
-            var configStat = fs.statSync(defaultconfig);
-            if (configStat.mtime.getTime() <= configStat.ctime.getTime()) {
-                // Default config file has not been modified - safe to copy
-                fs.copySync(defaultconfig,userconfigFile);
-                configFile = userconfigFile;
+            if (!this.parsedArgs.userDir && !(process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH)) {
+                console.log("Could not find user directory. Ensure $HOME is set for the current user, or use --userDir option")
+                process.exit(1)
+            }
+            this.userDir = this.parsedArgs.userDir || path.join(process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH,".b6");
+            var userconfigFile = path.join(this.userDir,"b6.config.js");
+            if (fs.existsSync(userconfigFile)) {
+                // $HOME/.node-red/b6.config.js exists
+                this.configFile = userconfigFile;
             } else {
-                // Use default b6.config.js as it has been modified
-                configFile = defaultconfig;
+                var defaultconfig = path.join(__dirname,"b6.config.js");
+                var configStat = fs.statSync(defaultconfig);
+                if (configStat.mtime.getTime() <= configStat.ctime.getTime()) {
+                    // Default config file has not been modified - safe to copy
+                    fs.copySync(defaultconfig,userconfigFile);
+                    this.configFile = userconfigFile;
+                } else {
+                    // Use default b6.config.js as it has been modified
+                    this.configFile = defaultconfig;
+                }
             }
         }
     }
-}
 
-try {
-    var config = require(configFile);
-    config.configFile = configFile;
-} catch(err) {
-    console.log("Error loading config file: "+configFile)
-    if (err.code == 'MODULE_NOT_FOUND') {
-        if (err.toString().indexOf(configFile) === -1) {
-            console.log(err.toString());
+    try {
+        this.config = require(this.configFile);
+        this.userDir = path.dirname(this.configFile);
+        this.config.configFile = this.configFile;
+    } catch(err) {
+        console.log("Error loading config file: "+this.configFile)
+        if (err.code == 'MODULE_NOT_FOUND') {
+            if (err.toString().indexOf(this.configFile) === -1) {
+                console.log(err.toString());
+            }
+        } else {
+            console.log(err);
         }
-    } else {
-        console.log(err);
+        process.exit(1);
     }
-    process.exit(1);
-}
 
-if (parsedArgs.verbose) {
-    config.verbose = true;
-}
-if (parsedArgs.safe || (process.env.B6_ENABLE_SAFE_MODE && !/^false$/i.test(process.env.B6_ENABLE_SAFE_MODE) )) {
-    config.safeMode = true;
-}
+    if (this.parsedArgs.verbose) {
+      this.config.verbose = true;
+    }
+    if (this.parsedArgs.safe || (process.env.B6_ENABLE_SAFE_MODE && !/^false$/i.test(process.env.B6_ENABLE_SAFE_MODE) )) {
+      this.config.safeMode = true;
+    }
 
-if (parsedArgs.port !== undefined){
-  config.port = parsedArgs.port;
-} else {
-  if (config.port === undefined){
-    config.port = 5100;
+    if (this.parsedArgs.port !== undefined){
+      this.config.port = this.parsedArgs.port;
+    } else {
+      if (this.config.port === undefined){
+        this.config.port = 5100;
+      }
+    }
+
+    if (this.parsedArgs.argv.remain.length > 0) {
+      const plugins = this.parsedArgs.argv.remain[0];
+      // plugins 格式为 @builder6/app1@1.0.0,@builder6/app2
+      // 转为 config.plugins 格式 { "@builder6/app1": "1.0.0", "@builder6/app2": "latest" }
+      const pluginList = plugins.split(',');
+      const pluginMap = {};
+      pluginList.forEach(plugin => {
+        const [name, version] = plugin.split('@');
+        pluginMap[name] = version || 'latest';
+      });
+      this.config.plugin = {
+        packages: pluginMap
+      }
+    }
+  
+    this.config.userDir = this.userDir;
+
+    this.logger.log('Loaded config', this.config);
+
+  }
+  async updatePackage() {
+      const pkgFilePath = path.join(this.userDir, 'package.json')
+      if (!fs.existsSync(pkgFilePath)) {  
+        // 写入一个空的 package.json
+        fs.writeFileSync(pkgFilePath, JSON.stringify({name: 'b6-server', version: '0.0.1', dependencies: {}}, null, 2))
+      }
+      const packageContent = fs.readFileSync(pkgFilePath, { encoding: 'utf8' })
+      const pkg = JSON.parse(packageContent)
+      const existingDependencies = pkg.dependencies || {}
+      const wantedDependencies = this.config.plugin?.packages || {}
+
+      const existingModules = Object.keys(existingDependencies)
+      const wantedModules = Object.keys(wantedDependencies)
+
+      let changed = false
+      if (existingModules.length !== wantedModules.length) {
+          changed = true
+      } else {
+          existingModules.sort()
+          wantedModules.sort()
+          for (let i = 0; i < existingModules.length; i++) {
+              if (existingModules[i] !== wantedModules[i]) {
+                  changed = true
+                  break
+              }
+              if (existingDependencies[existingModules[i]] !== wantedDependencies[wantedModules[i]]) {
+                  changed = true
+                  break
+              }
+          }
+      }
+
+      if (changed) {
+          this.state = States.INSTALLING
+          this.logger.log('Updating project dependencies')
+          pkg.dependencies = wantedDependencies
+          fs.writeFileSync(pkgFilePath, JSON.stringify(pkg, null, 2))
+          const npmEnv = Object.assign({}, process.env, this.config.env)
+          const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+          return new Promise<void>((resolve, reject) => {
+              const child = childProcess.spawn(
+                  npmCommand,
+                  ['install', '--omit=dev', '--no-audit', '--no-update-notifier', '--no-fund'],
+                  { windowsHide: true, cwd: path.join(this.userDir), env: npmEnv, shell: true })
+              child.stdout.on('data', (data) => {
+                  this.logger.log('[npm] ' + data )
+              })
+              child.stderr.on('data', (data) => {
+                this.logger.log('[npm] ' + data )
+              })
+              child.on('error', (err) => {
+                this.logger.log('[npm] ' + err.toString() )
+              })
+              child.on('close', (code) => {
+                  if (code === 0) {
+                      resolve()
+                  } else {
+                      reject(new Error(`Failed to install project dependencies ret code: ${code} signal ${child.signalCode}`))
+                  }
+              })
+          }).catch(err => {
+              // Revert the package file to the previous content. That ensures
+              // it will try to install again the next time it attempts to run
+              fs.writeFileSync(pkgFilePath, packageContent)
+              throw err
+          })
+      }
+  }
+
+
+  async bootstrap() {
+      await server.loadConfig();
+      await server.updatePackage();
+      const app = await ExpressApplication();
+      
+      await app.listen(this.config.port);
   }
 }
 
-
-global.B6 = global.B6? global.B6: {};
-global.B6.config = config;
-
-export async function bootstrap() {
-  const app = await ExpressApplication();
-  
-  await app.listen(config.port);
-}
-bootstrap();
-  
+const server = global.b6Server = new B6Server(parsedArgs);
+server.bootstrap();
