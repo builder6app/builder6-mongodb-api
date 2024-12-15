@@ -1,9 +1,12 @@
+import { Injectable } from '@nestjs/common';
+
 import { ServiceSchema } from 'moleculer';
 import * as project from '../package.json';
 
 const packageName: string = project.name;
 
-const service: ServiceSchema = {
+export default {
+	
 	name: packageName,
 	namespace: "steedos",
 
@@ -35,12 +38,14 @@ const service: ServiceSchema = {
 	/**
 	 * Service created lifecycle event handler
 	 */
-	async created() {},
+	async created() {
+	},
 
 	/**
 	 * Service started lifecycle event handler
 	 */
-	async started() {},
+	async started() {
+	},
 
 	/**
 	 * Service stopped lifecycle event handler
@@ -48,4 +53,3 @@ const service: ServiceSchema = {
 	async stopped() {}
 };
 
-export = service;

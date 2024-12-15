@@ -1,10 +1,11 @@
 {
   "name": "@builder6/node-red",
   "version": "0.0.1",
-  "main": "dist/ndex.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf dist && tsc --build"
+    "build": "rm -rf dist && tsc",
+    "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
     "node-red": "^4.0.5"

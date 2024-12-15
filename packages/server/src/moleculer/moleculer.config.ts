@@ -15,19 +15,23 @@ const defaultConfig = {
     nodeID: null,
     metadata: {},
 
-    logger: [
-        {
-            type: "Console",
-            options: {
-                colors: true,
-                moduleColors: false,
-                formatter: "full",
-                objectPrinter: null,
-                autoPadding: false
-            }
+    logger: {
+        type: "Console",
+        options: {
+            // Logging level
+            level: "info",
+            // Using colors on the output
+            colors: true,
+            // Print module names with different colors (like docker-compose for containers)
+            moduleColors: false,
+            // Line formatter. It can be "json", "short", "simple", "full", a `Function` or a template string like "{timestamp} {level} {nodeID}/{mod}: {msg}"
+            formatter: "[MO] {timestamp} {level} [{mod}] {msg}",
+            // Custom object printer. If not defined, it uses the `util.inspect` method.
+            objectPrinter: null,
+            // Auto-padding the module name in order to messages begin at the same column.
+            autoPadding: false
         }
-    ],
-    logLevel: process.env.B6_LOG_LEVEL || "warn",
+    },
 
     transporter: process.env.TRANSPORTER,
 

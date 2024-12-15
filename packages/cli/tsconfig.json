@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
+    "incremental": false,
     "declaration": true,
     "module": "commonjs",
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
-    "composite": true,
     "target": "es2022"
   },
   "include": ["src/**/*"],
