@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ServiceBroker } from 'moleculer';
 import * as fs from "fs";
@@ -9,6 +9,8 @@ import moleculerConfig from './moleculer.config';
 @Injectable()
 export class MoleculerService {
   private broker;
+  private readonly logger = new Logger(MoleculerService.name);
+
   constructor(private configService: ConfigService) {
     const transporter = this.configService.get("transporter");
     if (!transporter) {
@@ -41,16 +43,16 @@ export class MoleculerService {
       // 解析插件名称和版本号
       const match = plugin.match(/^(.*?)(?:@([\d.]+))?$/);
       if (!match) {
-        console.warn(`插件格式无效: ${plugin}`);
+        this.logger.warn(`插件格式无效: ${plugin}`);
         return;
       }
 
       const [, packageName, version] = match;
-      console.log(`解析插件: 名称=${packageName}, 版本=${version}`);
+      this.logger.log(`加载插件: 名称：${packageName}, 版本：${version}`);
 
       // 检测 npm 包是否存在
       if (!this.isPackageInstalled(packageName)) {
-        console.error(`插件 ${packageName} 未安装，请先安装`);
+        this.logger.error(`插件 ${packageName} 未安装，请先安装`);
         return;
       }
 
@@ -61,20 +63,19 @@ export class MoleculerService {
       );
 
       if (!fs.existsSync(packageServicePath)) {
-        console.error(`插件 ${packageName} 缺少文件: ${packageServicePath}`);
+        this.logger.error(`插件 ${packageName} 缺少文件: ${packageServicePath}`);
         return;
       }
 
       // 动态引入并创建服务
       const serviceModule = await import(packageServicePath);
-      if (serviceModule.default) {
-        this.broker.createService(serviceModule.default);
-        console.log(`服务已创建: ${packageName}`, serviceModule.default);
-      } else {
-        console.warn(`插件 ${packageName} 不包含默认导出`);
+      const serviceSchema = serviceModule.default? serviceModule.default : serviceModule
+      if (serviceSchema) {
+        this.broker.createService(serviceSchema);
+        this.logger.log(`插件服务已创建: ${packageName}`, serviceSchema);
       }
     } catch (err) {
-      console.error(`处理插件 ${plugin} 时出错: ${(err as Error).message}`);
+      this.logger.error(`处理插件 ${plugin} 时出错: ${(err as Error).message}`);
     }
   }
 

@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import * as devextremeQuery from 'devextreme-query-mongodb';
@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MongodbService {
+  private readonly logger = new Logger(MongodbService.name);
   private db: Db;
   private client: MongoClient;
 
@@ -22,10 +23,10 @@ export class MongodbService {
       .connect()
       .then(() => {
         this.db = this.client.db();
-        console.log('Connected to Steedos MongoDB');
+        this.logger.log('Connected to Steedos MongoDB');
       })
       .catch((err) => {
-        console.error('Error connecting to Steedos MongoDB', err);
+        this.logger.error('Error connecting to Steedos MongoDB', err);
       });
   }
 
