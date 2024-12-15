@@ -6,24 +6,30 @@ import * as path from 'path';
 import { MongodbService } from '@/mongodb/mongodb.service';
 import stream from 'stream';
 import * as mime from 'mime-types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FilesService {
   private s3: AWS.S3;
   public cfsStore: string;
-  public storageDir = process.env.STEEDOS_STORAGE_DIR || './steedos-storage';
+  public storageDir: string;
+  public s3Bucket: string;
+  public rootUrl: string;
 
-  constructor(private mongodbService: MongodbService) {
+  constructor(private configService: ConfigService, private mongodbService: MongodbService) {
+    this.rootUrl = configService.get('root.url');  
+    this.storageDir = configService.get('storage.dir') || './steedos-storage';  
     // 初始化 S3 客户端
-    this.cfsStore = process.env.STEEDOS_CFS_STORE || 'local';
-    if (this.cfsStore === 'S3') {
+    this.cfsStore = configService.get('cfs.store') || 'local';
+    if (this.cfsStore === 'S3') { 
       this.s3 = new AWS.S3({
-        endpoint: process.env.STEEDOS_CFS_AWS_S3_ENDPOINT,
-        accessKeyId: process.env.STEEDOS_CFS_AWS_S3_ACCESS_KEY_ID,
-        secretAccessKey: process.env.STEEDOS_CFS_AWS_S3_SECRET_ACCESS_KEY,
-        region: process.env.STEEDOS_CFS_AWS_S3_REGION,
+        endpoint: configService.get('cfs.aws.s3.endpoint'),
+        accessKeyId: configService.get('cfs.aws.s3.access.key.id'),
+        secretAccessKey: configService.get('cfs.aws.s3.secret.access.key'),
+        region: configService.get('cfs.aws.s3.region'),
         signatureVersion: 'v4',
       });
+      this.s3Bucket = configService.get('cfs.aws.s3.bucket');
     }
   }
 
@@ -111,13 +117,12 @@ export class FilesService {
       }
     } else if (this.cfsStore === 'S3') {
       // 如果存储配置为 S3
-      const bucketName = process.env.STEEDOS_CFS_AWS_S3_BUCKET;
       const collectionFolderName = this.getCollectionFolderName(collectionName);
 
       // 构造 S3 中的文件路径，例如：objectName/2024/12/uniqueFileName
       relativeKey = `${collectionFolderName}/${objectName}/${year}/${month}/${uniqueFileName}`;
       const params = {
-        Bucket: bucketName,
+        Bucket: this.s3Bucket,
         Key: relativeKey,
         Body: file.buffer,
         ContentType: mimeType,
@@ -186,11 +191,10 @@ export class FilesService {
     }
 
     if (this.cfsStore === 'S3') {
-      const bucketName = process.env.STEEDOS_CFS_AWS_S3_BUCKET;
       const key = fileRecord.copies.files.key;
 
       const params = {
-        Bucket: bucketName,
+        Bucket: this.s3Bucket,
         Key: key,
         Expires: 60 * 5, // 5分钟有效期
       };
@@ -203,7 +207,7 @@ export class FilesService {
       }
     } else if (this.cfsStore === 'local') {
       return (
-        process.env.ROOT_URL +
+        this.rootUrl +
         '/api/v6/files/' +
         collectionName +
         '/' +
@@ -251,11 +255,10 @@ export class FilesService {
         throw new Error(`文件下载失败: ${err.message}`);
       }
     } else if (this.cfsStore === 'S3') {
-      const bucketName = process.env.STEEDOS_CFS_AWS_S3_BUCKET;
       const key = fileRecord.copies.files.key;
 
       const params = {
-        Bucket: bucketName,
+        Bucket: this.s3Bucket,
         Key: key,
         Expires: 60 * 10, // 10分钟有效期
       };
