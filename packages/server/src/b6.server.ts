@@ -187,11 +187,12 @@ class B6Server {
     }
 
     try {
-        const config = require(this.configFile);
+        const configJs = require(this.configFile);
         this.config = {
-          config,
+          ...configJs,
           ...getEnvConfigs(),
         }
+        console.log('configJs', configJs)
         this.userDir = path.dirname(this.configFile);
         this.config.configFile = this.configFile;
     } catch(err) {
@@ -221,7 +222,7 @@ class B6Server {
       }
     }
     
-    this.config.plugin = {};
+    this.config.plugin = this.config.plugin || {};
 
     if (this.parsedArgs.npmPackages !== undefined){
       this.config.plugin.packages = this.parsedArgs.npmPackages;
