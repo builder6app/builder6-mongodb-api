@@ -1,5 +1,5 @@
 module.exports = {
-    plugins: {
-        '@builder6/test': '0.0.1'
+    plugin: {
+        packages: '@builder6/node-red'
     }
 }

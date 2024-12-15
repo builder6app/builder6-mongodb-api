@@ -109,9 +109,13 @@ const defaultConfig = {
     }
 };
 
+const b6ServerConfig = global.b6Server?.config || {};
 const envConfig = config();
 
-export default {
+export default () => {
+  return {
     ...defaultConfig,
+    ...b6ServerConfig,
     ...envConfig
+  }
 }

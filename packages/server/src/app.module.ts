@@ -11,7 +11,7 @@ import { MoleculerModule } from './moleculer/moleculer.module';
 import { Microsoft365Module } from './microsoft365/microsoft365.module';
 import { OidcModule } from './oidc/oidc.module';
 import { AppController } from './app.controller';
-import config from './moleculer/env.config';
+import config from './moleculer/moleculer.config';
 
 @Module({
   imports: [

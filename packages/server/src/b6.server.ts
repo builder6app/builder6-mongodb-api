@@ -213,23 +213,56 @@ class B6Server {
     }
 
     if (this.parsedArgs.argv.remain.length > 0) {
-      const plugins = this.parsedArgs.argv.remain[0];
-      // plugins 格式为 @builder6/app1@1.0.0,@builder6/app2
-      // 转为 config.plugins 格式 { "@builder6/app1": "1.0.0", "@builder6/app2": "latest" }
-      const pluginList = plugins.split(',');
-      const pluginMap = {};
-      pluginList.forEach(plugin => {
-        const [name, version] = plugin.split('@');
-        pluginMap[name] = version || 'latest';
-      });
       this.config.plugin = {
-        packages: pluginMap
+        packages: this.parsedArgs.argv.remain[0]
       }
     }
   
     this.config.userDir = this.userDir;
 
     this.logger.log('Loaded config', this.config);
+
+  }
+  getPluginPackages() {
+    // packages 格式为 @builder6/app1@1.0.0,@builder6/app2
+    // 转为 格式 { "@builder6/app1": "1.0.0", "@builder6/app2": "latest" }
+    if (this.config.plugin?.packages) {
+      const pluginList = this.config.plugin.packages.split(',');
+      const pluginMap = {};
+      pluginList.forEach(plugin => {
+        const match = plugin.match(/^(@[^@]+\/[^@]+|[^@]+)(?:@(.+))?$/);
+        if (match) {
+          const name = match[1]; // 包名
+          const version = match[2] || 'latest'; // 版本号（默认 latest）
+          pluginMap[name] = version;
+        }
+      });
+      return pluginMap;
+    }
+    return {}
+  }
+  async updateNpmrc() {
+
+    const npmrcPath = path.join(this.config.userDir, '.npmrc')
+    if (this.config.plugin?.npmrc) {
+        try {
+            fs.writeFileSync(npmrcPath, this.config.plugin?.npmrc)
+        } catch (error) {
+            this.state = States.STOPPED
+            this.logger.log('Unable to write .npmrc file' )
+            throw error
+        }
+    } else {
+        if (fs.existsSync(npmrcPath)) {
+            try {
+                fs.unlinkSync(npmrcPath)
+            } catch (error) {
+                this.state = States.STOPPED
+                this.logger.log('Unable to remove old .npmrc file')
+                throw error
+            }
+        }
+    }
 
   }
   async updatePackage() {
@@ -241,7 +274,7 @@ class B6Server {
       const packageContent = fs.readFileSync(pkgFilePath, { encoding: 'utf8' })
       const pkg = JSON.parse(packageContent)
       const existingDependencies = pkg.dependencies || {}
-      const wantedDependencies = this.config.plugin?.packages || {}
+      const wantedDependencies = this.getPluginPackages();
 
       const existingModules = Object.keys(existingDependencies)
       const wantedModules = Object.keys(wantedDependencies)
@@ -266,7 +299,7 @@ class B6Server {
 
       if (changed) {
           this.state = States.INSTALLING
-          this.logger.log('Updating project dependencies')
+          this.logger.log('Updating project dependencies', wantedDependencies)
           pkg.dependencies = wantedDependencies
           fs.writeFileSync(pkgFilePath, JSON.stringify(pkg, null, 2))
           const npmEnv = Object.assign({}, process.env, this.config.env)
