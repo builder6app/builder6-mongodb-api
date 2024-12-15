@@ -8,8 +8,12 @@
     "dist"
   ],
   "main": "dist/index.js",
+  "bin": {
+    "b6server": "dist/b6.server.js"
+  },
   "scripts": {
     "build": "nest build",
+    "build:watch": "nest build --watch",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -53,6 +57,7 @@
     "moleculer": "^0.14.35",
     "mongodb": "^3.7.3",
     "multer": "^1.4.5-lts.1",
+    "nopt": "5.0.0",
     "openid-client": "^5.7.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",

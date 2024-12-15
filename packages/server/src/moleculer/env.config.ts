@@ -47,5 +47,9 @@ function parseEnvToJSON(env, prefixes) {
 
 export default () => {
     const env = parseEnvToJSON(process.env, ['STEEDOS_', 'B6_']) as any;
-    return env
+    const config = global.B6?.config || {};
+    return {
+        ...config,
+        ...env,
+    }
 }

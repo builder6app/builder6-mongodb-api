@@ -28,7 +28,7 @@ import config from './moleculer/env.config';
     FilesModule,
     MoleculerModule,
     Microsoft365Module,
-    ...(process.env.STEEDOS_IDENTITY_OIDC_ENABLED ? [OidcModule] : []),
+    ...(process.env.B6_OIDC_ENABLED ? [OidcModule] : []),
   ],
   controllers: [AppController],
   providers: [],
