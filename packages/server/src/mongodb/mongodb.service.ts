@@ -4,14 +4,16 @@ import { Injectable } from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import * as devextremeQuery from 'devextreme-query-mongodb';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MongodbService {
   private db: Db;
   private client: MongoClient;
 
-  constructor() {
-    this.client = new MongoClient(process.env.MONGO_URL, {
+  constructor(private configService: ConfigService) {
+    const mongoUrl = configService.get('mongo.url');
+    this.client = new MongoClient(mongoUrl, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
     });

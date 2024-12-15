@@ -11,11 +11,13 @@ import { MoleculerModule } from './moleculer/moleculer.module';
 import { Microsoft365Module } from './microsoft365/microsoft365.module';
 import { OidcModule } from './oidc/oidc.module';
 import { AppController } from './app.controller';
+import config from './moleculer/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.local', '.env'],
+      load: [config],
       isGlobal: true, // 使配置在整个应用中可用
     }),
     AuthModule,
