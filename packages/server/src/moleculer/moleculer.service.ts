@@ -20,25 +20,25 @@ export class MoleculerService {
     this.broker = new ServiceBroker({
       ...moleculerConfig,
     });
-    this.loadPlugins();
+    this.loadServices();
     this.broker.start();
   }
 
-  loadPlugins() {
+  loadServices() {
     // @builder6/plugin-tables@0.5.6,@builder6/plugin-pages@0.5.1,
-    const plugins = this.configService.get("plugin.packages");
+    const plugins = this.configService.get("plugin.services");
     if (plugins) {
       for (const plugin of plugins.split(',')) {
-        // 解析 plugin npm 名称和 版本号。例如： @builder6/plugin-tables@0.5.6
+        // 解析 plugin npm 名称和 版本号。例如： @builder6/plugin-tables
         // 检测 npm 包是否存在
         // 检测 npm 包中是否包含 './dist/package.service.ts'
         // 引入此文件，并创建包服务
-        this.loadPlugin(plugin);
+        this.loadService(plugin);
       }
     }
   }
 
-  loadPlugin(plugin) {
+  loadService(plugin) {
     try {
       // 解析插件名称和版本号
       const match = plugin.match(/^(.*?)(?:@([\d.]+))?$/);
@@ -48,7 +48,7 @@ export class MoleculerService {
       }
 
       const [, packageName, version] = match;
-      this.logger.log(`加载插件: 名称：${packageName}, 版本：${version}`);
+      this.logger.log(`加载插件: 名称：${packageName}`);
 
       // 检测 npm 包是否存在
       if (!this.isPackageInstalled(packageName)) {
@@ -72,7 +72,7 @@ export class MoleculerService {
       const serviceSchema = serviceModule.default? serviceModule.default : serviceModule
       if (serviceSchema) {
         this.broker.createService(serviceSchema);
-        this.logger.log(`插件服务已创建: ${packageName}`, serviceSchema);
+        this.logger.log(`插件服务已创建: ${packageName}`);
       }
     } catch (err) {
       this.logger.error(`处理插件 ${plugin} 时出错: ${(err as Error).message}`);

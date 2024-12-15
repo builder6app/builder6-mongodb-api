@@ -1,7 +1,7 @@
 "use strict";
 import * as _ from "lodash";
 
-import config from './env.config';
+import AppConfig from '../app.config';
 
 /**
  * Steedos ServiceBroker configuration file
@@ -109,13 +109,10 @@ const defaultConfig = {
     }
 };
 
-const b6ServerConfig = global.b6Server?.config || {};
-const envConfig = config();
 
 export default () => {
   return {
     ...defaultConfig,
-    ...b6ServerConfig,
-    ...envConfig
+    ...AppConfig(),
   }
 }

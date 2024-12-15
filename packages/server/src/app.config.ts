@@ -45,9 +45,16 @@ function parseEnvToJSON(env, prefixes) {
     return result;
 }
 
-export default () => {
+export function getEnvConfigs () {
     const env = parseEnvToJSON(process.env, ['STEEDOS_', 'B6_']) as any;
+    return env;
+}
+
+export default () => {
+    const envConfigs = getEnvConfigs();
+    const b6Configs = global.b6Server?.config || {};
     return {
-        ...env,
+        ...b6Configs,
+        ...envConfigs
     }
 }

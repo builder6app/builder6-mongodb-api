@@ -20,6 +20,7 @@ import { Logger } from '@nestjs/common';
 
 import ExpressApplication from './app.express';
 import * as project from '../package.json';
+import {getEnvConfigs} from './app.config';
 
 const childProcess = require('child_process')
 
@@ -43,6 +44,7 @@ var knownOpts = {
     "config": [path],
     "title": String,
     "userDir": [path],
+    "npmPackages": String,
     "verbose": Boolean,
     "safe": Boolean,
     "version": Boolean,
@@ -56,6 +58,7 @@ var shortHands = {
     // doesn't get treated as --title
     "t":["--help"],
     "u":["--userDir"],
+    "n":["--npmPackages"],
     "v":["--verbose"],
     "D":["--define"]
 };
@@ -95,6 +98,7 @@ class B6Server {
     cpuAuditLogged: number;
     memoryAuditLogged: number;
     private readonly logger = new Logger(B6Server.name);
+    public app: any;
     
     constructor (parsedArgs) {
         this.state = States.STOPPED
@@ -124,12 +128,13 @@ class B6Server {
       if (this.parsedArgs.help) {
         console.log("B6 Server v" + project.version);
         console.log("Usage: b6server [-v] [-?] [--config b6.config.js] [--userDir DIR]");
-        console.log("                [--port PORT] [--title TITLE] [--safe] [plugins]");
+        console.log("                [--port PORT] [--title TITLE] [--safe] [services]");
         console.log("");
         console.log("Options:");
-        console.log("  -p, --port     PORT  port to listen on");
-        console.log("  -s, --config FILE  use specified config file");
-        console.log("  -u, --userDir  DIR   use specified user directory");
+        console.log("  -p, --port           port to listen on");
+        console.log("  -s, --config         specified config file");
+        console.log("  -n, --npmPackages    install specified npm packages");
+        console.log("  -u, --userDir        use specified user directory");
         console.log("  -v, --verbose        enable verbose output");
         console.log("      --safe           enable safe mode");
         console.log("      --version        show version information");
@@ -182,7 +187,11 @@ class B6Server {
     }
 
     try {
-        this.config = require(this.configFile);
+        const config = require(this.configFile);
+        this.config = {
+          config,
+          ...getEnvConfigs(),
+        }
         this.userDir = path.dirname(this.configFile);
         this.config.configFile = this.configFile;
     } catch(err) {
@@ -211,11 +220,16 @@ class B6Server {
         this.config.port = 5100;
       }
     }
+    
+    this.config.plugin = {};
+
+    if (this.parsedArgs.npmPackages !== undefined){
+      this.config.plugin.packages = this.parsedArgs.npmPackages;
+    }
+    
 
     if (this.parsedArgs.argv.remain.length > 0) {
-      this.config.plugin = {
-        packages: this.parsedArgs.argv.remain[0]
-      }
+      this.config.plugin.services = this.parsedArgs.argv.remain[0]
     }
   
     this.config.userDir = this.userDir;
@@ -336,11 +350,12 @@ class B6Server {
 
 
   async bootstrap() {
-      await server.loadConfig();
-      await server.updatePackage();
-      const app = await ExpressApplication();
+      await this.loadConfig();
+      await this.updateNpmrc();
+      await this.updatePackage();
+      this.app = await ExpressApplication();
       
-      await app.listen(this.config.port);
+      await this.app.listen(this.config.port);
   }
 }
 
