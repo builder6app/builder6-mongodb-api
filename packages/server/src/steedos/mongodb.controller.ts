@@ -16,7 +16,12 @@ import {
 import { MongodbService } from '../mongodb/mongodb.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AdminGuard } from '@/auth/admin.guard';
 
 // 直接操作 mongodb 数据库 的 API，必须是 admin 用户才能操作。
@@ -53,7 +58,12 @@ export class MongodbController {
       res.status(200).send(result);
     } catch (error) {
       console.error('Query error', error);
-      res.status(500).send(error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
     }
   }
 
@@ -104,7 +114,11 @@ export class MongodbController {
 
       const loadOptions = { take: top, skip: skip, ...options.loadOptions };
       if (filters) {
-        loadOptions.filter = JSON.parse(filters);
+        try {
+          loadOptions.filter = JSON.parse(filters);
+        } catch (e) {
+          throw new Error('filters 参数格式错误，不是有效的json字符串');
+        }
       }
       if (sort) {
         const sortFields = sort.split(',');
@@ -132,7 +146,12 @@ export class MongodbController {
       res.status(200).send(results);
     } catch (error) {
       console.error('Query error', error);
-      res.status(500).send(error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
     }
   }
 
@@ -153,7 +172,12 @@ export class MongodbController {
       res.status(200).send(result);
     } catch (error) {
       console.error('Query error', error);
-      res.status(500).send(error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
     }
   }
 
@@ -187,10 +211,14 @@ export class MongodbController {
       res.status(200).send(result);
     } catch (error) {
       console.error('Query error', error);
-      res.status(500).send(error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
     }
   }
-
 
   @Patch(':objectName')
   @ApiOperation({ summary: 'Update multiple records' })
@@ -220,7 +248,6 @@ export class MongodbController {
   ) {
     try {
       if (performUpsert) {
-        
         const createdRecords = [];
         const updatedRecords = [];
         const resultRecords = [];
@@ -236,24 +263,20 @@ export class MongodbController {
                 modified: new Date(),
               },
             );
-            if (!result) {  
+            if (!result) {
               throw new Error(`Record not found ${_id}`);
             }
-              
+
             updatedRecords.push(result._id);
             resultRecords.push(result);
           } else {
-
-            const result = await this.mongodbService.insertOne(
-              objectName,
-              {
-                ...rest,
-                created_by: req['user']._id,
-                created: new Date(),
-                modified_by: req['user']._id,
-                modified: new Date(),
-              },
-            );
+            const result = await this.mongodbService.insertOne(objectName, {
+              ...rest,
+              created_by: req['user']._id,
+              created: new Date(),
+              modified_by: req['user']._id,
+              modified: new Date(),
+            });
             createdRecords.push(result._id);
             resultRecords.push(result);
           }
@@ -263,13 +286,11 @@ export class MongodbController {
             records: resultRecords,
           });
         }
-          
       } else {
-
         const resultRecords = [];
         for (const record of records) {
           const { _id, ...rest } = record as any;
-          if (!_id) {  
+          if (!_id) {
             throw new Error(`_id is required`);
           }
           if (_id) {
@@ -282,7 +303,7 @@ export class MongodbController {
                 modified: new Date(),
               },
             );
-            if (!result) {  
+            if (!result) {
               throw new Error(`Record not found ${_id}`);
             }
             resultRecords.push(result);
@@ -294,7 +315,12 @@ export class MongodbController {
       }
     } catch (error) {
       console.error('Update error', error);
-      res.status(500).send(error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
     }
   }
 
@@ -306,7 +332,9 @@ export class MongodbController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.deleteOne(objectName, {_id: id});
+      const result = await this.mongodbService.deleteOne(objectName, {
+        _id: id,
+      });
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
@@ -350,14 +378,23 @@ export class MongodbController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.mongodbService.deleteMany(objectName, {_id: { $in: records }});
+      const result = await this.mongodbService.deleteMany(objectName, {
+        _id: { $in: records },
+      });
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
-      res.status(200).send({ records: records.map(_id => ({ deleted: true, _id })) });
+      res
+        .status(200)
+        .send({ records: records.map((_id) => ({ deleted: true, _id })) });
     } catch (error) {
       console.error('Query error', error);
-      res.status(500).send(error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
     }
   }
 }
