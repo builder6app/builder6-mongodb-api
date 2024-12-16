@@ -95,10 +95,10 @@ export class MongodbService {
     }
   }
 
-  async findOneAndUpdate(collectionName: string, id: string, data: any) {
+  async findOneAndUpdate(collectionName: string, query: object, data: any) {
     const collection = this.db.collection(collectionName);
     const result = await collection.findOneAndUpdate(
-      { _id: id as any },
+      query,
       { $set: data },
       { returnDocument: 'after' },
     );

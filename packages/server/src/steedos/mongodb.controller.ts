@@ -225,7 +225,59 @@ export class MongodbController {
     try {
       const result = await this.mongodbService.findOneAndUpdate(
         objectName,
-        id,
+        { _id: id },
+        {
+          ...body,
+          modified_by: req['user']._id,
+          modified: new Date(),
+        },
+      );
+      if (!result) {
+        return res.status(404).send();
+      }
+      res.status(200).send(result);
+    } catch (error) {
+      console.error('Query error', error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
+    }
+  }
+
+  @Patch(':objectName/:fieldName/:fieldValue')
+  @ApiOperation({
+    // summary: 'Insert or Update (Upsert) a Record Using an External ID',
+    summary: 'Update a Record Using an External ID',
+  })
+  // @ApiQuery({
+  //   name: 'performUpsert',
+  //   required: false,
+  //   description: 'Inserting a record that doesn’t yet exist',
+  //   schema: {
+  //     type: 'boolean',
+  //     default: false,
+  //   }, // 在 Swagger 中设置默认值
+  // })
+  @ApiBody({
+    schema: {
+      type: 'object',
+    },
+  })
+  async updateByField(
+    @Param('objectName') objectName: string,
+    @Param('fieldName') fieldName: string,
+    @Param('fieldValue') fieldValue: string,
+    @Body() body: any,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      const result = await this.mongodbService.findOneAndUpdate(
+        objectName,
+        { [fieldName]: fieldValue },
         {
           ...body,
           modified_by: req['user']._id,
@@ -283,7 +335,7 @@ export class MongodbController {
           if (_id) {
             const result = await this.mongodbService.findOneAndUpdate(
               objectName,
-              _id,
+              { _id },
               {
                 ...rest,
                 modified_by: req['user']._id,
@@ -323,7 +375,7 @@ export class MongodbController {
           if (_id) {
             const result = await this.mongodbService.findOneAndUpdate(
               objectName,
-              _id,
+              { _id },
               {
                 ...rest,
                 modified_by: req['user']._id,

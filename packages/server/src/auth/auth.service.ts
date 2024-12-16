@@ -72,7 +72,11 @@ export class AuthService {
     }
     user['services']['resume']['loginTokens'].push(hashedToken);
     const data = { services: user['services'] };
-    await this.mongodbService.findOneAndUpdate('users', user._id, data);
+    await this.mongodbService.findOneAndUpdate(
+      'users',
+      { _id: user._id },
+      data,
+    );
 
     return {
       access_token: access_token,
@@ -120,7 +124,7 @@ export class AuthService {
       const payload = this.jwtService.decode(token) as any;
       console.log('payload', payload);
       const user = (await this.mongodbService.findOne('users', {
-        '_id': payload.sub,
+        _id: payload.sub,
       })) as any;
       if (user) {
         userId = user._id;
@@ -130,11 +134,18 @@ export class AuthService {
       // It's an API key
       const apiKeyString = tokenArray[1] as string;
 
-      const apiKey = await this.mongodbService.findOne('api_keys', { api_key: apiKeyString, active: true });
+      const apiKey = await this.mongodbService.findOne('api_keys', {
+        api_key: apiKeyString,
+        active: true,
+      });
       if (apiKey) {
         userId = apiKey.owner;
-        spaceId = apiKey.space; 
-        await this.mongodbService.findOneAndUpdate('api_keys', apiKey._id, { last_use_time: new Date() });
+        spaceId = apiKey.space;
+        await this.mongodbService.findOneAndUpdate(
+          'api_keys',
+          { _id: apiKey._id },
+          { last_use_time: new Date() },
+        );
       }
     } else if (tokenArray.length === 2) {
       spaceId = tokenArray[0];
@@ -149,7 +160,7 @@ export class AuthService {
       const space_user = await this.getSpaceUser(userId, spaceId);
       return space_user;
     }
-    
+
     throw new UnauthorizedException();
   }
 
