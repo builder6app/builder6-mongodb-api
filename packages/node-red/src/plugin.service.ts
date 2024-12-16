@@ -1,55 +1,48 @@
-import { Injectable } from '@nestjs/common';
-
-import { ServiceSchema } from 'moleculer';
 import * as project from '../package.json';
 
 const packageName: string = project.name;
 
 export default {
-	
-	name: packageName,
-	namespace: "steedos",
+  name: packageName,
+  namespace: 'steedos',
 
-	/**
-	 * Settings
-	 */
-	settings: {},
+  /**
+   * Settings
+   */
+  settings: {},
 
-	/**
-	 * Dependencies
-	 */
-	dependencies: [],
+  /**
+   * Dependencies
+   */
+  dependencies: [],
 
-	/**
-	 * Actions
-	 */
-	actions: {},
+  /**
+   * Actions
+   */
+  actions: {},
 
-	/**
-	 * Events
-	 */
-	events: {},
+  /**
+   * Events
+   */
+  events: {},
 
-	/**
-	 * Methods
-	 */
-	methods: {},
+  /**
+   * Methods
+   */
+  methods: {},
 
-	/**
-	 * Service created lifecycle event handler
-	 */
-	async created() {
-	},
+  /**
+   * Service created lifecycle event handler
+   */
+  async created() {},
 
-	/**
-	 * Service started lifecycle event handler
-	 */
-	async started() {
-	},
+  /**
+   * Service started lifecycle event handler
+   */
+  async started() {},
 
-	/**
-	 * Service stopped lifecycle event handler
-	 */
-	async stopped() {}
+  /**
+   * Service stopped lifecycle event handler
+   */
+  async stopped() {},
 };
-
