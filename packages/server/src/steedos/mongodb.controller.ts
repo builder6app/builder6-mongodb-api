@@ -181,6 +181,33 @@ export class MongodbController {
     }
   }
 
+  @Get(':objectName/:fieldName/:fieldValue')
+  @ApiOperation({ summary: 'Get a Record Using an External ID' })
+  async findOneByField(
+    @Res() res: Response,
+    @Param('objectName') objectName: string,
+    @Param('fieldName') fieldName: string,
+    @Param('fieldValue') fieldValue: string,
+  ) {
+    try {
+      const result = await this.mongodbService.findOne(objectName, {
+        [fieldName]: fieldValue,
+      });
+      if (!result) {
+        return res.status(404).send();
+      }
+      res.status(200).send(result);
+    } catch (error) {
+      console.error('Query error', error);
+      res.status(500).send({
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      });
+    }
+  }
+
   @Patch(':objectName/:id')
   @ApiOperation({ summary: 'Update record' })
   @ApiBody({
