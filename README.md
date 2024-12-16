@@ -3,11 +3,13 @@
 ## 配置环境变量
 
 ```bash
-ROOT_URL=http://localhost:5100
+B6_ROOT_URL=http://localhost:5100
 B6_PORT=5100
-MONGO_URL=mongodb://127.0.0.1:27017/steedos
-TRANSPORTER=redis://127.0.0.1:6379
+B6_MONGO_URL=mongodb://127.0.0.1:27017/steedos
+B6_TRANSPORTER=redis://127.0.0.1:6379
 ```
+以上环境变量如未定义，会自动识别并转换 steedos 的环境变量。
+
 
 ## 启动开发服务
 
@@ -48,6 +50,10 @@ B6_PLUGIN_SERVICES=@builder6/node-red
 B6_PLUGIN_NPMRC=registry=https://registry.npmmirror.com
 ```
 
-# 与 Steedos 集成
+### 插件服务
+
+定义插件服务时，会自动查找 `dist/package.service.js` 作为 moleculer 服务加载。
+
+## 与 Steedos 集成
 
 项目运行于 `${STEEDOS_STORAGE_DIR}/builder6` 目录下。
