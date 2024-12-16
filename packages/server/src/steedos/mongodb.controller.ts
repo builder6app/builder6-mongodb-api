@@ -74,11 +74,17 @@ export class MongodbController {
     required: false,
     description: '排序，示例：created desc',
   })
-  @ApiQuery({ name: 'skip', required: false, description: '跳过记录数' })
+  @ApiQuery({
+    name: 'skip',
+    required: false,
+    description: '跳过记录数',
+    schema: { default: 0 }, // 在 Swagger 中设置默认值
+  })
   @ApiQuery({
     name: 'top',
     required: false,
     description: '每页记录数，默认20',
+    schema: { default: 20 }, // 在 Swagger 中设置默认值
   })
   async find(
     @Param('objectName') objectName: string,
