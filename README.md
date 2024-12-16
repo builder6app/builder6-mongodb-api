@@ -47,3 +47,7 @@ B6_PLUGIN_SERVICES=@builder6/node-red
 # 使用 淘宝员
 B6_PLUGIN_NPMRC=registry=https://registry.npmmirror.com
 ```
+
+# 与 Steedos 集成
+
+项目运行于 `${STEEDOS_STORAGE_DIR}/builder6` 目录下。
