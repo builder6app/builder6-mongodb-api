@@ -1,6 +1,8 @@
 # Builder6 Records API
 
-## 配置环境变量
+## 环境变量
+
+基本环境变量
 
 ```bash
 B6_ROOT_URL=http://localhost:5100
@@ -10,6 +12,16 @@ B6_TRANSPORTER=redis://127.0.0.1:6379
 ```
 以上环境变量如未定义，会自动识别并转换 steedos 的环境变量。
 
+
+## Nestjs configService
+
+系统会自动识别 B6_ 和 STEEDOS_ 开头的环境变量，转换为 nestjs configService 配置。
+
+例如：以下命令可以获得 B6_MONGO_URL 的值。
+
+```js
+configService.get('mongo.url');
+```
 
 ## 启动开发服务
 
@@ -53,6 +65,7 @@ B6_PLUGIN_NPMRC=registry=https://registry.npmmirror.com
 ### 插件服务
 
 定义插件服务时，会自动查找 `dist/package.service.js` 作为 moleculer 服务加载。
+
 
 ## 与 Steedos 集成
 
