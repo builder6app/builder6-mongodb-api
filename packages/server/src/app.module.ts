@@ -29,7 +29,7 @@ import config from './app.config';
     FilesModule,
     MoleculerModule,
     Microsoft365Module,
-    PluginModule.forRoot(process.env.B6_PLUGIN_MODULES),
+    PluginModule.forRoot(),
     ...(process.env.B6_OIDC_ENABLED ? [OidcModule] : []),
   ],
   controllers: [AppController],

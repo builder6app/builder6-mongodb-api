@@ -2,15 +2,19 @@ import { DynamicModule, Logger, Module } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PluginService } from './plugin.service';
+import AppConfig from '../app.config';
 
 @Module({
   providers: [PluginService],
 })
 export class PluginModule {
   static readonly logger = new Logger(PluginModule.name);
+  static readonly appConfig = AppConfig();
   public static plugins: Plugin[] = [];
 
-  static forRoot(modules): DynamicModule {
+  static forRoot(): DynamicModule {
+    const modules = this.appConfig.plugin.nestjs;
+
     if (modules) {
       for (const module of modules.split(',')) {
         const pluginModule = this.loadPlugin(module);
@@ -20,7 +24,6 @@ export class PluginModule {
         });
       }
     }
-    console.log('this.plugins', this.plugins);
     return {
       module: PluginModule,
       imports: [...this.plugins.map((plugin) => plugin.module)],
@@ -35,31 +38,31 @@ export class PluginModule {
     );
 
     if (!fs.existsSync(packageModulePath)) {
-      this.logger.error(`插件 ${packageName} 缺少文件: ${packageModulePath}`);
+      this.logger.error(
+        `Nestjs 插件 ${packageName} 缺少文件: ${packageModulePath}`,
+      );
       return;
     }
 
     // 动态引入并创建服务
     // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this.logger.log(`加载 Nestjs 插件： ${packageName} ...`);
     const PluginModule = require(packageModulePath);
 
     return PluginModule.default;
   }
 
-  static isPackageInstalled(packageName: string): boolean {
-    try {
-      require.resolve(`${packageName}/package.json`);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
   static getPackagePath(packageName: string): string {
+    const userDir = this.appConfig.plugin?.dir || process.cwd();
     try {
-      return path.dirname(require.resolve(`${packageName}/package.json`));
-    } catch {
-      throw new Error(`无法解析插件路径: ${packageName}`);
+      return path.dirname(
+        require.resolve(`${packageName}/package.json`, {
+          paths: [userDir, ...module.paths],
+        }),
+      );
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   }
 }

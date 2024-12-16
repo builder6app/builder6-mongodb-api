@@ -53,16 +53,16 @@ npm release --access public
 
 支持在启动时自动安装软件包，动态加载服务。可使用淘宝镜像。
 
+### 启动时自动安装软件包
+
 ```bash
 # 启动时自动安装软件包
 B6_PLUGIN_PACKAGES=@builder6/node-red,lodash
-# 启动时加载服务，此服务不需在 PACKAGES 中，单需已安装。
-B6_PLUGIN_SERVICES=@builder6/node-red
 # 使用 淘宝源
 B6_PLUGIN_NPMRC=registry=https://registry.npmmirror.com
 ```
 
-### Moleculer 服务插件
+### 启动时 自动加载 Moleculer 服务
 
 ```bash
 # 启动时加载服务
@@ -72,11 +72,11 @@ B6_PLUGIN_SERVICES=@builder6/node-red
 启动服务时，会自动查找所有服务类插件，如果找到 `dist/plugin.service.js` 则作为 moleculer 服务加载。
 
 
-### Nestjs Module插件
+### 启动时 自动加载 Nestjs Module
 
 ```bash
 # 启动时加载 NestJS Module
-B6_PLUGIN_MODULES=@builder6/node-red
+B6_PLUGIN_MODULE=@builder6/node-red
 ```
 
 启动服务时，会自动查找所有module类插件，如果找到 `dist/plugin.modules.js` 则作为 nestjs module 加载。

@@ -258,7 +258,7 @@ class B6Server {
       this.config.plugin.services = this.parsedArgs.argv.remain[0];
     }
 
-    this.config.userDir = this.userDir;
+    this.config.plugin.dir = this.userDir;
 
     this.logger.log('Loaded config', this.config);
   }

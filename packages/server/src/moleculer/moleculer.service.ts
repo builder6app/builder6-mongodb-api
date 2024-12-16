@@ -31,7 +31,7 @@ export class MoleculerService {
       for (const plugin of plugins.split(',')) {
         // 解析 plugin npm 名称和 版本号。例如： @builder6/plugin-tables
         // 检测 npm 包是否存在
-        // 检测 npm 包中是否包含 './dist/package.service.ts'
+        // 检测 npm 包中是否包含 './dist/plugin.service.ts'
         // 引入此文件，并创建包服务
         this.loadService(plugin);
       }
@@ -43,23 +43,23 @@ export class MoleculerService {
       // 解析插件名称和版本号
       const match = plugin.match(/^(.*?)(?:@([\d.]+))?$/);
       if (!match) {
-        this.logger.warn(`插件格式无效: ${plugin}`);
+        this.logger.warn(`服务插件格式无效: ${plugin}`);
         return;
       }
 
       const [, packageName] = match;
-      this.logger.log(`加载插件: 名称：${packageName}`);
+      this.logger.log(`加载服务插件: 名称：${packageName}`);
 
       // 检测 npm 包是否存在
-      if (!this.isPackageInstalled(packageName)) {
-        this.logger.error(`插件 ${packageName} 未安装，请先安装`);
+      if (!this.getPackagePath(packageName)) {
+        this.logger.error(`服务插件 ${packageName} 未安装，请先安装`);
         return;
       }
 
       // 检测是否包含指定文件
       const packageServicePath = path.resolve(
         this.getPackagePath(packageName),
-        './dist/package.service.js',
+        './dist/plugin.service.js',
       );
 
       if (!fs.existsSync(packageServicePath)) {
@@ -84,20 +84,17 @@ export class MoleculerService {
     }
   }
 
-  private isPackageInstalled(packageName: string): boolean {
-    try {
-      require.resolve(`${packageName}/package.json`);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
   private getPackagePath(packageName: string): string {
+    const userDir = this.configService.get('plugin.dir') || process.cwd();
     try {
-      return path.dirname(require.resolve(`${packageName}/package.json`));
-    } catch {
-      throw new Error(`无法解析插件路径: ${packageName}`);
+      return path.dirname(
+        require.resolve(`${packageName}/package.json`, {
+          paths: [userDir, ...module.paths],
+        }),
+      );
+    } catch (e) {
+      console.error(e);
+      return null;
     }
   }
 }
