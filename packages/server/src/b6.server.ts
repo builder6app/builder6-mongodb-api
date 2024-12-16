@@ -18,11 +18,11 @@
 
 import { Logger } from '@nestjs/common';
 
-import ExpressApplication from './app.express';
 import * as project from '../package.json';
 import { getEnvConfigs } from './app.config';
 
 const childProcess = require('child_process');
+
 
 var semver = require('semver');
 if (!semver.satisfies(process.version, '>=14.0.0')) {
@@ -43,6 +43,7 @@ var knownOpts = {
   config: [path],
   title: String,
   userDir: [path],
+  install: Boolean,
   npmPackages: String,
   verbose: Boolean,
   safe: Boolean,
@@ -56,6 +57,7 @@ var shortHands = {
   // As we want to reserve -t for now, adding a shorthand to help so it
   // doesn't get treated as --title
   t: ['--help'],
+  i: ['--install'],
   u: ['--userDir'],
   n: ['--npmPackages'],
   v: ['--verbose'],
@@ -67,7 +69,7 @@ nopt.invalidHandler = function (k, v, t) {
 
 var parsedArgs = nopt(knownOpts, shortHands, process.argv, 2);
 
-process.env.B6_HOME = process.env.B6_HOME || __dirname;
+process.env.B6_HOME = process.env.B6_HOME || process.cwd();
 
 const States = {
   STOPPED: 'stopped',
@@ -81,7 +83,7 @@ const States = {
 };
 
 class B6Server {
-  userDir: string = process.cwd();
+  userDir: string = process.env.B6_HOME;
   configFile: string;
   config: any;
 
@@ -135,6 +137,7 @@ class B6Server {
       console.log('  -p, --port           port to listen on');
       console.log('  -s, --config         specified config file');
       console.log('  -n, --npmPackages    install specified npm packages');
+      console.log('  -i, --install        enable auto install packages');
       console.log('  -u, --userDir        use specified user directory');
       console.log('  -v, --verbose        enable verbose output');
       console.log('      --safe           enable safe mode');
@@ -215,7 +218,7 @@ class B6Server {
         ...getEnvConfigs(),
       };
       console.log('configJs', configJs);
-      this.userDir = path.dirname(this.configFile);
+      // this.userDir = path.dirname(this.configFile);
       this.config.configFile = this.configFile;
     } catch (err) {
       console.log('Error loading config file: ' + this.configFile);
@@ -258,7 +261,7 @@ class B6Server {
       this.config.plugin.services = this.parsedArgs.argv.remain[0];
     }
 
-    this.config.plugin.dir = this.userDir;
+    this.config.plugin.dir = process.cwd();
 
     this.logger.log('Loaded config', this.config);
   }
@@ -281,7 +284,7 @@ class B6Server {
     return {};
   }
   async updateNpmrc() {
-    const npmrcPath = path.join(this.config.userDir, '.npmrc');
+    const npmrcPath = path.join(this.config.plugin.dir, '.npmrc');
     if (this.config.plugin?.npmrc) {
       try {
         fs.writeFileSync(npmrcPath, this.config.plugin?.npmrc);
@@ -303,7 +306,7 @@ class B6Server {
     }
   }
   async updatePackage() {
-    const pkgFilePath = path.join(this.userDir, 'package.json');
+    const pkgFilePath = path.join(process.env.B6_HOME, 'package.json');
     if (!fs.existsSync(pkgFilePath)) {
       // 写入一个空的 package.json
       fs.writeFileSync(
@@ -397,15 +400,22 @@ class B6Server {
     }
   }
 
+  async startApp() {
+
+    const ExpressApplication = require('./app.express');
+    this.app = await ExpressApplication.default();
+    await this.app.listen(this.config.port);
+  }
+  
   async bootstrap() {
     await this.loadConfig();
-    await this.updateNpmrc();
-    await this.updatePackage();
-    this.app = await ExpressApplication();
-
-    await this.app.listen(this.config.port);
+    if (this.parsedArgs.install) {
+      await this.updateNpmrc();
+      await this.updatePackage();
+    }
+    await this.startApp();
   }
 }
 
-const server = (global.b6Server = new B6Server(parsedArgs));
+const server = new B6Server(parsedArgs);
 server.bootstrap();

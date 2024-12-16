@@ -54,11 +54,9 @@ export function getEnvConfigs() {
   return env;
 }
 
-export default () => {
-  const envConfigs = getEnvConfigs();
-  const b6Configs = global.b6Server?.config || {};
+export default function getConfig() {
+  const env = getEnvConfigs();
   return {
-    ...b6Configs,
-    ...envConfigs,
+    ...env,
   };
-};
+}

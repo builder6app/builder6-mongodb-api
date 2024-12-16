@@ -12,13 +12,13 @@ import { Microsoft365Module } from './microsoft365/microsoft365.module';
 import { OidcModule } from './oidc/oidc.module';
 import { AppController } from './app.controller';
 import { PluginModule } from './plugin/plugin.module';
-import config from './app.config';
+import getConfig from './app.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.local', '.env'],
-      load: [config],
+      load: [getConfig],
       isGlobal: true, // 使配置在整个应用中可用
     }),
     AuthModule,

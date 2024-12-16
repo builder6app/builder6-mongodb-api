@@ -85,13 +85,8 @@ export class MoleculerService {
   }
 
   private getPackagePath(packageName: string): string {
-    const userDir = this.configService.get('plugin.dir') || process.cwd();
     try {
-      return path.dirname(
-        require.resolve(`${packageName}/package.json`, {
-          paths: [userDir, ...module.paths],
-        }),
-      );
+      return path.dirname(require.resolve(`${packageName}/package.json`));
     } catch (e) {
       console.error(e);
       return null;

@@ -2,19 +2,18 @@ import { DynamicModule, Logger, Module } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PluginService } from './plugin.service';
-import AppConfig from '../app.config';
+import getConfig from '@/app.config';
 
 @Module({
   providers: [PluginService],
 })
 export class PluginModule {
   static readonly logger = new Logger(PluginModule.name);
-  static readonly appConfig = AppConfig();
+  static config = getConfig();
   public static plugins: Plugin[] = [];
 
   static forRoot(): DynamicModule {
-    const modules = this.appConfig.plugin.nestjs;
-
+    const modules = this.config.plugin.modules;
     if (modules) {
       for (const module of modules.split(',')) {
         const pluginModule = this.loadPlugin(module);
@@ -53,13 +52,8 @@ export class PluginModule {
   }
 
   static getPackagePath(packageName: string): string {
-    const userDir = this.appConfig.plugin?.dir || process.cwd();
     try {
-      return path.dirname(
-        require.resolve(`${packageName}/package.json`, {
-          paths: [userDir, ...module.paths],
-        }),
-      );
+      return path.dirname(require.resolve(`${packageName}/package.json`));
     } catch (e) {
       console.error(e);
       return null;

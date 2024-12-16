@@ -1,7 +1,7 @@
 {
   "name": "@builder6/node-red",
   "version": "0.0.3",
-  "main": "dist/index.js",
+  "main": "dist/plugin.module.js",
   "license": "MIT",
   "files": [
     "dist"
@@ -11,5 +11,6 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
+    "node-red": "^4.0.5"
   }
 }
