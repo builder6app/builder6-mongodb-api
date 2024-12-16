@@ -7,7 +7,6 @@ import { ObjectService } from './object.service';
 @Module({
   imports: [AuthModule, MongodbModule],
   controllers: [MongodbController],
-  providers: [
-  ObjectService],
+  providers: [ObjectService],
 })
 export class SteedosModule {}

@@ -1,5 +1,5 @@
-"use strict";
-import * as _ from "lodash";
+'use strict';
+import * as _ from 'lodash';
 
 import AppConfig from '../app.config';
 
@@ -11,108 +11,105 @@ import AppConfig from '../app.config';
  */
 
 const defaultConfig = {
-    namespace: "steedos",
-    nodeID: null,
-    metadata: {},
+  namespace: 'steedos',
+  nodeID: null,
+  metadata: {},
 
-    logger: {
-        type: "Console",
-        options: {
-            // Logging level
-            level: "info",
-            // Using colors on the output
-            colors: true,
-            // Print module names with different colors (like docker-compose for containers)
-            moduleColors: false,
-            // Line formatter. It can be "json", "short", "simple", "full", a `Function` or a template string like "{timestamp} {level} {nodeID}/{mod}: {msg}"
-            formatter: "[MO] {timestamp} {level} [{mod}] {msg}",
-            // Custom object printer. If not defined, it uses the `util.inspect` method.
-            objectPrinter: null,
-            // Auto-padding the module name in order to messages begin at the same column.
-            autoPadding: false
-        }
+  logger: {
+    type: 'Console',
+    options: {
+      // Logging level
+      level: 'info',
+      // Using colors on the output
+      colors: true,
+      // Print module names with different colors (like docker-compose for containers)
+      moduleColors: false,
+      // Line formatter. It can be "json", "short", "simple", "full", a `Function` or a template string like "{timestamp} {level} {nodeID}/{mod}: {msg}"
+      formatter: '[MO] {timestamp} {level} [{mod}] {msg}',
+      // Custom object printer. If not defined, it uses the `util.inspect` method.
+      objectPrinter: null,
+      // Auto-padding the module name in order to messages begin at the same column.
+      autoPadding: false,
     },
+  },
 
-    transporter: process.env.TRANSPORTER,
+  transporter: process.env.TRANSPORTER,
 
-    cacher: process.env.CACHER,
+  cacher: process.env.CACHER,
 
-    serializer: "JSON",
+  serializer: 'JSON',
 
-    requestTimeout: 0,
+  requestTimeout: 0,
 
-    retryPolicy: {
-        enabled: false,
-    },
+  retryPolicy: {
+    enabled: false,
+  },
 
-    maxCallLevel: 100,
+  maxCallLevel: 100,
 
-    heartbeatInterval: 10,
-    heartbeatTimeout: 30,
+  heartbeatInterval: 10,
+  heartbeatTimeout: 30,
 
-    contextParamsCloning: false,
+  contextParamsCloning: false,
 
-    tracking: {
-        enabled: false,
-    },
+  tracking: {
+    enabled: false,
+  },
 
-    disableBalancer: false,
+  disableBalancer: false,
 
-    registry: {
-        strategy: "RoundRobin",
-        preferLocal: true
-    },
+  registry: {
+    strategy: 'RoundRobin',
+    preferLocal: true,
+  },
 
-    circuitBreaker: {
-        enabled: false,
-        threshold: 0.5,
-        minRequestCount: 20,
-        windowTime: 60,
-        halfOpenTime: 10000,
-        check: (err: any) => err && err.code >= 500
-    },
+  circuitBreaker: {
+    enabled: false,
+    threshold: 0.5,
+    minRequestCount: 20,
+    windowTime: 60,
+    halfOpenTime: 10000,
+    check: (err: any) => err && err.code >= 500,
+  },
 
-    bulkhead: {
-        enabled: false,
-        concurrency: 10,
-        maxQueueSize: 100
-    },
+  bulkhead: {
+    enabled: false,
+    concurrency: 10,
+    maxQueueSize: 100,
+  },
 
-    validator: true,
+  validator: true,
 
-    errorHandler: null,
+  errorHandler: null,
 
-    metrics: {
-        enabled: false,
-    },
+  metrics: {
+    enabled: false,
+  },
 
-    tracing: {
-        enabled: false,
-    },
+  tracing: {
+    enabled: false,
+  },
 
-    middlewares: [],
+  middlewares: [],
 
-    replCommands: null,
+  replCommands: null,
 
-    skipProcessEventRegistration: true,
+  skipProcessEventRegistration: true,
 
-    created(broker: any) {
-      
-    },
+  created(broker: any) {},
 
-    started(broker: any) {
-        // Custom logic after broker starts
-    },
+  started(broker: any) {
+    // Custom logic after broker starts
+  },
 
-    stopped(broker: any) {
-        // Custom logic after broker stops
-    }
+  stopped(broker: any) {
+    // Custom logic after broker stops
+  },
 };
-
 
 export default () => {
   return {
     ...defaultConfig,
     ...AppConfig(),
-  }
-}
+  };
+};

@@ -1,5 +1,5 @@
-import type { DM } from "../globals/augmentation";
-import type { DateToString } from "../lib/DateToString";
+import type { DM } from '../globals/augmentation';
+import type { DateToString } from '../lib/DateToString';
 
 export type BaseMetadata = Record<
   string,
@@ -15,7 +15,7 @@ export type CommentReaction = {
 };
 
 export type CommentAttachment = {
-  type: "attachment";
+  type: 'attachment';
   id: string;
   name: string;
   size: number;
@@ -23,8 +23,8 @@ export type CommentAttachment = {
 };
 
 export type CommentLocalAttachmentIdle = {
-  type: "localAttachment";
-  status: "idle";
+  type: 'localAttachment';
+  status: 'idle';
   id: string;
   name: string;
   size: number;
@@ -33,8 +33,8 @@ export type CommentLocalAttachmentIdle = {
 };
 
 export type CommentLocalAttachmentUploading = {
-  type: "localAttachment";
-  status: "uploading";
+  type: 'localAttachment';
+  status: 'uploading';
   id: string;
   name: string;
   size: number;
@@ -43,8 +43,8 @@ export type CommentLocalAttachmentUploading = {
 };
 
 export type CommentLocalAttachmentUploaded = {
-  type: "localAttachment";
-  status: "uploaded";
+  type: 'localAttachment';
+  status: 'uploaded';
   id: string;
   name: string;
   size: number;
@@ -53,8 +53,8 @@ export type CommentLocalAttachmentUploaded = {
 };
 
 export type CommentLocalAttachmentError = {
-  type: "localAttachment";
-  status: "error";
+  type: 'localAttachment';
+  status: 'error';
   id: string;
   name: string;
   size: number;
@@ -75,7 +75,7 @@ export type CommentMixedAttachment = CommentAttachment | CommentLocalAttachment;
  * Represents a comment.
  */
 export type CommentData = {
-  type: "comment";
+  type: 'comment';
   id: string;
   threadId: string;
   roomId: string;
@@ -91,7 +91,7 @@ export type CommentData = {
 
 export type CommentDataPlain = Omit<
   DateToString<CommentData>,
-  "reactions" | "body"
+  'reactions' | 'body'
 > & {
   reactions: DateToString<CommentReaction>[];
 } & (
@@ -111,17 +111,17 @@ export type CommentBodyElement =
   | CommentBodyInlineElement;
 
 export type CommentBodyParagraph = {
-  type: "paragraph";
+  type: 'paragraph';
   children: CommentBodyInlineElement[];
 };
 
 export type CommentBodyMention = {
-  type: "mention";
+  type: 'mention';
   id: string;
 };
 
 export type CommentBodyLink = {
-  type: "link";
+  type: 'link';
   url: string;
   text?: string;
 };
@@ -151,7 +151,7 @@ export type CommentUserReactionPlain = DateToString<CommentUserReaction>;
  * Represents a thread of comments.
  */
 export type ThreadData<M extends BaseMetadata = DM> = {
-  type: "thread";
+  type: 'thread';
   id: string;
   roomId: string;
   createdAt: Date;
@@ -168,14 +168,14 @@ export interface ThreadDataWithDeleteInfo<M extends BaseMetadata = DM>
 
 export type ThreadDataPlain<M extends BaseMetadata> = Omit<
   DateToString<ThreadData<M>>,
-  "comments" | "metadata"
+  'comments' | 'metadata'
 > & {
   comments: CommentDataPlain[];
   metadata: M;
 };
 
 export type ThreadDeleteInfo = {
-  type: "deletedThread";
+  type: 'deletedThread';
   id: string;
   roomId: string;
   deletedAt: Date;

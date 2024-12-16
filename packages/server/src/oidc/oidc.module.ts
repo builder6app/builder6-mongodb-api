@@ -4,6 +4,6 @@ import { OidcController } from './oidc.controller';
 
 @Module({
   providers: [OidcService],
-  controllers: [OidcController]
+  controllers: [OidcController],
 })
 export class OidcModule {}

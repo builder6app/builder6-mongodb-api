@@ -1,8 +1,8 @@
-import type { DAD } from "../globals/augmentation";
-import type { DateToString } from "../lib/DateToString";
+import type { DAD } from '../globals/augmentation';
+import type { DateToString } from '../lib/DateToString';
 
 export type InboxNotificationThreadData = {
-  kind: "thread";
+  kind: 'thread';
   id: string;
   roomId: string;
   threadId: string;
@@ -11,7 +11,7 @@ export type InboxNotificationThreadData = {
 };
 
 export type InboxNotificationTextMentionData = {
-  kind: "textMention";
+  kind: 'textMention';
   id: string;
   roomId: string;
   notifiedAt: Date;
@@ -54,7 +54,7 @@ export type InboxNotificationThreadDataPlain =
 
 export type InboxNotificationCustomDataPlain = Omit<
   DateToString<InboxNotificationCustomData>,
-  "activities"
+  'activities'
 > & {
   activities: DateToString<InboxNotificationActivity>[];
 };
@@ -65,7 +65,7 @@ export type InboxNotificationDataPlain =
   | InboxNotificationTextMentionDataPlain;
 
 export type InboxNotificationDeleteInfo = {
-  type: "deletedInboxNotification";
+  type: 'deletedInboxNotification';
   id: string;
   roomId: string;
   deletedAt: Date;

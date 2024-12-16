@@ -1,4 +1,4 @@
-import type { Json, JsonObject } from "../lib/Json";
+import type { Json, JsonObject } from '../lib/Json';
 
 export enum OpCode {
   INIT = 0,
@@ -40,7 +40,7 @@ export type UpdateObjectOp = {
 export type CreateObjectOp = {
   readonly opId?: string;
   readonly id: string;
-  readonly intent?: "set";
+  readonly intent?: 'set';
   readonly deletedId?: string;
   readonly type: OpCode.CREATE_OBJECT;
   readonly parentId: string;
@@ -51,7 +51,7 @@ export type CreateObjectOp = {
 export type CreateListOp = {
   readonly opId?: string;
   readonly id: string;
-  readonly intent?: "set";
+  readonly intent?: 'set';
   readonly deletedId?: string;
   readonly type: OpCode.CREATE_LIST;
   readonly parentId: string;
@@ -61,7 +61,7 @@ export type CreateListOp = {
 export type CreateMapOp = {
   readonly opId?: string;
   readonly id: string;
-  readonly intent?: "set";
+  readonly intent?: 'set';
   readonly deletedId?: string;
   readonly type: OpCode.CREATE_MAP;
   readonly parentId: string;
@@ -71,7 +71,7 @@ export type CreateMapOp = {
 export type CreateRegisterOp = {
   readonly opId?: string;
   readonly id: string;
-  readonly intent?: "set";
+  readonly intent?: 'set';
   readonly deletedId?: string;
   readonly type: OpCode.CREATE_REGISTER;
   readonly parentId: string;
@@ -94,7 +94,7 @@ export type DeleteCrdtOp = {
 //
 export type AckOp = {
   readonly type: OpCode.DELETE_CRDT; // Not a typo!
-  readonly id: "ACK";
+  readonly id: 'ACK';
   readonly opId: string;
 };
 
@@ -119,13 +119,13 @@ export type AckOp = {
 export function ackOp(opId: string): AckOp {
   return {
     type: OpCode.DELETE_CRDT,
-    id: "ACK", // (H)ACK
+    id: 'ACK', // (H)ACK
     opId,
   };
 }
 
 export function isAckOp(op: Op): op is AckOp {
-  return op.type === OpCode.DELETE_CRDT && op.id === "ACK";
+  return op.type === OpCode.DELETE_CRDT && op.id === 'ACK';
 }
 
 export type SetParentKeyOp = {

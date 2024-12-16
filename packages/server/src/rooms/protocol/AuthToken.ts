@@ -1,21 +1,21 @@
-import type { Json } from "../lib/Json";
-import { b64decode, isPlainObject, tryParseJson } from "../lib/utils";
-import type { IUserInfo } from "./BaseUserMeta";
+import type { Json } from '../lib/Json';
+import { b64decode, isPlainObject, tryParseJson } from '../lib/utils';
+import type { IUserInfo } from './BaseUserMeta';
 
 export enum Permission {
-  Read = "room:read",
-  Write = "room:write",
-  PresenceWrite = "room:presence:write",
-  CommentsWrite = "comments:write",
-  CommentsRead = "comments:read",
+  Read = 'room:read',
+  Write = 'room:write',
+  PresenceWrite = 'room:presence:write',
+  CommentsWrite = 'comments:write',
+  CommentsRead = 'comments:read',
 }
 
 export type LiveblocksPermissions = Record<string, Permission[]>;
 
 export enum TokenKind {
-  SECRET_LEGACY = "sec-legacy",
-  ACCESS_TOKEN = "acc",
-  ID_TOKEN = "id",
+  SECRET_LEGACY = 'sec-legacy',
+  ACCESS_TOKEN = 'acc',
+  ID_TOKEN = 'id',
 }
 
 /**
@@ -89,7 +89,7 @@ export type ParsedAuthToken = {
 };
 
 function isValidAuthTokenPayload(
-  data: Json
+  data: Json,
 ): data is AccessToken | IDToken | LegacySecretToken {
   return (
     isPlainObject(data) &&
@@ -107,15 +107,15 @@ function isValidAuthTokenPayload(
  * input: never trust these values for anything important.
  */
 export function parseAuthToken(rawTokenString: string): ParsedAuthToken {
-  const tokenParts = rawTokenString.split(".");
+  const tokenParts = rawTokenString.split('.');
   if (tokenParts.length !== 3) {
-    throw new Error("Authentication error: invalid JWT token");
+    throw new Error('Authentication error: invalid JWT token');
   }
 
   const payload = tryParseJson(b64decode(tokenParts[1]));
   if (!(payload && isValidAuthTokenPayload(payload))) {
     throw new Error(
-      "Authentication error: expected a valid token but did not get one. Hint: if you are using a callback, ensure the room is passed when creating the token. For more information: https://liveblocks.io/docs/api-reference/liveblocks-client#createClientCallback"
+      'Authentication error: expected a valid token but did not get one. Hint: if you are using a callback, ensure the room is passed when creating the token. For more information: https://liveblocks.io/docs/api-reference/liveblocks-client#createClientCallback',
     );
   }
 

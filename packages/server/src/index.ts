@@ -8,8 +8,7 @@ export * from './mongodb';
 export * from './files';
 export * from './auth';
 
-
-export let app : INestApplicationContext;
+export let app: INestApplicationContext;
 
 async function bootstrap() {
   app = await NestFactory.createApplicationContext(AppModule);

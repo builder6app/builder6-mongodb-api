@@ -14,8 +14,11 @@ import { JwtService } from '@nestjs/jwt';
 interface RoomState {
   roomId: string;
   connections: {
-    [connectionId: number]: { userId: string; nonce: string; roomId: string,
-      client: WebSocket;  // 新增字段，保存客户端连接对象 
+    [connectionId: number]: {
+      userId: string;
+      nonce: string;
+      roomId: string;
+      client: WebSocket; // 新增字段，保存客户端连接对象
     };
   };
 }
@@ -61,11 +64,10 @@ export class RoomsGateway implements OnGatewayConnection {
 
     const roomId = parsedUrl.query['roomId'] as string;
     const token = parsedUrl.query['tok'] as string;
-    const jwt = await this.jwtService.decode(token) as any;
+    const jwt = (await this.jwtService.decode(token)) as any;
     const userId = jwt.uid;
 
     if (userId && roomId) {
-
       client.on('message', (message: Buffer) => {
         const messageStr = message.toString();
         console.log('Received message from client: ', messageStr);
@@ -85,7 +87,6 @@ export class RoomsGateway implements OnGatewayConnection {
         } else if (typeof parsedMessage === 'object') {
           this.handleClientMessage(client, parsedMessage);
         }
-       
       });
 
       // 监听客户端关闭事件，执行离开房间的操作
@@ -168,14 +169,11 @@ export class RoomsGateway implements OnGatewayConnection {
     client.send(JSON.stringify(roomStateResponse));
 
     // Notify other users in the room about the new user joined
-    this.broadcastToRoom(
-      roomId,
-      {
-        type: ServerMsgCode.USER_JOINED, // 使用 ServerMsgCode 枚举
-        actor: connectionId,
-        userId,
-      },
-    );
+    this.broadcastToRoom(roomId, {
+      type: ServerMsgCode.USER_JOINED, // 使用 ServerMsgCode 枚举
+      actor: connectionId,
+      userId,
+    });
 
     console.log(`User ${connectionId},${userId} has join room: ${roomId}`);
     return connectionId;
@@ -186,7 +184,6 @@ export class RoomsGateway implements OnGatewayConnection {
     client: WebSocket,
     payload: { roomId: string; userId: string },
   ) {
-
     const { roomId, userId } = payload;
     const connectionId = (client as any).connectionId;
 
@@ -215,7 +212,6 @@ export class RoomsGateway implements OnGatewayConnection {
 
       console.log(`User ${connectionId},${userId} has left room: ${roomId}`);
     }
-
   }
 
   @SubscribeMessage('updatePresence')
@@ -231,10 +227,7 @@ export class RoomsGateway implements OnGatewayConnection {
     // });
   }
 
-  public broadcastToRoom(
-    roomId: string,
-    message: any,
-  ) {
+  public broadcastToRoom(roomId: string, message: any) {
     // Publish the message to Redis so that other instances can receive it
     this.pubRedis.publish('rooms_channel', JSON.stringify({ roomId, message }));
   }
@@ -246,13 +239,10 @@ export class RoomsGateway implements OnGatewayConnection {
     const { roomId, message } = parsedMessage;
     const roomState = this.roomStates.get(roomId);
 
-    
     if (roomState) {
       Object.keys(roomState.connections).forEach((connectionId) => {
         const client = roomState.connections[connectionId].client;
-        if (
-          client.readyState === WebSocket.OPEN
-        ) {
+        if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(message));
         }
       });

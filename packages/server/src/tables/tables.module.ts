@@ -7,9 +7,7 @@ import { AuthModule } from '@/auth/auth.module';
 
 @Module({
   imports: [AuthModule, MongodbModule],
-  controllers: [
-    TablesController,
-  ],
+  controllers: [TablesController],
   providers: [MetaService, RecordsService],
 })
 export class TablesModule {}

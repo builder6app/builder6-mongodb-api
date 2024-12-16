@@ -19,9 +19,9 @@ export type JsonObject = { [key: string]: Json | undefined };
 export function isJsonScalar(data: Json): data is JsonScalar {
   return (
     data === null ||
-    typeof data === "string" ||
-    typeof data === "number" ||
-    typeof data === "boolean"
+    typeof data === 'string' ||
+    typeof data === 'number' ||
+    typeof data === 'boolean'
   );
 }
 

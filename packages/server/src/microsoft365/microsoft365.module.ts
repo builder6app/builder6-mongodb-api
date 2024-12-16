@@ -4,6 +4,6 @@ import { Microsoft365Controller } from './microsoft365.controller';
 
 @Module({
   providers: [Microsoft365Service],
-  controllers: [Microsoft365Controller]
+  controllers: [Microsoft365Controller],
 })
 export class Microsoft365Module {}

@@ -16,12 +16,15 @@ export class FilesService {
   public s3Bucket: string;
   public rootUrl: string;
 
-  constructor(private configService: ConfigService, private mongodbService: MongodbService) {
-    this.rootUrl = configService.get('root.url');  
-    this.storageDir = configService.get('storage.dir') || './steedos-storage';  
+  constructor(
+    private configService: ConfigService,
+    private mongodbService: MongodbService,
+  ) {
+    this.rootUrl = configService.get('root.url');
+    this.storageDir = configService.get('storage.dir') || './steedos-storage';
     // 初始化 S3 客户端
     this.cfsStore = configService.get('cfs.store') || 'local';
-    if (this.cfsStore === 'S3') { 
+    if (this.cfsStore === 'S3') {
       this.s3 = new AWS.S3({
         endpoint: configService.get('cfs.aws.s3.endpoint'),
         accessKeyId: configService.get('cfs.aws.s3.access.key.id'),

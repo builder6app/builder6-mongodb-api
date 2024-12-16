@@ -1,4 +1,4 @@
-import type { Json } from "./Json";
+import type { Json } from './Json';
 
 declare const brand: unique symbol;
 export type Brand<T, TBrand extends string> = T & { [brand]: TBrand };
@@ -19,14 +19,14 @@ export function raise(msg: string): never {
 }
 
 export function isPlainObject(
-  blob: unknown
+  blob: unknown,
 ): blob is { [key: string]: unknown } {
   // Implementation borrowed from pojo decoder, see
   // https://github.com/nvie/decoders/blob/78849f843193647eb6b5307240387bdcff7161fb/src/lib/objects.js#L10-L41
   return (
     blob !== null &&
-    typeof blob === "object" &&
-    Object.prototype.toString.call(blob) === "[object Object]"
+    typeof blob === 'object' &&
+    Object.prototype.toString.call(blob) === '[object Object]'
   );
 }
 
@@ -44,7 +44,7 @@ export function entries<
  * Drop-in replacement for Object.keys() that retains better types.
  */
 export function keys<O extends { [key: string]: unknown }, K extends keyof O>(
-  obj: O
+  obj: O,
 ): K[] {
   return Object.keys(obj) as K[];
 }
@@ -53,7 +53,7 @@ export function keys<O extends { [key: string]: unknown }, K extends keyof O>(
  * Drop-in replacement for Object.values() that retains better types.
  */
 export function values<O extends Record<string, unknown>>(
-  obj: O
+  obj: O,
 ): O[keyof O][] {
   return Object.values(obj) as O[keyof O][];
 }
@@ -64,12 +64,12 @@ export function values<O extends Record<string, unknown>>(
  */
 export function mapValues<V, O extends Record<string, unknown>>(
   obj: O,
-  mapFn: (value: O[keyof O], key: keyof O) => V
+  mapFn: (value: O[keyof O], key: keyof O) => V,
 ): { [K in keyof O]: V } {
   const result = {} as { [K in keyof O]: V };
   for (const pair of Object.entries(obj)) {
     const key: keyof O = pair[0];
-    if (key === "__proto__") {
+    if (key === '__proto__') {
       // Avoid setting dangerous __proto__ keys
       continue;
     }
@@ -110,14 +110,14 @@ export function deepClone<T extends Json>(value: T): T {
  */
 export function b64decode(b64value: string): string {
   try {
-    const formattedValue = b64value.replace(/-/g, "+").replace(/_/g, "/");
+    const formattedValue = b64value.replace(/-/g, '+').replace(/_/g, '/');
     const decodedValue = decodeURIComponent(
       atob(formattedValue)
-        .split("")
+        .split('')
         .map(function (c) {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         })
-        .join("")
+        .join(''),
     );
 
     return decodedValue;
@@ -145,7 +145,7 @@ export function remove<T>(array: T[], item: T): void {
  */
 export function compact<T>(items: readonly T[]): NonNullable<T>[] {
   return items.filter(
-    (item: T): item is NonNullable<T> => item !== null && item !== undefined
+    (item: T): item is NonNullable<T> => item !== null && item !== undefined,
   );
 }
 
@@ -158,7 +158,7 @@ export type RemoveUndefinedValues<T> = {
  * removed.
  */
 export function compactObject<O extends Record<string, unknown>>(
-  obj: O
+  obj: O,
 ): RemoveUndefinedValues<O> {
   const newObj = { ...obj };
   Object.keys(obj).forEach((k) => {
@@ -185,7 +185,7 @@ export function wait(millis: number): Promise<void> {
 export async function withTimeout<T>(
   promise: Promise<T>,
   millis: number,
-  errmsg: string
+  errmsg: string,
 ): Promise<T> {
   let timerID: ReturnType<typeof setTimeout> | undefined;
   const timer$ = new Promise<never>((_, reject) => {
@@ -211,7 +211,7 @@ export async function withTimeout<T>(
  * memoized value.
  */
 export function memoizeOnSuccess<T>(
-  factoryFn: () => Promise<T>
+  factoryFn: () => Promise<T>,
 ): () => Promise<T> {
   let cached: Promise<T> | null = null;
   return () => {

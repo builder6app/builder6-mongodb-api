@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { generators } from 'openid-client';
 
-
 @Injectable()
 export class OidcService {
-
   async getProviderFromDB(providerId: string) {
-
     const code_challenge_method = 'S256';
     const code_verifier = generators.codeVerifier();
     const code_challenge = generators.codeChallenge(code_verifier);

@@ -94,8 +94,10 @@ export class RoomsController {
 
   @UseGuards(RoomsGuard)
   @Get('rooms/:roomId/threads/delta')
-  async getThreadsDelta(@Param('roomId') roomId: string, 
-  @Query('since') since: string,) {
+  async getThreadsDelta(
+    @Param('roomId') roomId: string,
+    @Query('since') since: string,
+  ) {
     const sinceData = new Date(since);
     const threads = await this.roomsService.getThreads(roomId);
     return {
@@ -255,7 +257,6 @@ export class RoomsController {
   ) {
     await this.roomsService.deleteComment(commentId);
 
-
     await this.roomsService.updateThread(threadId);
     this.roomsGateway.broadcastToRoom(roomId, {
       type: ServerMsgCode.COMMENT_DELETED, // 使用 ServerMsgCode 枚举
@@ -369,5 +370,4 @@ export class RoomsController {
     });
     return {};
   }
-
 }

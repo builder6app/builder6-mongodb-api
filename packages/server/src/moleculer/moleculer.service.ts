@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ServiceBroker } from 'moleculer';
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from 'fs';
+import * as path from 'path';
 
 import moleculerConfig from './moleculer.config';
 
@@ -12,9 +12,9 @@ export class MoleculerService {
   private readonly logger = new Logger(MoleculerService.name);
 
   constructor(private configService: ConfigService) {
-    const transporter = this.configService.get("transporter");
+    const transporter = this.configService.get('transporter');
     if (!transporter) {
-      console.error("B6_TRANSPORTER env is required.");
+      console.error('B6_TRANSPORTER env is required.');
       return;
     }
     this.broker = new ServiceBroker({
@@ -26,7 +26,7 @@ export class MoleculerService {
 
   loadServices() {
     // @builder6/plugin-tables@0.5.6,@builder6/plugin-pages@0.5.1,
-    const plugins = this.configService.get("plugin.services");
+    const plugins = this.configService.get('plugin.services');
     if (plugins) {
       for (const plugin of plugins.split(',')) {
         // 解析 plugin npm 名称和 版本号。例如： @builder6/plugin-tables
@@ -59,17 +59,21 @@ export class MoleculerService {
       // 检测是否包含指定文件
       const packageServicePath = path.resolve(
         this.getPackagePath(packageName),
-        "./dist/package.service.js"
+        './dist/package.service.js',
       );
 
       if (!fs.existsSync(packageServicePath)) {
-        this.logger.error(`插件 ${packageName} 缺少文件: ${packageServicePath}`);
+        this.logger.error(
+          `插件 ${packageName} 缺少文件: ${packageServicePath}`,
+        );
         return;
       }
 
       // 动态引入并创建服务
       const serviceModule = require(packageServicePath);
-      const serviceSchema = serviceModule.default? serviceModule.default : serviceModule
+      const serviceSchema = serviceModule.default
+        ? serviceModule.default
+        : serviceModule;
       if (serviceSchema) {
         this.broker.createService(serviceSchema);
         this.logger.log(`插件服务已创建: ${packageName}`);

@@ -1,7 +1,5 @@
 import { MongodbService } from '@/mongodb/mongodb.service';
 import { Injectable } from '@nestjs/common';
-import { RoomsGateway } from './rooms.gateway';
-import { ServerMsgCode } from './protocol/ServerMsg';
 
 export interface CreateThreadParams {
   id?: string;

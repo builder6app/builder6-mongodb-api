@@ -9,16 +9,20 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MetaService {
-  constructor(private readonly mongodbService: MongodbService) { }
+  constructor(private readonly mongodbService: MongodbService) {}
 
   async getTableMeta(baseId: string, tableId: string) {
     let table = await this.mongodbService.findOne('b6_tables', {
       _id: tableId,
     });
     if (table) {
-      table.fields = await this.mongodbService.find('b6_fields', {
-        table_id: tableId,
-      }, { sort: { sort_no: 1 } });
+      table.fields = await this.mongodbService.find(
+        'b6_fields',
+        {
+          table_id: tableId,
+        },
+        { sort: { sort_no: 1 } },
+      );
       table.verifications = await this.mongodbService.find('b6_verification', {
         table: tableId,
       });
@@ -36,8 +40,20 @@ export class MetaService {
             type: 'text',
             default_value: '默认文本',
           },
-          { _id: 'fld002', name: 'age', label: '年龄', type: 'number', default_value: 20 },
-          { _id: 'fld003', name: 'discount', label: '折扣', type: 'number', precision: 2 },
+          {
+            _id: 'fld002',
+            name: 'age',
+            label: '年龄',
+            type: 'number',
+            default_value: 20,
+          },
+          {
+            _id: 'fld003',
+            name: 'discount',
+            label: '折扣',
+            type: 'number',
+            precision: 2,
+          },
           { _id: 'fld004', name: 'info', label: '备注', type: 'textarea' },
           {
             _id: 'fld005',
@@ -54,7 +70,13 @@ export class MetaService {
           //   multiple: true,
           // },
           { _id: 'fld007', name: 'birthdate', label: '生日', type: 'date' },
-          { _id: 'fld008', name: 'created', label: '创建时间', type: 'datetime', default_value: '2024-12-11T09:22:09.045Z' },
+          {
+            _id: 'fld008',
+            name: 'created',
+            label: '创建时间',
+            type: 'datetime',
+            default_value: '2024-12-11T09:22:09.045Z',
+          },
           { _id: 'fld009', name: 'valid', label: '启用', type: 'boolean' },
           {
             _id: 'fld010',

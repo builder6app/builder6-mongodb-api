@@ -4,14 +4,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MongoClient, Db, Collection } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import * as devextremeQuery from 'devextreme-query-mongodb';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RecordsService {
   private db: Db;
   private readonly logger = new Logger(RecordsService.name);
 
-  constructor() {
-    const mongoUrl = process.env.STEEDOS_TABLES_MONGO_URL || process.env.B6_TABLES_MONGO_URL || process.env.MONGO_URL;
+  constructor(private configService: ConfigService) {
+    const mongoUrl =
+      configService.get('tables.mongo.url') || configService.get('mongo.url');
+
     const client = new MongoClient(mongoUrl, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,

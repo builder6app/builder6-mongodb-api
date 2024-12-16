@@ -20,11 +20,13 @@ export default async function ExpressApplication() {
     methods: 'GET,PUT,POST,DELETE,UPDATE,OPTIONS',
     credentials: true,
   });
-  app.use(session({
-    secret: 'your_session_secret',
-    resave: false,
-    saveUninitialized: false,
-  }));
+  app.use(
+    session({
+      secret: 'your_session_secret',
+      resave: false,
+      saveUninitialized: false,
+    }),
+  );
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Builder6 API')
@@ -33,7 +35,8 @@ export default async function ExpressApplication() {
     .addBearerAuth()
     .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, swaggerConfig);
+  const documentFactory = () =>
+    SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/v6', app, documentFactory);
 
   app.useStaticAssets(join(__dirname, '..', 'public'));

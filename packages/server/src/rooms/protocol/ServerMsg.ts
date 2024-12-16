@@ -1,7 +1,7 @@
-import type { Json, JsonObject } from "../lib/Json";
-import type { BaseUserMeta } from "./BaseUserMeta";
-import type { Op } from "./Op";
-import type { IdTuple, SerializedCrdt } from "./SerializedCrdt";
+import type { Json, JsonObject } from '../lib/Json';
+import type { BaseUserMeta } from './BaseUserMeta';
+import type { Op } from './Op';
+import type { IdTuple, SerializedCrdt } from './SerializedCrdt';
 
 export enum ServerMsgCode {
   // For Presence
@@ -191,12 +191,12 @@ export type UserJoinServerMsg<U extends BaseUserMeta> = {
    * The id of the User that has been set in the authentication endpoint.
    * Useful to get additional information about the connected user.
    */
-  readonly id: U["id"];
+  readonly id: U['id'];
   /**
    * Additional user information that has been set in the authentication
    * endpoint.
    */
-  readonly info: U["info"];
+  readonly info: U['info'];
   /**
    * Informs the client what (public) permissions this (other) User has.
    */

@@ -17,7 +17,12 @@ import {
 import { RecordsService } from './records.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
-import { ApiBody, ApiQuery, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiQuery,
+  ApiBearerAuth,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@/auth/auth.guard';
 import { MetaService } from '@/tables/meta.service';
 
@@ -26,7 +31,10 @@ import { MetaService } from '@/tables/meta.service';
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class TablesController {
-  constructor(private readonly recordsService: RecordsService, private readonly metaService: MetaService) {}
+  constructor(
+    private readonly recordsService: RecordsService,
+    private readonly metaService: MetaService,
+  ) {}
 
   /**
    * Create a new record
@@ -312,11 +320,9 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteOne(
-        baseId,
-        tableId,
-        {_id: recordId},
-      );
+      const result = await this.recordsService.deleteOne(baseId, tableId, {
+        _id: recordId,
+      });
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
@@ -363,13 +369,15 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteMany(
-        baseId,
-        tableId, {_id: { $in: records }});
+      const result = await this.recordsService.deleteMany(baseId, tableId, {
+        _id: { $in: records },
+      });
       if (result.deletedCount === 0) {
         return res.status(404).send();
       }
-      res.status(200).send({ records: records.map(_id => ({ deleted: true, _id })) });
+      res
+        .status(200)
+        .send({ records: records.map((_id) => ({ deleted: true, _id })) });
     } catch (error) {
       console.error('Query error', error);
       res.status(500).send(error);
@@ -391,7 +399,6 @@ export class TablesController {
       res.status(500).send(error);
     }
   }
-
 
   @Get('devextreme/datagrid/:baseId/:tableId')
   @Render('devextreme/datagrid')
@@ -417,4 +424,3 @@ export class TablesController {
     };
   }
 }
-
