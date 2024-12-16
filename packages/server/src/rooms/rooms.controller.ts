@@ -98,8 +98,8 @@ export class RoomsController {
     @Param('roomId') roomId: string,
     @Query('since') since: string,
   ) {
-    const sinceData = new Date(since);
-    const threads = await this.roomsService.getThreads(roomId);
+    const sinceDate = new Date(since);
+    const threads = await this.roomsService.getThreads(roomId, sinceDate);
     return {
       data: threads,
       inboxNotifications: [],
