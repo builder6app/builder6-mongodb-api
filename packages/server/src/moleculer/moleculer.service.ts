@@ -47,7 +47,7 @@ export class MoleculerService {
         return;
       }
 
-      const [, packageName, version] = match;
+      const [, packageName] = match;
       this.logger.log(`加载插件: 名称：${packageName}`);
 
       // 检测 npm 包是否存在
@@ -70,6 +70,7 @@ export class MoleculerService {
       }
 
       // 动态引入并创建服务
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const serviceModule = require(packageServicePath);
       const serviceSchema = serviceModule.default
         ? serviceModule.default

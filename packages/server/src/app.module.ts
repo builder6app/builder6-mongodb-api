@@ -11,6 +11,7 @@ import { MoleculerModule } from './moleculer/moleculer.module';
 import { Microsoft365Module } from './microsoft365/microsoft365.module';
 import { OidcModule } from './oidc/oidc.module';
 import { AppController } from './app.controller';
+import { PluginModule } from './plugin/plugin.module';
 import config from './app.config';
 
 @Module({
@@ -28,6 +29,7 @@ import config from './app.config';
     FilesModule,
     MoleculerModule,
     Microsoft365Module,
+    PluginModule.forRoot(process.env.B6_PLUGIN_MODULES),
     ...(process.env.B6_OIDC_ENABLED ? [OidcModule] : []),
   ],
   controllers: [AppController],

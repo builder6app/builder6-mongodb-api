@@ -5,4 +5,4 @@ import { NodeRedService } from './node-red.service';
   providers: [NodeRedService],
   controllers: []
 })
-export class NodeRedModule {}
+export default class NodeRedModule {}

@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
-import { MongodbService } from './mongodb/mongodb.service';
 import { INestApplicationContext } from '@nestjs/common';
 
 export * from './mongodb';
