@@ -1,6 +1,6 @@
 {
   "name": "@builder6/server",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "",
   "author": "",
   "license": "AGPL-3.0-only",
@@ -29,9 +29,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@builder6/core": "^0.5.3",
-    "@builder6/email": "^0.5.3",
-    "@builder6/moleculer": "^0.5.3",
+    "@builder6/core": "^0.5.4",
+    "@builder6/email": "^0.5.4",
+    "@builder6/moleculer": "^0.5.4",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^9.0.0",
