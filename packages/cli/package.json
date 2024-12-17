@@ -68,6 +68,9 @@
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "types": "dist/index.d.ts",
-  "gitHead": "47d3d61e53f81abcda69bd9b7a4d157c9de4a466"
+  "gitHead": "a4771df5cb27677e1e140ebf2aaa0cd30ff731cd"
 }

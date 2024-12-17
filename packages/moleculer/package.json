@@ -26,5 +26,9 @@
       "prettier --write",
       "git add"
     ]
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "a4771df5cb27677e1e140ebf2aaa0cd30ff731cd"
 }
