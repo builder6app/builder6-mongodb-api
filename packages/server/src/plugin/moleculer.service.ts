@@ -75,7 +75,7 @@ export class MoleculerPluginService {
         : serviceModule;
       if (serviceSchema) {
         const service = this.broker.createService(serviceSchema);
-        this.broker._restartService(service);
+        // this.broker._restartService(service);
         this.logger.log(`插件服务已加载: ${packageName}`);
       }
     } catch (err) {
