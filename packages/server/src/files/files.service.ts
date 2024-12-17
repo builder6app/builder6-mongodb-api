@@ -3,7 +3,7 @@ import * as AWS from 'aws-sdk';
 import * as fs from 'fs-extra';
 import { v4 as uuid } from 'uuid';
 import * as path from 'path';
-import { MongodbService } from '@/mongodb/mongodb.service';
+import { MongodbService } from '@builder6/common';
 import stream from 'stream';
 import * as mime from 'mime-types';
 import { ConfigService } from '@nestjs/config';

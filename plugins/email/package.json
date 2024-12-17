@@ -1,0 +1,17 @@
+{
+  "name": "@builder6/plugin-email",
+  "version": "0.0.3",
+  "main": "dist/plugin.module.js",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "build:watch": "rm -rf dist && tsc --watch"
+  },
+  "dependencies": {
+    "node-red": "^4.0.5",
+    "nodemailer": "^6.9.16"
+  }
+}

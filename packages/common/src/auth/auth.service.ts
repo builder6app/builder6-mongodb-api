@@ -2,7 +2,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { v4 as uuid } from 'uuid';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { MongodbService } from '@/mongodb/mongodb.service';
+import { MongodbService } from '../mongodb';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 

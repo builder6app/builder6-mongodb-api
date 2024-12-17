@@ -127,18 +127,24 @@ export class FilesController {
       },
     },
   })
+  @ApiParam({
+    name: 'collectionName',
+    required: true,
+    type: 'string',
+    schema: {
+      type: 'string',
+      default: 'cfs.files.filerecord', // 设置默认值
+    },
+  })
   async presignedUrls(
     @Param('collectionName') collectionName: string,
-    @Body('records') records: string[]) {
+    @Body('records') records: string[],
+  ) {
     const urls = await Promise.all(
       records.map(async (attachmentId) => {
-        return this.filesService.getPreSignedUrl(
-          collectionName,
-          attachmentId,
-        );
+        return this.filesService.getPreSignedUrl(collectionName, attachmentId);
       }),
     );
     return { urls };
   }
-
 }

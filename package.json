@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "plugins/*"
   ],
   "repository": "https://github.com/builder6app/builder6-mongodb-api.git",
   "author": "Jack Zhuang <9340100@qq.com>",

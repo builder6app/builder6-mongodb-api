@@ -1,4 +1,4 @@
-import { MongodbService } from '@/mongodb/mongodb.service';
+import { MongodbService } from '@builder6/common';
 import { Injectable } from '@nestjs/common';
 
 export interface CreateThreadParams {

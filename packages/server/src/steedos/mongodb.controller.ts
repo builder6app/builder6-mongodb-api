@@ -12,7 +12,7 @@ import {
   ParseIntPipe,
   Patch,
 } from '@nestjs/common';
-import { MongodbService } from '../mongodb/mongodb.service';
+import { AdminGuard, MongodbService } from '@builder6/common';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 import {
@@ -21,7 +21,6 @@ import {
   ApiOperation,
   ApiQuery,
 } from '@nestjs/swagger';
-import { AdminGuard } from '@/auth/admin.guard';
 
 // 直接操作 mongodb 数据库 的 API，必须是 admin 用户才能操作。
 @Controller('api/v6/direct')

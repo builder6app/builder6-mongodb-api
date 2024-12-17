@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { RoomsController } from './rooms.controller';
 import { RoomsService } from './rooms.service';
-import { MongodbModule } from '@/mongodb/mongodb.module';
+import { MongodbModule } from '@builder6/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthModule } from '@/auth/auth.module';
+import { AuthModule } from '@builder6/common';
 import { RoomsGateway } from './rooms.gateway';
 import { FilesModule } from '@/files/files.module';
 

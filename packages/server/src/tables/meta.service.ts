@@ -4,7 +4,7 @@
  * @LastEditors: 殷亮辉 yinlianghui@hotoa.com
  * @LastEditTime: 2024-12-14 11:02:46
  */
-import { MongodbService } from '@/mongodb/mongodb.service';
+import { MongodbService } from '@builder6/common';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
