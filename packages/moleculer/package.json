@@ -1,6 +1,6 @@
 {
   "name": "@builder6/moleculer",
-  "version": "1.0.5",
+  "version": "0.5.2",
   "description": "using Moleculer as a Nest module",
   "main": "index.js",
   "license": "MIT",
@@ -13,20 +13,13 @@
     "publish:next": "npm publish --access public --tag next"
   },
   "devDependencies": {
-    "@types/node": "*",
-    "lint-staged": "^7.0.0",
     "moleculer": "^0.14.35",
-    "prettier": "^1.11.1",
-    "reflect-metadata": "^0.1.12",
+    "reflect-metadata": "^0.2.0",
     "rxjs": "^6.0.0",
-    "rxjs-compat": "^6.2.1",
-    "ts-node": "^3.3.0",
-    "typescript": "^2.8.0"
+    "rxjs-compat": "^6.6.7"
   },
   "peerDependencies": {
-    "moleculer": "^0.14.35",
-    "reflect-metadata": "^0.1.12",
-    "rxjs": "^6.0.0"
+    "moleculer": "^0.14.35"
   },
   "lint-staged": {
     "*.ts": [
