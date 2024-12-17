@@ -1,4 +1,5 @@
 import * as dotenvFlow from 'dotenv-flow';
+import * as path from 'path';
 
 dotenvFlow.config({
   path: process.cwd(),
@@ -12,6 +13,10 @@ process.env.B6_TRANSPORTER =
   process.env.B6_TRANSPORTER ||
   process.env.STEEDOS_TRANSPORTER ||
   process.env.TRANSPORTER;
+
+process.env.B6_HOME = process.env.B6_HOME || process.cwd();
+process.env.B6_PLUGIN_DIR =
+  process.env.B6_PLUGIN_DIR || path.join(process.cwd(), 'plugins');
 
 /**
  * 将以指定前缀开头的环境变量解析为 JSON 对象

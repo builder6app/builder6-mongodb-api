@@ -86,7 +86,14 @@ export class MoleculerService {
 
   private getPackagePath(packageName: string): string {
     try {
-      return path.dirname(require.resolve(`${packageName}/package.json`));
+      return path.dirname(
+        require.resolve(`${packageName}/package.json`, {
+          paths: [
+            path.join(process.env.B6_PLUGIN_DIR, 'node_modules'),
+            ...module.paths,
+          ],
+        }),
+      );
     } catch (e) {
       console.error(e);
       return null;

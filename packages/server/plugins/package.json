@@ -1,0 +1,8 @@
+{
+  "name": "b6-server",
+  "version": "0.0.1",
+  "dependencies": {
+    "@builder6/node-red": "latest",
+    "lodash": "latest"
+  }
+}

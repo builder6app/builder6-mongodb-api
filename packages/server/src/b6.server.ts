@@ -43,7 +43,6 @@ var knownOpts = {
   config: [path],
   title: String,
   userDir: [path],
-  install: Boolean,
   npmPackages: String,
   verbose: Boolean,
   safe: Boolean,
@@ -57,7 +56,6 @@ var shortHands = {
   // As we want to reserve -t for now, adding a shorthand to help so it
   // doesn't get treated as --title
   t: ['--help'],
-  i: ['--install'],
   u: ['--userDir'],
   n: ['--npmPackages'],
   v: ['--verbose'],
@@ -68,8 +66,6 @@ nopt.invalidHandler = function (k, v, t) {
 };
 
 var parsedArgs = nopt(knownOpts, shortHands, process.argv, 2);
-
-process.env.B6_HOME = process.env.B6_HOME || process.cwd();
 
 const States = {
   STOPPED: 'stopped',
@@ -83,7 +79,7 @@ const States = {
 };
 
 class B6Server {
-  userDir: string = process.env.B6_HOME;
+  userDir: string = process.env.B6_PLUGIN_DIR;
   configFile: string;
   config: any;
 
@@ -124,6 +120,13 @@ class B6Server {
   }
 
   async loadConfig() {
+
+    const configJs = require('./b6.config');
+    this.config = {
+      ...configJs,
+      ...getEnvConfigs(),
+    };
+
     if (this.parsedArgs.help) {
       console.log('B6 Server v' + project.version);
       console.log(
@@ -137,7 +140,6 @@ class B6Server {
       console.log('  -p, --port           port to listen on');
       console.log('  -s, --config         specified config file');
       console.log('  -n, --npmPackages    install specified npm packages');
-      console.log('  -i, --install        enable auto install packages');
       console.log('  -u, --userDir        use specified user directory');
       console.log('  -v, --verbose        enable verbose output');
       console.log('      --safe           enable safe mode');
@@ -163,74 +165,74 @@ class B6Server {
       process.exit();
     }
 
-    if (this.parsedArgs.config) {
-      // User-specified config file
-      this.configFile = this.parsedArgs.config;
-    } else if (
-      this.parsedArgs.userDir &&
-      fs.existsSync(path.join(this.parsedArgs.userDir, 'b6.config.js'))
-    ) {
-      // User-specified userDir that contains a b6.config.js
-      this.configFile = path.join(this.parsedArgs.userDir, 'b6.config.js');
-    } else {
-      if (fs.existsSync(path.join(process.env.B6_HOME, '.config.json'))) {
-        // B6_HOME contains user data - use its b6.config.js
-        this.configFile = path.join(process.env.B6_HOME, 'b6.config.js');
-      } else {
-        if (
-          !this.parsedArgs.userDir &&
-          !(process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH)
-        ) {
-          console.log(
-            'Could not find user directory. Ensure $HOME is set for the current user, or use --userDir option',
-          );
-          process.exit(1);
-        }
-        this.userDir =
-          this.parsedArgs.userDir ||
-          path.join(
-            process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH,
-            '.b6',
-          );
-        var userconfigFile = path.join(this.userDir, 'b6.config.js');
-        if (fs.existsSync(userconfigFile)) {
-          // $HOME/.node-red/b6.config.js exists
-          this.configFile = userconfigFile;
-        } else {
-          var defaultconfig = path.join(__dirname, 'b6.config.js');
-          var configStat = fs.statSync(defaultconfig);
-          if (configStat.mtime.getTime() <= configStat.ctime.getTime()) {
-            // Default config file has not been modified - safe to copy
-            fs.copySync(defaultconfig, userconfigFile);
-            this.configFile = userconfigFile;
-          } else {
-            // Use default b6.config.js as it has been modified
-            this.configFile = defaultconfig;
-          }
-        }
-      }
-    }
+    // if (this.parsedArgs.config) {
+    //   // User-specified config file
+    //   this.configFile = this.parsedArgs.config;
+    // } else if (
+    //   this.parsedArgs.userDir &&
+    //   fs.existsSync(path.join(this.parsedArgs.userDir, 'b6.config.js'))
+    // ) {
+    //   // User-specified userDir that contains a b6.config.js
+    //   this.configFile = path.join(this.parsedArgs.userDir, 'b6.config.js');
+    // } else {
+    //   if (fs.existsSync(path.join(process.env.B6_PLUGIN_HOME, 'b6.config.json'))) {
+    //     // B6_HOME contains user data - use its b6.config.js
+    //     this.configFile = path.join(process.env.B6_HOME, 'b6.config.js');
+    //   } else {
+    //     if (
+    //       !this.parsedArgs.userDir &&
+    //       !(process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH)
+    //     ) {
+    //       console.log(
+    //         'Could not find user directory. Ensure $HOME is set for the current user, or use --userDir option',
+    //       );
+    //       process.exit(1);
+    //     }
+    //     this.userDir =
+    //       this.parsedArgs.userDir ||
+    //       path.join(
+    //         process.env.HOME || process.env.USERPROFILE || process.env.HOMEPATH,
+    //         '.b6',
+    //       );
+    //     var userconfigFile = path.join(this.userDir, 'b6.config.js');
+    //     if (fs.existsSync(userconfigFile)) {
+    //       // $HOME/.node-red/b6.config.js exists
+    //       this.configFile = userconfigFile;
+    //     } else {
+    //       var defaultconfig = path.join(__dirname, 'b6.config.js');
+    //       var configStat = fs.statSync(defaultconfig);
+    //       if (configStat.mtime.getTime() <= configStat.ctime.getTime()) {
+    //         // Default config file has not been modified - safe to copy
+    //         fs.copySync(defaultconfig, userconfigFile);
+    //         this.configFile = userconfigFile;
+    //       } else {
+    //         // Use default b6.config.js as it has been modified
+    //         this.configFile = defaultconfig;
+    //       }
+    //     }
+    //   }
+    // }
 
-    try {
-      const configJs = require(this.configFile);
-      this.config = {
-        ...configJs,
-        ...getEnvConfigs(),
-      };
-      console.log('configJs', configJs);
-      // this.userDir = path.dirname(this.configFile);
-      this.config.configFile = this.configFile;
-    } catch (err) {
-      console.log('Error loading config file: ' + this.configFile);
-      if (err.code == 'MODULE_NOT_FOUND') {
-        if (err.toString().indexOf(this.configFile) === -1) {
-          console.log(err.toString());
-        }
-      } else {
-        console.log(err);
-      }
-      process.exit(1);
-    }
+    // try {
+    //   const configJs = require(this.configFile);
+    //   this.config = {
+    //     ...configJs,
+    //     ...getEnvConfigs(),
+    //   };
+    //   console.log('configJs', configJs);
+    //   this.userDir = path.dirname(this.configFile);
+    //   this.config.configFile = this.configFile;
+    // } catch (err) {
+    //   console.log('Error loading config file: ' + this.configFile);
+    //   if (err.code == 'MODULE_NOT_FOUND') {
+    //     if (err.toString().indexOf(this.configFile) === -1) {
+    //       console.log(err.toString());
+    //     }
+    //   } else {
+    //     console.log(err);
+    //   }
+    //   process.exit(1);
+    // }
 
     if (this.parsedArgs.verbose) {
       this.config.verbose = true;
@@ -251,7 +253,9 @@ class B6Server {
       }
     }
 
-    this.config.plugin = this.config.plugin || {};
+    this.config.plugin = this.config.plugin || {
+      dir: process.env.B6_PLUGIN_DIR,
+    };
 
     if (this.parsedArgs.npmPackages !== undefined) {
       this.config.plugin.packages = this.parsedArgs.npmPackages;
@@ -260,8 +264,6 @@ class B6Server {
     if (this.parsedArgs.argv.remain.length > 0) {
       this.config.plugin.services = this.parsedArgs.argv.remain[0];
     }
-
-    this.config.plugin.dir = process.cwd();
 
     this.logger.log('Loaded config', this.config);
   }
@@ -284,7 +286,7 @@ class B6Server {
     return {};
   }
   async updateNpmrc() {
-    const npmrcPath = path.join(this.config.plugin.dir, '.npmrc');
+    const npmrcPath = path.join(process.env.B6_PLUGIN_DIR, '.npmrc');
     if (this.config.plugin?.npmrc) {
       try {
         fs.writeFileSync(npmrcPath, this.config.plugin?.npmrc);
@@ -306,7 +308,7 @@ class B6Server {
     }
   }
   async updatePackage() {
-    const pkgFilePath = path.join(process.env.B6_HOME, 'package.json');
+    const pkgFilePath = path.join(process.env.B6_PLUGIN_DIR, 'package.json');
     if (!fs.existsSync(pkgFilePath)) {
       // 写入一个空的 package.json
       fs.writeFileSync(
@@ -366,7 +368,7 @@ class B6Server {
           ],
           {
             windowsHide: true,
-            cwd: path.join(this.userDir),
+            cwd: path.join(process.env.B6_PLUGIN_DIR),
             env: npmEnv,
             shell: true,
           },
@@ -406,13 +408,11 @@ class B6Server {
     this.app = await ExpressApplication.default();
     await this.app.listen(this.config.port);
   }
-  
+
   async bootstrap() {
     await this.loadConfig();
-    if (this.parsedArgs.install) {
-      await this.updateNpmrc();
-      await this.updatePackage();
-    }
+    await this.updateNpmrc();
+    await this.updatePackage();
     await this.startApp();
   }
 }
