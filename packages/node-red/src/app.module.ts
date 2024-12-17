@@ -7,4 +7,4 @@ import { NodeRedMoleculer } from './node-red.moleculer';
   providers: [NodeRedService, NodeRedMoleculer],
   controllers: [NodeRedController],
 })
-export default class NodeRed2Module {}
+export default class NodeRedModule {}

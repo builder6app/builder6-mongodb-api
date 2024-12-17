@@ -1,8 +1,8 @@
-import * as project from '../package.json';
+const project = require('./package.json');
 
-const packageName: string = project.name;
+const packageName = project.name;
 
-export default {
+module.exports = {
   name: packageName,
   namespace: 'steedos',
 

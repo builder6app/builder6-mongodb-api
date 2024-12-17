@@ -57,7 +57,7 @@ export class MoleculerPluginService {
       // 检测是否包含指定文件
       const packageServicePath = path.resolve(
         this.getPackagePath(packageName),
-        './dist/plugin.service.js',
+        './package.service.js',
       );
 
       if (!fs.existsSync(packageServicePath)) {

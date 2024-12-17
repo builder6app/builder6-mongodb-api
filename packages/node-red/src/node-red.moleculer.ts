@@ -14,7 +14,7 @@ export class NodeRedMoleculer extends Service {
             settings: {
             },
             actions: {
-                getPreSignedUrl: this.getPreSignedUrl,
+                startNodeRed: this.startNodeRed,
             },
             created: this.serviceCreated,
             started: this.serviceStarted,
@@ -31,7 +31,7 @@ export class NodeRedMoleculer extends Service {
     async serviceStopped() {
     }
 
-    async getPreSignedUrl(ctx: Context) {
+    async startNodeRed(ctx: Context) {
        return {}
     }
 }

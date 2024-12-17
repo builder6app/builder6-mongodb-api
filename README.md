@@ -69,7 +69,7 @@ B6_PLUGIN_NPMRC=registry=https://registry.npmmirror.com
 B6_PLUGIN_SERVICES=@builder6/node-red
 ```
 
-启动服务时，会自动查找所有服务类插件，如果找到 `dist/plugin.service.js` 则作为 moleculer 服务加载。
+启动服务时，会自动查找所有服务类插件，如果找到 `package.service.js` 则作为 moleculer 服务加载。
 
 
 ### 启动时 自动加载 Nestjs Module
@@ -79,7 +79,7 @@ B6_PLUGIN_SERVICES=@builder6/node-red
 B6_PLUGIN_MODULE=@builder6/node-red
 ```
 
-启动服务时，会自动查找所有module类插件，如果找到 `dist/plugin.modules.js` 则作为 nestjs module 加载。
+启动服务时，会自动查找所有module类插件，如果找到 `dist/app.modules.js` 则作为 nestjs module 加载。
 
 
 ## 与 Steedos 集成

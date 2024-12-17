@@ -39,7 +39,7 @@ export class PluginModule {
     // 检测是否包含指定文件
     const packageModulePath = path.resolve(
       this.getPackagePath(packageName),
-      './dist/plugin.module.js',
+      './dist/app.module.js',
     );
 
     if (!fs.existsSync(packageModulePath)) {
