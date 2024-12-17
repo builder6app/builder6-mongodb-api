@@ -13,5 +13,6 @@
   "dependencies": {
     "@builder6/core": "^0.5.2",
     "nodemailer": "^6.9.16"
-  }
+  },
+  "gitHead": "47d3d61e53f81abcda69bd9b7a4d157c9de4a466"
 }
