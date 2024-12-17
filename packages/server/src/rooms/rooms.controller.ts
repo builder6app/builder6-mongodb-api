@@ -1,4 +1,4 @@
-import { AuthGuard } from '@builder6/common';
+import { AuthGuard } from '@builder6/core';
 import { RoomsService } from './rooms.service';
 import {
   Controller,

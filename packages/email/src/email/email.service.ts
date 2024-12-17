@@ -4,19 +4,28 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter = null;
   private readonly logger = new Logger(EmailService.name);
 
   constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get('email.host'), // 邮件服务提供商的SMTP服务器地址
-      port: this.configService.get('email.port'), // SMTP端口
-      // secure: false, // 是否使用TLS
-      auth: {
-        user: this.configService.get('email.username'), // 邮箱账号
-        pass: this.configService.get('email.password'), // 邮箱密码或SMTP授权码
-      },
-    });
+    console.log(
+      this.configService.get('email.enabled'),
+      this.configService.get('email.host'),
+    );
+    if (
+      this.configService.get('email.enabled') &&
+      this.configService.get('email.host')
+    ) {
+      this.transporter = nodemailer.createTransport({
+        host: this.configService.get('email.host'), // 邮件服务提供商的SMTP服务器地址
+        port: this.configService.get('email.port'), // SMTP端口
+        // secure: false, // 是否使用TLS
+        auth: {
+          user: this.configService.get('email.username'), // 邮箱账号
+          pass: this.configService.get('email.password'), // 邮箱密码或SMTP授权码
+        },
+      });
+    }
   }
 
   /**
@@ -32,6 +41,10 @@ export class EmailService {
     text?: string,
     html?: string,
   ): Promise<void> {
+    if (!this.transporter) {
+      throw new Error('Email service not enabled');
+    }
+
     const mailOptions: nodemailer.SendMailOptions = {
       from: this.configService.get('email.from'), // 发件人名称和邮箱
       to, // 收件人

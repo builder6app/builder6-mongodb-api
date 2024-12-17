@@ -1,4 +1,4 @@
-import { MongodbService } from '@builder6/common';
+import { MongodbService } from '@builder6/core';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

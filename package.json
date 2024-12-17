@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "plugins/*"
+    "packages/*"
   ],
   "repository": "https://github.com/builder6app/builder6-mongodb-api.git",
   "author": "Jack Zhuang <9340100@qq.com>",
@@ -13,7 +12,7 @@
     "start:dev": "nx start:dev @builder6/server",
     "start:debug": "nx start:debug @builder6/server",
     "start:prod": "nx start:prod @builder6/server",
-    "build": "nx run-many -t build",
+    "build": "nx run-many -t build --parallel=1",
     "build:watch": "nx run-many -t build:watch",
     "clean": "nx run-many -t clean",
     "format": "nx run-many -t format",

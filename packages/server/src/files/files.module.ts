@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
-import { MongodbModule } from '@builder6/common';
+import { MongodbModule } from '@builder6/core';
 
 @Module({
   imports: [MongodbModule],

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { MongodbModule } from '@builder6/common';
+import { MongodbModule } from '@builder6/core';
 import { TablesModule } from '@/tables/tables.module';
-import { AuthModule } from '@builder6/common';
+import { AuthModule } from '@builder6/core';
 import { SteedosModule } from './steedos/steedos.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { FilesModule } from './files/files.module';
@@ -12,7 +12,7 @@ import { Microsoft365Module } from './microsoft365/microsoft365.module';
 import { OidcModule } from './oidc/oidc.module';
 import { AppController } from './app.controller';
 import { PluginModule } from './plugin/plugin.module';
-import { EmailModule } from '@builder6/plugin-email';
+import { EmailModule } from '@builder6/email';
 import getConfig from './app.config';
 
 @Module({

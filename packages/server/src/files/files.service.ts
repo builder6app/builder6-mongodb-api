@@ -3,7 +3,7 @@ import * as AWS from 'aws-sdk';
 import * as fs from 'fs-extra';
 import { v4 as uuid } from 'uuid';
 import * as path from 'path';
-import { MongodbService } from '@builder6/common';
+import { MongodbService } from '@builder6/core';
 import stream from 'stream';
 import * as mime from 'mime-types';
 import { ConfigService } from '@nestjs/config';
@@ -263,7 +263,7 @@ export class FilesService {
       const params = {
         Bucket: this.s3Bucket,
         Key: key,
-        Expires: 60 * 10, // 10分钟有效期
+        Expires: 60 * 60, // 60分钟有效期
       };
 
       try {

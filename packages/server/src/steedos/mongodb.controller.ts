@@ -12,7 +12,7 @@ import {
   ParseIntPipe,
   Patch,
 } from '@nestjs/common';
-import { AdminGuard, MongodbService } from '@builder6/common';
+import { AdminGuard, MongodbService } from '@builder6/core';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 import {

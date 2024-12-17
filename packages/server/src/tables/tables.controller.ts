@@ -23,7 +23,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@builder6/common';
+import { AuthGuard } from '@builder6/core';
 import { MetaService } from '@/tables/meta.service';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
