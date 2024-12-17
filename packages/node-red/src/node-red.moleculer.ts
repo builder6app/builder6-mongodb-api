@@ -1,17 +1,16 @@
 import { Service, Context, ServiceBroker } from 'moleculer';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectBroker } from '@builder6/moleculer';
-import { FilesService } from './files.service';
+import { NodeRedService } from './node-red.service';
 
 @Injectable()
-export class FilesMoleculer extends Service {
-    constructor(@InjectBroker() broker: ServiceBroker,
-        private filesService: FilesService,
+export class NodeRedMoleculer extends Service {
+    constructor(@InjectBroker() broker: ServiceBroker
     ) {
         super(broker);
 
         this.parseServiceSchema({
-            name: "@builder6/files",
+            name: "@builder6/node-red/moleculer",
             settings: {
             },
             actions: {
@@ -33,8 +32,6 @@ export class FilesMoleculer extends Service {
     }
 
     async getPreSignedUrl(ctx: Context) {
-        const {collectionName, fileId} = ctx.params as any;
-
-        return this.filesService.getPreSignedUrl(collectionName, fileId);
+       return {}
     }
 }

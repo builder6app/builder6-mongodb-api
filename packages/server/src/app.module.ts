@@ -23,7 +23,7 @@ import getConfig from './app.config';
       isGlobal: true, // 使配置在整个应用中可用
     }),
     MoleculerModule.forRoot({
-        brokerName: "builder6", // if you have multiple broker
+        // brokerName: "builder6", // if you have multiple broker
         namespace: "steedos", // some moleculer options
         transporter: process.env.B6_TRANSPORTER,
         // hotReload: true, // hotReload feature from moleculer will not work 
