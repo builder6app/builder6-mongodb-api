@@ -16,40 +16,41 @@ A new CLI generated with oclif
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g mycli123
-$ mycli123 COMMAND
+$ npm install -g @builder6/cli
+$ b6 COMMAND
 running command...
-$ mycli123 (--version)
-mycli123/0.0.0 darwin-arm64 node-v20.12.2
-$ mycli123 --help [COMMAND]
+$ b6 (--version)
+@builder6/cli/0.5.2 darwin-arm64 node-v18.20.2
+$ b6 --help [COMMAND]
 USAGE
-  $ mycli123 COMMAND
+  $ b6 COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`mycli123 hello PERSON`](#mycli123-hello-person)
-* [`mycli123 hello world`](#mycli123-hello-world)
-* [`mycli123 help [COMMAND]`](#mycli123-help-command)
-* [`mycli123 plugins`](#mycli123-plugins)
-* [`mycli123 plugins add PLUGIN`](#mycli123-plugins-add-plugin)
-* [`mycli123 plugins:inspect PLUGIN...`](#mycli123-pluginsinspect-plugin)
-* [`mycli123 plugins install PLUGIN`](#mycli123-plugins-install-plugin)
-* [`mycli123 plugins link PATH`](#mycli123-plugins-link-path)
-* [`mycli123 plugins remove [PLUGIN]`](#mycli123-plugins-remove-plugin)
-* [`mycli123 plugins reset`](#mycli123-plugins-reset)
-* [`mycli123 plugins uninstall [PLUGIN]`](#mycli123-plugins-uninstall-plugin)
-* [`mycli123 plugins unlink [PLUGIN]`](#mycli123-plugins-unlink-plugin)
-* [`mycli123 plugins update`](#mycli123-plugins-update)
+* [`b6 hello PERSON`](#b6-hello-person)
+* [`b6 hello world`](#b6-hello-world)
+* [`b6 help [COMMAND]`](#b6-help-command)
+* [`b6 plugins`](#b6-plugins)
+* [`b6 plugins add PLUGIN`](#b6-plugins-add-plugin)
+* [`b6 plugins:inspect PLUGIN...`](#b6-pluginsinspect-plugin)
+* [`b6 plugins install PLUGIN`](#b6-plugins-install-plugin)
+* [`b6 plugins link PATH`](#b6-plugins-link-path)
+* [`b6 plugins remove [PLUGIN]`](#b6-plugins-remove-plugin)
+* [`b6 plugins reset`](#b6-plugins-reset)
+* [`b6 plugins uninstall [PLUGIN]`](#b6-plugins-uninstall-plugin)
+* [`b6 plugins unlink [PLUGIN]`](#b6-plugins-unlink-plugin)
+* [`b6 plugins update`](#b6-plugins-update)
+* [`b6 start`](#b6-start)
 
-## `mycli123 hello PERSON`
+## `b6 hello PERSON`
 
 Say hello
 
 ```
 USAGE
-  $ mycli123 hello PERSON -f <value>
+  $ b6 hello PERSON -f <value>
 
 ARGUMENTS
   PERSON  Person to say hello to
@@ -61,37 +62,37 @@ DESCRIPTION
   Say hello
 
 EXAMPLES
-  $ mycli123 hello friend --from oclif
+  $ b6 hello friend --from oclif
   hello friend from oclif! (./src/commands/hello/index.ts)
 ```
 
-_See code: [src/commands/hello/index.ts](https://github.com/mdonnalley/mycli123/blob/v0.0.0/src/commands/hello/index.ts)_
+_See code: [src/commands/hello/index.ts](https://github.com/builder6app/cli/blob/v0.5.2/src/commands/hello/index.ts)_
 
-## `mycli123 hello world`
+## `b6 hello world`
 
 Say hello world
 
 ```
 USAGE
-  $ mycli123 hello world
+  $ b6 hello world
 
 DESCRIPTION
   Say hello world
 
 EXAMPLES
-  $ mycli123 hello world
+  $ b6 hello world
   hello world! (./src/commands/hello/world.ts)
 ```
 
-_See code: [src/commands/hello/world.ts](https://github.com/mdonnalley/mycli123/blob/v0.0.0/src/commands/hello/world.ts)_
+_See code: [src/commands/hello/world.ts](https://github.com/builder6app/cli/blob/v0.5.2/src/commands/hello/world.ts)_
 
-## `mycli123 help [COMMAND]`
+## `b6 help [COMMAND]`
 
-Display help for mycli123.
+Display help for b6.
 
 ```
 USAGE
-  $ mycli123 help [COMMAND...] [-n]
+  $ b6 help [COMMAND...] [-n]
 
 ARGUMENTS
   COMMAND...  Command to show help for.
@@ -100,18 +101,18 @@ FLAGS
   -n, --nested-commands  Include all nested commands in the output.
 
 DESCRIPTION
-  Display help for mycli123.
+  Display help for b6.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.0.21/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.19/src/commands/help.ts)_
 
-## `mycli123 plugins`
+## `b6 plugins`
 
 List installed plugins.
 
 ```
 USAGE
-  $ mycli123 plugins [--json] [--core]
+  $ b6 plugins [--json] [--core]
 
 FLAGS
   --core  Show core plugins.
@@ -123,18 +124,18 @@ DESCRIPTION
   List installed plugins.
 
 EXAMPLES
-  $ mycli123 plugins
+  $ b6 plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.22/src/commands/plugins/index.ts)_
 
-## `mycli123 plugins add PLUGIN`
+## `b6 plugins add PLUGIN`
 
-Installs a plugin into mycli123.
+Installs a plugin into b6.
 
 ```
 USAGE
-  $ mycli123 plugins add PLUGIN... [--json] [-f] [-h] [-s | -v]
+  $ b6 plugins add PLUGIN... [--json] [-f] [-h] [-s | -v]
 
 ARGUMENTS
   PLUGIN...  Plugin to install.
@@ -149,39 +150,39 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Installs a plugin into mycli123.
+  Installs a plugin into b6.
 
-  Uses bundled npm executable to install plugins into /Users/mdonnalley/.local/share/mycli123
+  Uses npm to install plugins.
 
   Installation of a user-installed plugin will override a core plugin.
 
-  Use the MYCLI123_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the MYCLI123_NPM_REGISTRY environment variable to set the npm registry.
+  Use the B6_NPM_LOG_LEVEL environment variable to set the npm loglevel.
+  Use the B6_NPM_REGISTRY environment variable to set the npm registry.
 
 ALIASES
-  $ mycli123 plugins add
+  $ b6 plugins add
 
 EXAMPLES
   Install a plugin from npm registry.
 
-    $ mycli123 plugins add myplugin
+    $ b6 plugins add myplugin
 
   Install a plugin from a github url.
 
-    $ mycli123 plugins add https://github.com/someuser/someplugin
+    $ b6 plugins add https://github.com/someuser/someplugin
 
   Install a plugin from a github slug.
 
-    $ mycli123 plugins add someuser/someplugin
+    $ b6 plugins add someuser/someplugin
 ```
 
-## `mycli123 plugins:inspect PLUGIN...`
+## `b6 plugins:inspect PLUGIN...`
 
 Displays installation properties of a plugin.
 
 ```
 USAGE
-  $ mycli123 plugins inspect PLUGIN...
+  $ b6 plugins inspect PLUGIN...
 
 ARGUMENTS
   PLUGIN...  [default: .] Plugin to inspect.
@@ -197,18 +198,18 @@ DESCRIPTION
   Displays installation properties of a plugin.
 
 EXAMPLES
-  $ mycli123 plugins inspect myplugin
+  $ b6 plugins inspect myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/inspect.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.22/src/commands/plugins/inspect.ts)_
 
-## `mycli123 plugins install PLUGIN`
+## `b6 plugins install PLUGIN`
 
-Installs a plugin into mycli123.
+Installs a plugin into b6.
 
 ```
 USAGE
-  $ mycli123 plugins install PLUGIN... [--json] [-f] [-h] [-s | -v]
+  $ b6 plugins install PLUGIN... [--json] [-f] [-h] [-s | -v]
 
 ARGUMENTS
   PLUGIN...  Plugin to install.
@@ -223,41 +224,41 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Installs a plugin into mycli123.
+  Installs a plugin into b6.
 
-  Uses bundled npm executable to install plugins into /Users/mdonnalley/.local/share/mycli123
+  Uses npm to install plugins.
 
   Installation of a user-installed plugin will override a core plugin.
 
-  Use the MYCLI123_NPM_LOG_LEVEL environment variable to set the npm loglevel.
-  Use the MYCLI123_NPM_REGISTRY environment variable to set the npm registry.
+  Use the B6_NPM_LOG_LEVEL environment variable to set the npm loglevel.
+  Use the B6_NPM_REGISTRY environment variable to set the npm registry.
 
 ALIASES
-  $ mycli123 plugins add
+  $ b6 plugins add
 
 EXAMPLES
   Install a plugin from npm registry.
 
-    $ mycli123 plugins install myplugin
+    $ b6 plugins install myplugin
 
   Install a plugin from a github url.
 
-    $ mycli123 plugins install https://github.com/someuser/someplugin
+    $ b6 plugins install https://github.com/someuser/someplugin
 
   Install a plugin from a github slug.
 
-    $ mycli123 plugins install someuser/someplugin
+    $ b6 plugins install someuser/someplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/install.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.22/src/commands/plugins/install.ts)_
 
-## `mycli123 plugins link PATH`
+## `b6 plugins link PATH`
 
 Links a plugin into the CLI for development.
 
 ```
 USAGE
-  $ mycli123 plugins link PATH [-h] [--install] [-v]
+  $ b6 plugins link PATH [-h] [--install] [-v]
 
 ARGUMENTS
   PATH  [default: .] path to plugin
@@ -269,6 +270,7 @@ FLAGS
 
 DESCRIPTION
   Links a plugin into the CLI for development.
+
   Installation of a linked plugin will override a user-installed or core plugin.
 
   e.g. If you have a user-installed or core plugin that has a 'hello' command, installing a linked plugin with a 'hello'
@@ -276,18 +278,18 @@ DESCRIPTION
 
 
 EXAMPLES
-  $ mycli123 plugins link myplugin
+  $ b6 plugins link myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/link.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.22/src/commands/plugins/link.ts)_
 
-## `mycli123 plugins remove [PLUGIN]`
+## `b6 plugins remove [PLUGIN]`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ mycli123 plugins remove [PLUGIN...] [-h] [-v]
+  $ b6 plugins remove [PLUGIN...] [-h] [-v]
 
 ARGUMENTS
   PLUGIN...  plugin to uninstall
@@ -300,35 +302,35 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ mycli123 plugins unlink
-  $ mycli123 plugins remove
+  $ b6 plugins unlink
+  $ b6 plugins remove
 
 EXAMPLES
-  $ mycli123 plugins remove myplugin
+  $ b6 plugins remove myplugin
 ```
 
-## `mycli123 plugins reset`
+## `b6 plugins reset`
 
 Remove all user-installed and linked plugins.
 
 ```
 USAGE
-  $ mycli123 plugins reset [--hard] [--reinstall]
+  $ b6 plugins reset [--hard] [--reinstall]
 
 FLAGS
   --hard       Delete node_modules and package manager related files in addition to uninstalling plugins.
   --reinstall  Reinstall all plugins after uninstalling.
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/reset.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.22/src/commands/plugins/reset.ts)_
 
-## `mycli123 plugins uninstall [PLUGIN]`
+## `b6 plugins uninstall [PLUGIN]`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ mycli123 plugins uninstall [PLUGIN...] [-h] [-v]
+  $ b6 plugins uninstall [PLUGIN...] [-h] [-v]
 
 ARGUMENTS
   PLUGIN...  plugin to uninstall
@@ -341,22 +343,22 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ mycli123 plugins unlink
-  $ mycli123 plugins remove
+  $ b6 plugins unlink
+  $ b6 plugins remove
 
 EXAMPLES
-  $ mycli123 plugins uninstall myplugin
+  $ b6 plugins uninstall myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/uninstall.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.22/src/commands/plugins/uninstall.ts)_
 
-## `mycli123 plugins unlink [PLUGIN]`
+## `b6 plugins unlink [PLUGIN]`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ mycli123 plugins unlink [PLUGIN...] [-h] [-v]
+  $ b6 plugins unlink [PLUGIN...] [-h] [-v]
 
 ARGUMENTS
   PLUGIN...  plugin to uninstall
@@ -369,20 +371,20 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ mycli123 plugins unlink
-  $ mycli123 plugins remove
+  $ b6 plugins unlink
+  $ b6 plugins remove
 
 EXAMPLES
-  $ mycli123 plugins unlink myplugin
+  $ b6 plugins unlink myplugin
 ```
 
-## `mycli123 plugins update`
+## `b6 plugins update`
 
 Update installed plugins.
 
 ```
 USAGE
-  $ mycli123 plugins update [-h] [-v]
+  $ b6 plugins update [-h] [-v]
 
 FLAGS
   -h, --help     Show CLI help.
@@ -392,5 +394,27 @@ DESCRIPTION
   Update installed plugins.
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/update.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.22/src/commands/plugins/update.ts)_
+
+## `b6 start`
+
+Start b6 server.
+
+```
+USAGE
+  $ b6 start [--port <value>] [-u <value>] [-c <value>]
+
+FLAGS
+  -c, --config=<value>   [default: b6.config.js] use specified config file
+  -u, --userDir=<value>  use specified user directory
+      --port=<value>     [default: 5100] port to listen on
+
+DESCRIPTION
+  Start b6 server.
+
+EXAMPLES
+  $ b6 start --port 5100
+```
+
+_See code: [src/commands/start/index.ts](https://github.com/builder6app/cli/blob/v0.5.2/src/commands/start/index.ts)_
 <!-- commandsstop -->

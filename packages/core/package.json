@@ -1,6 +1,6 @@
 {
   "name": "@builder6/core",
-  "version": "0.0.1",
+  "version": "0.5.2",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
@@ -9,7 +9,5 @@
   "scripts": {
     "build": "rm -rf dist && tsc -b",
     "build:watch": "rm -rf dist && tsc --watch"
-  },
-  "dependencies": {
   }
 }
