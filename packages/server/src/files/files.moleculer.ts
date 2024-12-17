@@ -10,10 +10,9 @@ export class FilesMoleculer extends Service {
     ) {
         super(broker);
 
-        this.parseServiceSchema({
+        this.broker.createService({
             name: "@builder6/files",
             settings: {
-                upperCase: true
             },
             actions: {
                 getPreSignedUrl: this.getPreSignedUrl,
@@ -28,11 +27,11 @@ export class FilesMoleculer extends Service {
         this.logger.info("@builder6/files service created.");
     }
 
-    serviceStarted() {
+    async serviceStarted() {
         this.logger.info("@builder6/files service started.");
     }
 
-    serviceStopped() {
+    async serviceStopped() {
         this.logger.info("@builder6/files service stopped.");
     }
 
