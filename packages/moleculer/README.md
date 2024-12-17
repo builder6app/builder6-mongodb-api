@@ -16,13 +16,13 @@ using `InjectService` to inject Moleculer Service.
 IMPORTANT: you need Nest > v4.5.10+
 
 ```bash
-npm install nestjs-moleculer --save
+npm install @builder6/moleculer --save
 ```
 
 OR
 
 ```bash
-yarn add nestjs-moleculer
+yarn add @builder6/moleculer
 ```
 
 ## Setup
