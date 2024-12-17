@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
@@ -108,4 +109,36 @@ export class FilesController {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  // 获取下载Url
+  @Post(':collectionName/presigned-urls')
+  @ApiOperation({ summary: 'Get presigned urls for files' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      description: 'Array of record id',
+      properties: {
+        records: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+    },
+  })
+  async presignedUrls(
+    @Param('collectionName') collectionName: string,
+    @Body('records') records: string[]) {
+    const urls = await Promise.all(
+      records.map(async (attachmentId) => {
+        return this.filesService.getPreSignedUrl(
+          collectionName,
+          attachmentId,
+        );
+      }),
+    );
+    return { urls };
+  }
+
 }

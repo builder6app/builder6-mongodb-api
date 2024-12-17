@@ -6,6 +6,7 @@ dotenvFlow.config({
 });
 
 /* 兼容 Steedos 环境变量 */
+process.env.B6_ROOT_URL = process.env.B6_ROOT_URL || process.env.ROOT_URL;
 process.env.B6_MONGO_URL = process.env.B6_MONGO_URL || process.env.MONGO_URL;
 process.env.B6_TRANSPORTER =
   process.env.B6_TRANSPORTER ||
@@ -57,6 +58,7 @@ export function getEnvConfigs() {
 export default function getConfig() {
   const env = getEnvConfigs();
   return {
+    plugin: {},
     ...env,
   };
 }
