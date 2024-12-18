@@ -20,6 +20,7 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "k6": "^0.0.0",
     "lerna": "^8.1.9",
     "nx": "20.2.2"
   },
