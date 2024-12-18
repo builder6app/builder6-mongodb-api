@@ -1,6 +1,6 @@
 {
   "name": "@builder6/moleculer",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "using Moleculer as a Nest module",
   "main": "index.js",
   "license": "MIT",

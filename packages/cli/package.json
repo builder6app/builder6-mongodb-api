@@ -1,7 +1,7 @@
 {
   "name": "@builder6/cli",
   "description": "A new CLI generated with oclif",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "author": "Jack Zhuang",
   "bin": {
     "b6": "./bin/run.js"
