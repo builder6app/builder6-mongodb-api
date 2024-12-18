@@ -13,5 +13,8 @@
   "dependencies": {
     "node-red": "^4.0.5"
   },
-  "gitHead": "47d3d61e53f81abcda69bd9b7a4d157c9de4a466"
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "b2f4b729a66167d1849fe6a969689d4b6cf3c1c2"
 }
