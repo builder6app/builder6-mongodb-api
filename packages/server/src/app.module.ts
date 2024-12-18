@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { MongodbModule } from '@builder6/core';
-import { TablesModule } from '@/tables/tables.module';
+import { TablesModule } from '@builder6/tables';
 import { AuthModule } from '@builder6/core';
 import { SteedosModule } from './steedos/steedos.module';
 import { RoomsModule } from './rooms/rooms.module';

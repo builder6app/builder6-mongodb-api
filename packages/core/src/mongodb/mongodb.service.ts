@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime';
 import { Injectable, Logger } from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
-import * as devextremeQuery from 'devextreme-query-mongodb';
+import { queryGroups } from '@builder6/query-mongodb';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -30,6 +30,10 @@ export class MongodbService {
       });
   }
 
+  async getCollection(collectionName: string) {
+    return this.db.collection(collectionName);
+  }
+
   async insertOne(collectionName: string, data: any) {
     const collection = this.db.collection(collectionName);
     const entry = { _id: uuidv4(), ...data };
@@ -39,6 +43,7 @@ export class MongodbService {
 
   async find(collectionName: string, query: object, options: object = {}) {
     const collection = this.db.collection(collectionName);
+    console.log('mongodb find', query, options);
     return await collection.find(query, options).toArray();
   }
 
@@ -81,7 +86,7 @@ export class MongodbService {
     }
     const collection = this.db.collection(collectionName);
 
-    return devextremeQuery(collection, loadOptions, processingOptions);
+    return queryGroups(collection, loadOptions, processingOptions);
   }
 
   async objectqlFindOne(collectionName: string, options: any) {

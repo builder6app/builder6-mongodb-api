@@ -102,10 +102,10 @@ export class AuthService {
   }
 
   async getSpaceUser(userId: string, spaceId: string): Promise<any> {
-    const spaceUser = await this.mongodbService.findOne('space_users', {
+    const spaceUser = (await this.mongodbService.findOne('space_users', {
       user: userId,
       space: spaceId,
-    });
+    })) as any;
 
     if (spaceUser) {
       spaceUser['_id'] = userId;

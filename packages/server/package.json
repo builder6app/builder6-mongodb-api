@@ -1,6 +1,6 @@
 {
   "name": "@builder6/server",
-  "version": "0.5.5",
+  "version": "0.6.2",
   "description": "",
   "author": "",
   "license": "AGPL-3.0-only",
@@ -29,9 +29,11 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@builder6/core": "^0.5.4",
-    "@builder6/email": "^0.5.5",
-    "@builder6/moleculer": "^0.5.4",
+    "@builder6/core": "^0.6.2",
+    "@builder6/email": "^0.6.2",
+    "@builder6/moleculer": "^0.6.2",
+    "@builder6/query-mongodb": "^0.6.2",
+    "@builder6/tables": "^0.6.2",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^9.0.0",
@@ -50,7 +52,6 @@
     "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "crypto-js": "^4.2.0",
-    "devextreme-query-mongodb": "^2.0.16",
     "dotenv": "^16.4.5",
     "dotenv-flow": "^4.1.0",
     "express-session": "^1.18.1",
@@ -59,7 +60,7 @@
     "ioredis": "^5.4.1",
     "mime-types": "^2.1.35",
     "moleculer": "^0.14.35",
-    "mongodb": "^3.7.3",
+    "mongodb": "^5.2.0",
     "multer": "^1.4.5-lts.1",
     "nopt": "5.0.0",
     "openid-client": "^5.7.1",
@@ -111,5 +112,8 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },
-  "gitHead": "a4771df5cb27677e1e140ebf2aaa0cd30ff731cd"
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2f816481fc81096a973e75ed27ff9b8bb0638e0c"
 }

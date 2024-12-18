@@ -14,9 +14,9 @@ import {
   Render,
   Patch,
 } from '@nestjs/common';
-import { RecordsService } from './records.service';
+import { TablesService } from './tables.service';
 import { Request, Response } from 'express';
-import { getOptions } from 'devextreme-query-mongodb/options';
+import { getOptions } from '@builder6/query-mongodb';
 import {
   ApiBody,
   ApiQuery,
@@ -24,7 +24,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@builder6/core';
-import { MetaService } from '@/tables/meta.service';
+import { MetaService } from './meta.service';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/v6/tables/')
@@ -32,7 +32,7 @@ import { MetaService } from '@/tables/meta.service';
 @ApiBearerAuth()
 export class TablesController {
   constructor(
-    private readonly recordsService: RecordsService,
+    private readonly tablesService: TablesService,
     private readonly metaService: MetaService,
   ) {}
 
@@ -58,7 +58,7 @@ export class TablesController {
   ) {
     const user = req['user'];
     try {
-      const result = await this.recordsService.createRecord(baseId, tableId, {
+      const result = await this.tablesService.createRecord(baseId, tableId, {
         ...record,
         owner: user._id,
         created_by: user._id,
@@ -80,7 +80,7 @@ export class TablesController {
   @ApiQuery({
     name: 'fields',
     required: false,
-    description: '查询的字段，示例：name,created',
+    description: '查询的字段，例如: "name,created"',
   })
   @ApiQuery({
     name: 'filters',
@@ -88,14 +88,26 @@ export class TablesController {
     description: '过滤条件，示例：["age", ">", 10]',
   })
   @ApiQuery({
+    name: 'expands',
+    required: false,
+    default: 'created_by,modified_by',
+    description: '扩展相关表字段，例如: "created_by,modified_by"',
+  })
+  @ApiQuery({
     name: 'sort',
     required: false,
     description: '排序，示例：created desc',
   })
-  @ApiQuery({ name: 'skip', required: false, description: '跳过记录数' })
+  @ApiQuery({
+    name: 'skip',
+    required: false,
+    description: '跳过记录数',
+    default: 0,
+  })
   @ApiQuery({
     name: 'top',
     required: false,
+    default: 20,
     description: '每页记录数，默认20',
   })
   async find(
@@ -104,6 +116,7 @@ export class TablesController {
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
     @Query('fields') fields?: any,
+    @Query('expands') expands?: any,
     @Query('filters') filters?: any,
     @Query('sort') sort?: any,
     @Query('skip', new ParseIntPipe()) skip: number = 0,
@@ -133,15 +146,18 @@ export class TablesController {
           loadOptions.select = fields.split(',');
         }
       }
-      const processingOptions = {
-        replaceIds: false,
-        ...options.processingOptions,
-      };
-      const results = await this.recordsService.getRecords(
+      if (expands) {
+        try {
+          loadOptions.expands = JSON.parse(expands);
+        } catch {
+          loadOptions.expands = expands.split(',');
+        }
+      }
+      const results = await this.tablesService.getRecords(
         baseId,
         tableId,
         loadOptions,
-        processingOptions,
+        options.processingOptions,
       );
       res.status(200).send(results);
     } catch (error) {
@@ -151,103 +167,103 @@ export class TablesController {
   }
 
   // 兼容 amis 格式的数据返回接口
-  @ApiOperation({ summary: 'List records (deprecated)' })
-  @Get(':baseId/:tableId/amis')
-  @ApiQuery({
-    name: 'fields',
-    required: false,
-    description: '查询的字段，示例：name,created',
-  })
-  @ApiQuery({
-    name: 'filters',
-    required: false,
-    description: '过滤条件，示例：["age", ">", 10]',
-  })
-  @ApiQuery({
-    name: 'sort',
-    required: false,
-    description: '排序，示例：created desc',
-  })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    description: '当前页码，从1开始。',
-  })
-  @ApiQuery({
-    name: 'perPage',
-    required: false,
-    description: '每页记录数，默认20',
-  })
-  @ApiQuery({ name: 'orderBy', required: false, description: '排序字段' })
-  @ApiQuery({
-    name: 'orderDir',
-    required: false,
-    description: '排序顺序',
-    enum: ['asc', 'desc'],
-  })
-  async amisFind(
-    @Res() res: Response,
-    @Param('baseId') baseId: string,
-    @Param('tableId') tableId: string,
-    @Query('fields') fields?: any,
-    @Query('filters') filters?: any,
-    @Query('sort') sort?: any,
-    @Query('orderBy') orderBy?: string,
-    @Query('orderDir') orderDir?: string,
-    @Query('page', new ParseIntPipe()) page: number = 1,
-    @Query('perPage', new ParseIntPipe())
-    perPage: number = 10,
-  ) {
-    try {
-      const take = perPage ? perPage : 10;
-      const skip = (page - 1) * perPage;
-      const loadOptions = {
-        take,
-        skip,
-        requireTotalCount: true,
-      } as any;
-      if (orderBy) {
-        loadOptions.sort = [{ selector: orderBy, desc: orderDir === 'desc' }];
-      }
-      if (filters) {
-        loadOptions.filter = JSON.parse(filters);
-      }
-      if (sort) {
-        const sortFields = sort.split(',');
-        loadOptions.sort = sortFields.map((sortField) => {
-          const [field, dir] = sortField.split(' ');
-          return { selector: field, desc: dir === 'desc' };
-        });
-      }
-      if (fields) {
-        try {
-          loadOptions.select = JSON.parse(fields);
-        } catch {
-          loadOptions.select = fields.split(',');
-        }
-      }
-      const processingOptions = {
-        replaceIds: false,
-      };
-      const results = await this.recordsService.getRecords(
-        baseId,
-        tableId,
-        loadOptions,
-        processingOptions,
-      );
-      res.status(200).send({
-        status: 0,
-        msg: '',
-        data: {
-          items: results.data,
-          count: results.totalCount,
-        },
-      });
-    } catch (error) {
-      console.error('Query error', error);
-      res.status(500).send(error);
-    }
-  }
+  // @ApiOperation({ summary: 'List records (deprecated)' })
+  // @Get(':baseId/:tableId/amis')
+  // @ApiQuery({
+  //   name: 'fields',
+  //   required: false,
+  //   description: '查询的字段，示例：name,created',
+  // })
+  // @ApiQuery({
+  //   name: 'filters',
+  //   required: false,
+  //   description: '过滤条件，示例：["age", ">", 10]',
+  // })
+  // @ApiQuery({
+  //   name: 'sort',
+  //   required: false,
+  //   description: '排序，示例：created desc',
+  // })
+  // @ApiQuery({
+  //   name: 'page',
+  //   required: false,
+  //   description: '当前页码，从1开始。',
+  // })
+  // @ApiQuery({
+  //   name: 'perPage',
+  //   required: false,
+  //   description: '每页记录数，默认20',
+  // })
+  // @ApiQuery({ name: 'orderBy', required: false, description: '排序字段' })
+  // @ApiQuery({
+  //   name: 'orderDir',
+  //   required: false,
+  //   description: '排序顺序',
+  //   enum: ['asc', 'desc'],
+  // })
+  // async amisFind(
+  //   @Res() res: Response,
+  //   @Param('baseId') baseId: string,
+  //   @Param('tableId') tableId: string,
+  //   @Query('fields') fields?: any,
+  //   @Query('filters') filters?: any,
+  //   @Query('sort') sort?: any,
+  //   @Query('orderBy') orderBy?: string,
+  //   @Query('orderDir') orderDir?: string,
+  //   @Query('page', new ParseIntPipe()) page: number = 1,
+  //   @Query('perPage', new ParseIntPipe())
+  //   perPage: number = 10,
+  // ) {
+  //   try {
+  //     const take = perPage ? perPage : 10;
+  //     const skip = (page - 1) * perPage;
+  //     const loadOptions = {
+  //       take,
+  //       skip,
+  //       requireTotalCount: true,
+  //     } as any;
+  //     if (orderBy) {
+  //       loadOptions.sort = [{ selector: orderBy, desc: orderDir === 'desc' }];
+  //     }
+  //     if (filters) {
+  //       loadOptions.filter = JSON.parse(filters);
+  //     }
+  //     if (sort) {
+  //       const sortFields = sort.split(',');
+  //       loadOptions.sort = sortFields.map((sortField) => {
+  //         const [field, dir] = sortField.split(' ');
+  //         return { selector: field, desc: dir === 'desc' };
+  //       });
+  //     }
+  //     if (fields) {
+  //       try {
+  //         loadOptions.select = JSON.parse(fields);
+  //       } catch {
+  //         loadOptions.select = fields.split(',');
+  //       }
+  //     }
+  //     const processingOptions = {
+  //       replaceIds: false,
+  //     };
+  //     const results = await this.tablesService.getRecords(
+  //       baseId,
+  //       tableId,
+  //       loadOptions,
+  //       processingOptions,
+  //     );
+  //     res.status(200).send({
+  //       status: 0,
+  //       msg: '',
+  //       data: {
+  //         items: results.data,
+  //         count: results.totalCount,
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error('Query error', error);
+  //     res.status(500).send(error);
+  //   }
+  // }
 
   @Get(':baseId/:tableId/:recordId')
   @ApiOperation({ summary: 'Get record' })
@@ -258,11 +274,9 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.getRecordById(
-        baseId,
-        tableId,
-        recordId,
-      );
+      const result = await this.tablesService.findOne(baseId, tableId, {
+        _id: recordId,
+      });
       if (!result) {
         return res.status(404).send();
       }
@@ -295,7 +309,7 @@ export class TablesController {
         modified_by: req['user']._id,
         modified: new Date(),
       };
-      const result = await this.recordsService.updateRecord(
+      const result = await this.tablesService.updateRecord(
         baseId,
         tableId,
         recordId,
@@ -320,7 +334,7 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteOne(baseId, tableId, {
+      const result = await this.tablesService.deleteOne(baseId, tableId, {
         _id: recordId,
       });
       if (result.deletedCount === 0) {
@@ -369,7 +383,7 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteMany(baseId, tableId, {
+      const result = await this.tablesService.deleteMany(baseId, tableId, {
         _id: { $in: records },
       });
       if (result.deletedCount === 0) {

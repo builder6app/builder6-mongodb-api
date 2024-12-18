@@ -1,0 +1,60 @@
+{
+  "name": "@builder6/query-mongodb",
+  "version": "0.6.2",
+  "description": "Querying a MongoDB collection using DevExtreme data store load parameters",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "options.js",
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "prepare": "babel src --out-dir ./dist",
+    "build": "babel src --out-dir ./dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/builder6/builder6-server.git"
+  },
+  "keywords": [
+    "DevExtreme",
+    "MongoDB"
+  ],
+  "author": "Oliver Sturm <oliver@oliversturm.com>",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/builder6/builder6-server/issues"
+  },
+  "homepage": "https://github.com/builder6/builder6-server#readme",
+  "engines": {
+    "node": ">=7.3"
+  },
+  "dependencies": {
+    "yup": "^1.1.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-eslint": "^10.1.0",
+    "babel-plugin-remove-comments": "^2.0.0",
+    "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "chai": "^4.3.7",
+    "eslint": "^8.38.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.2.0",
+    "mongodb": "^5.2.0",
+    "nyc": "^15.1.0",
+    "qs": "^6.11.1",
+    "sinon": "^15.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2f816481fc81096a973e75ed27ff9b8bb0638e0c"
+}

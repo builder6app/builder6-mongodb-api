@@ -1,6 +1,6 @@
 {
   "name": "@builder6/node-red",
-  "version": "0.5.3",
+  "version": "0.6.2",
   "main": "dist/plugin.module.js",
   "license": "MIT",
   "files": [
@@ -13,5 +13,8 @@
   "dependencies": {
     "node-red": "^4.0.5"
   },
-  "gitHead": "47d3d61e53f81abcda69bd9b7a4d157c9de4a466"
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "2f816481fc81096a973e75ed27ff9b8bb0638e0c"
 }
