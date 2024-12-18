@@ -31,6 +31,7 @@
   "dependencies": {
     "@builder6/core": "^0.5.4",
     "@builder6/email": "^0.5.5",
+    "@builder6/tables": "^0.5.5",
     "@builder6/moleculer": "^0.5.4",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^3.3.0",

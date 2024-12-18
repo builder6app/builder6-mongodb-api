@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { TablesService } from './tables.service';
 import { Request, Response } from 'express';
-import { getOptions } from 'devextreme-query-mongodb/options';
+import { getOptions } from '@builder6/query-mongodb/options';
 import {
   ApiBody,
   ApiQuery,
@@ -24,7 +24,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@builder6/core';
-import { MetaService } from '@/tables/meta.service';
+import { MetaService } from './meta.service';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/v6/tables/')
