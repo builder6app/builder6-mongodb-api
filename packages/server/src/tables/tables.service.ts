@@ -7,9 +7,9 @@ import * as devextremeQuery from '@builder6/query-mongodb';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class RecordsService {
+export class TablesService {
   private db: Db;
-  private readonly logger = new Logger(RecordsService.name);
+  private readonly logger = new Logger(TablesService.name);
 
   constructor(private configService: ConfigService) {
     const mongoUrl =

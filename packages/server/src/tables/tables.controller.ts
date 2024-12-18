@@ -14,7 +14,7 @@ import {
   Render,
   Patch,
 } from '@nestjs/common';
-import { RecordsService } from './records.service';
+import { TablesService } from './tables.service';
 import { Request, Response } from 'express';
 import { getOptions } from 'devextreme-query-mongodb/options';
 import {
@@ -32,7 +32,7 @@ import { MetaService } from '@/tables/meta.service';
 @ApiBearerAuth()
 export class TablesController {
   constructor(
-    private readonly recordsService: RecordsService,
+    private readonly tablesService: TablesService,
     private readonly metaService: MetaService,
   ) {}
 
@@ -58,7 +58,7 @@ export class TablesController {
   ) {
     const user = req['user'];
     try {
-      const result = await this.recordsService.createRecord(baseId, tableId, {
+      const result = await this.tablesService.createRecord(baseId, tableId, {
         ...record,
         owner: user._id,
         created_by: user._id,
@@ -137,7 +137,7 @@ export class TablesController {
         replaceIds: false,
         ...options.processingOptions,
       };
-      const results = await this.recordsService.getRecords(
+      const results = await this.tablesService.getRecords(
         baseId,
         tableId,
         loadOptions,
@@ -229,7 +229,7 @@ export class TablesController {
       const processingOptions = {
         replaceIds: false,
       };
-      const results = await this.recordsService.getRecords(
+      const results = await this.tablesService.getRecords(
         baseId,
         tableId,
         loadOptions,
@@ -258,7 +258,7 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.getRecordById(
+      const result = await this.tablesService.getRecordById(
         baseId,
         tableId,
         recordId,
@@ -295,7 +295,7 @@ export class TablesController {
         modified_by: req['user']._id,
         modified: new Date(),
       };
-      const result = await this.recordsService.updateRecord(
+      const result = await this.tablesService.updateRecord(
         baseId,
         tableId,
         recordId,
@@ -320,7 +320,7 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteOne(baseId, tableId, {
+      const result = await this.tablesService.deleteOne(baseId, tableId, {
         _id: recordId,
       });
       if (result.deletedCount === 0) {
@@ -369,7 +369,7 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.recordsService.deleteMany(baseId, tableId, {
+      const result = await this.tablesService.deleteMany(baseId, tableId, {
         _id: { $in: records },
       });
       if (result.deletedCount === 0) {
