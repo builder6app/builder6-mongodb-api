@@ -58,7 +58,7 @@ export class TablesController {
   ) {
     const user = req['user'];
     try {
-      const result = await this.tablesService.createRecord(baseId, tableId, {
+      const result = await this.tablesService.recordInsertOne(baseId, tableId, {
         ...record,
         owner: user._id,
         created_by: user._id,
@@ -116,7 +116,7 @@ export class TablesController {
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
     @Query('fields') fields?: any,
-    @Query('expands') expands?: any,
+    // @Query('expands') expands?: any,
     @Query('filters') filters?: any,
     @Query('sort') sort?: any,
     @Query('skip', new ParseIntPipe()) skip: number = 0,
@@ -146,14 +146,14 @@ export class TablesController {
           loadOptions.select = fields.split(',');
         }
       }
-      if (expands) {
-        try {
-          loadOptions.expands = JSON.parse(expands);
-        } catch {
-          loadOptions.expands = expands.split(',');
-        }
-      }
-      const results = await this.tablesService.getRecords(
+      // if (expands) {
+      //   try {
+      //     loadOptions.expands = JSON.parse(expands);
+      //   } catch {
+      //     loadOptions.expands = expands.split(',');
+      //   }
+      // }
+      const results = await this.tablesService.recordFind(
         baseId,
         tableId,
         loadOptions,
@@ -274,7 +274,7 @@ export class TablesController {
     @Res() res: Response,
   ) {
     try {
-      const result = await this.tablesService.findOne(baseId, tableId, {
+      const result = await this.tablesService.recordFindOne(baseId, tableId, {
         _id: recordId,
       });
       if (!result) {
@@ -309,10 +309,12 @@ export class TablesController {
         modified_by: req['user']._id,
         modified: new Date(),
       };
-      const result = await this.tablesService.updateRecord(
+      const result = await this.tablesService.recordFindOneAndUpdate(
         baseId,
         tableId,
-        recordId,
+        {
+          _id: recordId,
+        },
         record,
       );
       if (!result) {

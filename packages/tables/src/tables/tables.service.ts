@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime';
 import { Injectable, Logger } from '@nestjs/common';
 import { MongoClient, Db, Collection } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
-import { queryGroups, querySimple } from '@builder6/query-mongodb';
+import { querySimple } from '@builder6/query-mongodb';
 import { ConfigService } from '@nestjs/config';
 import * as DataLoader from 'dataloader';
 import { MongodbService } from '@builder6/core';
@@ -44,54 +44,20 @@ export class TablesService {
     return this.db.collection(collectionName);
   }
 
-  async createRecord(baseId: string, tableId, data: any) {
+  async insertOne(baseId: string, tableId, data: any) {
     const collection = this.getCollection(baseId, tableId);
     const entry = { _id: uuidv4(), ...data };
     await collection.insertOne(entry);
     return entry;
   }
 
-  async getRecords(
-    baseId: string,
-    tableId: string,
-    loadOptions: any,
-    processingOptions: any,
-  ) {
-    const collection = this.getCollection(baseId, tableId);
-    const result = await querySimple(collection, loadOptions, {
-      replaceIds: false,
-      ...processingOptions,
-    });
-    const records = result.data;
+  async recordInsertOne(baseId: string, tableId, data: any) {
+    const lookupFields = await this.getTableLookupFields(baseId, tableId);
+    await this.roolbackRecordLookupFields(data, lookupFields);
 
-    const expands = loadOptions?.expands || [];
-
-    // 循环 expands，获取关联表数据
-    for (const expand of expands) {
-      const { reference_to } = await this.getTableField(
-        baseId,
-        tableId,
-        expand,
-      );
-      if (reference_to) {
-        const loader = await this.getMongodbDataLoader(reference_to, [
-          '_id',
-          'name',
-        ]);
-        for (const record of records) {
-          if (record[expand]) {
-            const expandedRecord = (await loader.load(record[expand])) || {
-              _id: expand,
-            };
-            record[expand] = expandedRecord;
-          }
-        }
-      }
-    }
-    return {
-      ...result,
-      data: records,
-    };
+    const record = await this.insertOne(baseId, tableId, data);
+    await this.convertRecordLookupFields(record, lookupFields);
+    return record;
   }
 
   async find(
@@ -104,19 +70,95 @@ export class TablesService {
     return await collection.find(query, options).toArray();
   }
 
+  async recordFind(
+    baseId: string,
+    tableId: string,
+    loadOptions: any,
+    processingOptions: any,
+  ) {
+    const collection = this.getCollection(baseId, tableId);
+    const result = await querySimple(collection, loadOptions, {
+      replaceIds: false,
+      ...processingOptions,
+    });
+    const records = result.data;
+
+    const lookupFields = await this.getTableLookupFields(baseId, tableId);
+
+    for (const record of records) {
+      await this.convertRecordLookupFields(record, lookupFields);
+    }
+
+    // const expands = loadOptions?.expands || [];
+
+    // // 循环 expands，获取关联表数据
+    // for (const expand of expands) {
+    //   const { reference_to } = await this.getTableField(
+    //     baseId,
+    //     tableId,
+    //     expand,
+    //   );
+    //   if (reference_to) {
+    //     const loader = await this.getMongodbDataLoader(reference_to, [
+    //       '_id',
+    //       'name',
+    //     ]);
+    //     for (const record of records) {
+    //       if (record[expand]) {
+    //         const expandedRecord = (await loader.load(record[expand])) || {
+    //           _id: expand,
+    //         };
+    //         record[expand] = expandedRecord;
+    //       }
+    //     }
+    //   }
+    // }
+    return {
+      ...result,
+      data: records,
+    };
+  }
+
   async findOne(baseId: string, tableId: string, query: object) {
     const collection = this.getCollection(baseId, tableId);
     return await collection.findOne(query);
   }
 
-  async updateRecord(baseId: string, tableId: string, id: string, data: any) {
+  async recordFindOne(baseId: string, tableId: string, query: object) {
+    const record = await this.findOne(baseId, tableId, query);
+    await this.convertRecordLookupFields(
+      record,
+      await this.getTableLookupFields(baseId, tableId),
+    );
+    return record;
+  }
+
+  async findOneAndUpdate(
+    baseId: string,
+    tableId: string,
+    query: object,
+    data: any,
+  ) {
     const collection = this.getCollection(baseId, tableId);
     const result = await collection.findOneAndUpdate(
-      { _id: id as any },
+      query,
       { $set: data },
       { returnDocument: 'after' },
     );
     return result.value;
+  }
+
+  async recordFindOneAndUpdate(
+    baseId: string,
+    tableId: string,
+    query: object,
+    data: any,
+  ) {
+    const lookupFields = await this.getTableLookupFields(baseId, tableId);
+    await this.roolbackRecordLookupFields(data, lookupFields);
+    const record = await this.findOneAndUpdate(baseId, tableId, query, data);
+    await this.convertRecordLookupFields(record, lookupFields);
+    return record;
   }
 
   async deleteOne(baseId: string, tableId: string, query: object) {
@@ -176,5 +218,35 @@ export class TablesService {
       };
     }
     return table.fields.find((field) => field.name === fieldName);
+  }
+
+  async getTableLookupFields(baseId, tableId) {
+    const table = await this.metaService.getTableMeta(baseId, tableId);
+    return table.fields.filter((field) => field.type === 'lookup');
+  }
+
+  async convertRecordLookupFields(record, lookupFields) {
+    for (const field of lookupFields) {
+      const loader = await this.getMongodbDataLoader(field.reference_to, [
+        '_id',
+        'name',
+      ]);
+      if (record[field.name]) {
+        const expandedRecord = (await loader.load(record[field.name])) || {
+          _id: field.name,
+        };
+        record[field.name] = expandedRecord;
+      }
+    }
+    return record;
+  }
+
+  async roolbackRecordLookupFields(record, lookupFields) {
+    for (const field of lookupFields) {
+      if (record[field.name] && record[field.name]._id) {
+        record[field.name] = record[field.name]._id;
+      }
+    }
+    return record;
   }
 }
