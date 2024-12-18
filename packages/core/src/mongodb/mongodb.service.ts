@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime';
 import { Injectable, Logger } from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
-import * as devextremeQuery from 'devextreme-query-mongodb';
+import * as devextremeQuery from '@builder6/query-mongodb';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
