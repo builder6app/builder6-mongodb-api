@@ -1,6 +1,6 @@
 {
   "name": "@builder6/email",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
@@ -11,7 +11,7 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.6.2",
+    "@builder6/core": "^0.6.3",
     "nodemailer": "^6.9.16"
   },
   "publishConfig": {
