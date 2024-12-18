@@ -5,33 +5,28 @@ import { NodeRedService } from './node-red.service';
 
 @Injectable()
 export class NodeRedMoleculer extends Service {
-    constructor(@InjectBroker() broker: ServiceBroker
-    ) {
-        super(broker);
+  constructor(@InjectBroker() broker: ServiceBroker) {
+    super(broker);
 
-        this.parseServiceSchema({
-            name: "@builder6/node-red/moleculer",
-            settings: {
-            },
-            actions: {
-                startNodeRed: this.startNodeRed,
-            },
-            created: this.serviceCreated,
-            started: this.serviceStarted,
-            stopped: this.serviceStopped,
-        });
-    }
+    this.parseServiceSchema({
+      name: '@builder6/node-red/moleculer',
+      settings: {},
+      actions: {
+        startNodeRed: this.startNodeRed,
+      },
+      created: this.serviceCreated,
+      started: this.serviceStarted,
+      stopped: this.serviceStopped,
+    });
+  }
 
-    serviceCreated() {
-    }
+  serviceCreated() {}
 
-    async serviceStarted() {
-    }
+  async serviceStarted() {}
 
-    async serviceStopped() {
-    }
+  async serviceStopped() {}
 
-    async startNodeRed(ctx: Context) {
-       return {}
-    }
+  async startNodeRed(ctx: Context) {
+    return {};
+  }
 }
