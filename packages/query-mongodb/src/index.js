@@ -18,6 +18,7 @@ const {
   merge,
   debug,
 } = require('./utils');
+const { getOptions } = require('./options');
 
 function createContext(contextOptions, loadOptions) {
   const aggregateCall = (collection, pipeline, identifier) =>
@@ -480,4 +481,17 @@ function query(collection, loadOptions = {}, options = {}) {
     : context.querySimple(collection);
 }
 
-module.exports = query;
+function querySimple(collection, loadOptions = {}, options = {}) {
+  delete loadOptions.group;
+  return query(collection, loadOptions, options);
+}
+
+function queryGroups(collection, loadOptions = {}, options = {}) {
+  return query(collection, loadOptions, options);
+}
+
+module.exports = {
+  queryGroups,
+  querySimple,
+  getOptions
+};

@@ -1,6 +1,6 @@
 {
   "name": "@builder6/query-mongodb",
-  "version": "2.0.16",
+  "version": "0.5.5",
   "description": "Querying a MongoDB collection using DevExtreme data store load parameters",
   "main": "index.js",
   "files": [
@@ -12,7 +12,8 @@
     "README.md"
   ],
   "scripts": {
-    "prepare": "babel src --out-dir ./dist"
+    "prepare": "babel src --out-dir ./dist",
+    "build": "babel src --out-dir ./dist"
   },
   "repository": {
     "type": "git",

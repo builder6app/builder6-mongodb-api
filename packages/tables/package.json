@@ -11,7 +11,8 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.5.4",
+    "@builder6/core": "^0.5.5",
+    "dataloader": "^2.2.3",
     "nodemailer": "^6.9.16"
   },
   "gitHead": "a4771df5cb27677e1e140ebf2aaa0cd30ff731cd"

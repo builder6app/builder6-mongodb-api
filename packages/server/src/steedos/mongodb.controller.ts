@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { AdminGuard, MongodbService } from '@builder6/core';
 import { Request, Response } from 'express';
-import { getOptions } from 'devextreme-query-mongodb/options';
+import { getOptions } from '@builder6/query-mongodb';
 import {
   ApiBearerAuth,
   ApiBody,
