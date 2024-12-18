@@ -3,25 +3,23 @@ import { ConfigService } from '@nestjs/config';
 import { ServiceBroker } from 'moleculer';
 import * as fs from 'fs';
 import * as path from 'path';
+import { InjectBroker } from "@builder6/moleculer";
 
-import moleculerConfig from './moleculer.config';
 
 @Injectable()
-export class MoleculerService {
-  private broker;
-  private readonly logger = new Logger(MoleculerService.name);
+export class MoleculerPluginService {
+  private readonly logger = new Logger(MoleculerPluginService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectBroker() private readonly broker: ServiceBroker,
+  ) {
     const transporter = this.configService.get('transporter');
     if (!transporter) {
       console.error('B6_TRANSPORTER env is required.');
       return;
     }
-    this.broker = new ServiceBroker({
-      ...moleculerConfig,
-    });
     this.loadServices();
-    this.broker.start();
   }
 
   loadServices() {
@@ -59,7 +57,7 @@ export class MoleculerService {
       // 检测是否包含指定文件
       const packageServicePath = path.resolve(
         this.getPackagePath(packageName),
-        './dist/plugin.service.js',
+        './package.service.js',
       );
 
       if (!fs.existsSync(packageServicePath)) {
@@ -76,8 +74,9 @@ export class MoleculerService {
         ? serviceModule.default
         : serviceModule;
       if (serviceSchema) {
-        this.broker.createService(serviceSchema);
-        this.logger.log(`插件服务已创建: ${packageName}`);
+        const service = this.broker.createService(serviceSchema);
+        // this.broker._restartService(service);
+        this.logger.log(`插件服务已加载: ${packageName}`);
       }
     } catch (err) {
       this.logger.error(`处理插件 ${plugin} 时出错: ${(err as Error).message}`);

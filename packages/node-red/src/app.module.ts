@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { NodeRedService } from './node-red.service';
 import { NodeRedController } from './node-red.controller';
+import { NodeRedMoleculer } from './node-red.moleculer';
 
 @Module({
-  providers: [NodeRedService],
+  providers: [NodeRedService, NodeRedMoleculer],
   controllers: [NodeRedController],
 })
-export default class NodeRed2Module {}
+export default class NodeRedModule {}

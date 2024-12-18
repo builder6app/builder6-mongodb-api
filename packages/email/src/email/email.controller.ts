@@ -4,7 +4,7 @@ import { AdminGuard } from '@builder6/core';
 import { EmailService } from './email.service';
 
 @UseGuards(AdminGuard)
-@Controller('email')
+@Controller('api/v6/email')
 export class EmailController {
   constructor(private readonly emailService: EmailService) {}
 

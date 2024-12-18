@@ -8,7 +8,7 @@ import {
 import { default as axios } from 'axios';
 import { Microsoft365Service } from './microsoft365.service';
 
-@Controller('microsoft365')
+@Controller('api/v6/microsoft365')
 export class Microsoft365Controller {
   constructor(private microsoft365Service: Microsoft365Service) {}
 

@@ -3,9 +3,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { PluginService } from './plugin.service';
 import getConfig from '@/app.config';
+import { MoleculerPluginService } from './moleculer.service';
+import { MoleculerModule } from '@builder6/moleculer';
 
 @Module({
-  providers: [PluginService],
+  imports: [
+        MoleculerModule.forRoot({
+        })
+  ],
+  providers: [PluginService, MoleculerPluginService],
 })
 export class PluginModule {
   static readonly logger = new Logger(PluginModule.name);
@@ -33,7 +39,7 @@ export class PluginModule {
     // 检测是否包含指定文件
     const packageModulePath = path.resolve(
       this.getPackagePath(packageName),
-      './dist/plugin.module.js',
+      './dist/app.module.js',
     );
 
     if (!fs.existsSync(packageModulePath)) {

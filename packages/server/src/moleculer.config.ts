@@ -1,7 +1,7 @@
 'use strict';
 import * as _ from 'lodash';
 
-import AppConfig from '../app.config';
+import AppConfig from './app.config';
 
 /**
  * Steedos ServiceBroker configuration file
@@ -33,9 +33,9 @@ const defaultConfig = {
     },
   },
 
-  transporter: process.env.TRANSPORTER,
+  transporter: process.env.B6_TRANSPORTER,
 
-  cacher: process.env.CACHER,
+  cacher: process.env.B6_CACHER,
 
   serializer: 'JSON',
 
