@@ -7,6 +7,7 @@ import { queryGroups, querySimple } from '@builder6/query-mongodb';
 import { ConfigService } from '@nestjs/config';
 import * as DataLoader from 'dataloader';
 import { MongodbService } from '@builder6/core';
+import { MetaService } from './meta.service';
 
 @Injectable()
 export class TablesService {
@@ -17,6 +18,7 @@ export class TablesService {
   constructor(
     private configService: ConfigService,
     private readonly mongodbService: MongodbService,
+    private readonly metaService: MetaService,
   ) {
     const mongoUrl =
       configService.get('tables.mongo.url') || configService.get('mongo.url');
@@ -63,7 +65,6 @@ export class TablesService {
     const records = result.data;
 
     const expands = loadOptions?.expands || [];
-    console.log('query expand fields', expands);
 
     // 循环 expands，获取关联表数据
     for (const expand of expands) {
@@ -72,7 +73,6 @@ export class TablesService {
         tableId,
         expand,
       );
-      console.log('query expand fields', expand, reference_to);
       if (reference_to) {
         const loader = await this.getMongodbDataLoader(reference_to, [
           '_id',
@@ -83,7 +83,6 @@ export class TablesService {
             const expandedRecord = (await loader.load(record[expand])) || {
               _id: expand,
             };
-            console.log('expandedRecord', expand, expandedRecord);
             record[expand] = expandedRecord;
           }
         }
@@ -168,6 +167,7 @@ export class TablesService {
   }
 
   async getTableField(baseId, tableId, fieldName) {
+    const table = await this.metaService.getTableMeta(baseId, tableId);
     if (fieldName === 'created_by' || fieldName === 'modified_by') {
       return {
         type: 'lookup',
@@ -175,10 +175,6 @@ export class TablesService {
         reference_to: 'users',
       };
     }
-
-    return {
-      name: fieldName,
-      reference_to: null,
-    };
+    return table.fields.find((field) => field.name === fieldName);
   }
 }

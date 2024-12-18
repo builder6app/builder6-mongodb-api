@@ -14,6 +14,7 @@ export class MongodbService {
 
   constructor(private configService: ConfigService) {
     const mongoUrl = configService.get('mongo.url');
+    console.log('mongoUrl', mongoUrl);
     this.client = new MongoClient(mongoUrl, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
@@ -43,15 +44,12 @@ export class MongodbService {
 
   async find(collectionName: string, query: object, options: object = {}) {
     const collection = this.db.collection(collectionName);
-    console.log('mongodb find', query, options);
+    this.logger.log('find', query, options);
     return await collection.find(query, options).toArray();
   }
 
   async findOne(collectionName: string, query: object, options: object = {}) {
     const collection = this.db.collection(collectionName);
-    if (typeof query === 'string') {
-      return await collection.findOne({ _id: query as any }, options);
-    }
     return await collection.findOne(query, options);
   }
 

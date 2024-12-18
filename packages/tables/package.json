@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "@builder6/core": "^0.6.2",
-    "dataloader": "^2.2.3",
-    "nodemailer": "^6.9.16"
+    "dataloader": "^2.2.3"
   },
   "publishConfig": {
     "access": "public"

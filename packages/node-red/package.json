@@ -4,7 +4,8 @@
   "main": "dist/plugin.module.js",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "package.service.js"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc",
