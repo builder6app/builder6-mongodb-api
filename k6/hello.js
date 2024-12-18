@@ -1,13 +1,14 @@
 import http from 'k6/http';
-import { sleep } from 'k6';
+import { sleep, check } from 'k6';
 
 const rootUrl = 'http://localhost:5100/';
+const token = 'apikey,W0uafl4P7u8uAH9TSCibg1M5s8IaOj3qmHmgSa2lUZu';
 
 export const options = {
   // A number specifying the number of VUs to run concurrently.
   vus: 10,
   // A string specifying the total duration of the test run.
-  duration: '10s',
+  duration: '5s',
 
   // The following section contains configuration options for execution of this
   // test script in Grafana Cloud.
@@ -56,6 +57,9 @@ export const options = {
 // about authoring k6 scripts.
 //
 export default function() {
-  http.get(rootUrl);
-  sleep(1);
+  const res = http.get(rootUrl);
+  sleep(3);
+  check(res, {
+    'is status 200': (r) => r.status === 200,
+  });
 }
