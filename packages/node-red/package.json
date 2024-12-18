@@ -1,6 +1,6 @@
 {
   "name": "@builder6/node-red",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "main": "dist/plugin.module.js",
   "license": "MIT",
   "files": [
