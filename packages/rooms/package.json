@@ -3,7 +3,6 @@
   "version": "0.7.1",
   "description": "",
   "author": "",
-  "private": true,
   "license": "MIT",
   "main": "dist/plugin.module.js",
   "scripts": {
@@ -27,10 +26,10 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "publishConfig": {
-      "access": "public"
-    },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

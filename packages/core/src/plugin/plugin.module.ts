@@ -27,7 +27,7 @@ export class PluginModule {
 
   private readonly logger = new Logger(PluginService.name);
   private static npmrc = process.env.B6_PLUGIN_NPMRC;
-  private static install_packages = process.env.B6_PLUGIN_INSTALL_PACKAGES;
+  private static install_packages = process.env.B6_PLUGIN_PACKAGES;
 
   static state: any;
   static targetState: any;
@@ -108,7 +108,7 @@ export class PluginModule {
       return path.dirname(
         require.resolve(`${packageName}/package.json`, {
           paths: [
-            path.join(process.env.B6_PLUGIN_DIR, 'node_modules'),
+            path.join(this.getPluginDir(), 'node_modules'),
             ...module.paths,
           ],
         }),
@@ -239,7 +239,7 @@ export class PluginModule {
           ],
           {
             windowsHide: true,
-            cwd: path.join(process.env.B6_PLUGIN_DIR),
+            cwd: path.join(this.getPluginDir()),
             env: npmEnv,
             shell: true,
           },
