@@ -8,10 +8,6 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
   constructor(private configService: ConfigService) {
-    console.log(
-      this.configService.get('email.enabled'),
-      this.configService.get('email.host'),
-    );
     if (
       this.configService.get('email.enabled') &&
       this.configService.get('email.host')

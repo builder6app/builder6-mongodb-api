@@ -20,6 +20,7 @@ export class OidcController {
   @Get(':providerId/login')
   async login(@Param('providerId') providerId: string, @Req() req, @Res() res) {
     const provider = await this.oidcService.getProviderFromDB(providerId);
+    console.log(provider)
     const issuer = await Issuer.discover(provider.issuer);
 
     const client = new issuer.Client({
@@ -45,7 +46,7 @@ export class OidcController {
     return res.redirect(redirectTo);
   }
 
-  @Get(':providerId/callback')
+  @Get(':providerId/login/callback')
   async callback(
     @Param('providerId') providerId: string,
     @Req() req,
