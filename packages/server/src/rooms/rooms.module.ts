@@ -5,7 +5,7 @@ import { MongodbModule } from '@builder6/core';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from '@builder6/core';
 import { RoomsGateway } from './rooms.gateway';
-import { FilesModule } from '@/files/files.module';
+import { FilesModule } from '@builder6/core';
 
 /* 按照 liveblocks.io 规范实现的API */
 @Module({

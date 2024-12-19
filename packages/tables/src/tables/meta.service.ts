@@ -70,13 +70,6 @@ export class MetaService {
           //   multiple: true,
           // },
           { _id: 'fld007', name: 'birthdate', label: '生日', type: 'date' },
-          {
-            _id: 'fld008',
-            name: 'created',
-            label: '创建时间',
-            type: 'datetime',
-            default_value: '2024-12-11T09:22:09.045Z',
-          },
           { _id: 'fld009', name: 'valid', label: '启用', type: 'boolean' },
           {
             _id: 'fld010',
@@ -84,6 +77,39 @@ export class MetaService {
             label: '公式',
             type: 'formula',
             formula: 'name + age',
+          },
+          {
+            _id: 'owner',
+            name: 'owner',
+            label: '所有者',
+            type: 'lookup',
+            reference_to: 'users',
+          },
+          {
+            _id: 'created',
+            name: 'created',
+            label: '创建日期',
+            type: 'datetime',
+          },
+          {
+            _id: 'created_by',
+            name: 'created_by',
+            label: '创建人',
+            type: 'lookup',
+            reference_to: 'users',
+          },
+          {
+            _id: 'modified',
+            name: 'modified',
+            label: '修改日期',
+            type: 'datetime',
+          },
+          {
+            _id: 'modified_by',
+            name: 'modified_by',
+            label: '修改人',
+            type: 'lookup',
+            reference_to: 'users',
           },
         ],
         verifications: [

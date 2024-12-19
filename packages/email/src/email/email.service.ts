@@ -24,6 +24,8 @@ export class EmailService {
           user: this.configService.get('email.username'), // 邮箱账号
           pass: this.configService.get('email.password'), // 邮箱密码或SMTP授权码
         },
+        logger: this.configService.get('email.logger') || true, // 启用日志
+        debug: this.configService.get('email.debug') || false, // 是否debug
       });
     }
   }

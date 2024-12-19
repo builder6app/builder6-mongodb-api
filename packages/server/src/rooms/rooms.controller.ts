@@ -18,7 +18,7 @@ import { JwtService } from '@nestjs/jwt';
 import { RoomsGuard } from './rooms.guard';
 import * as rawBody from 'raw-body';
 import { Request } from 'express';
-import { FilesService } from '@/files/files.service';
+import { FilesService } from '@builder6/core';
 import { RoomsGateway } from './rooms.gateway';
 import { ServerMsgCode } from './protocol/ServerMsg';
 

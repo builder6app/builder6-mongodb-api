@@ -3,8 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { INestApplicationContext } from '@nestjs/common';
 
-export * from './files';
-
 export let app: INestApplicationContext;
 
 async function bootstrap() {

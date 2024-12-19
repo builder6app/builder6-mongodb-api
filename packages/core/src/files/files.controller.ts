@@ -6,16 +6,20 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
   Res,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('api/v6/files/')
+@UseGuards(AuthGuard)
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
@@ -39,6 +43,21 @@ export class FilesController {
           type: 'string',
           format: 'binary',
         },
+        object_name: {
+          type: 'string',
+          description: 'Object Name',
+          default: '',
+        },
+        record_id: {
+          type: 'string',
+          description: 'Record id',
+          default: '',
+        },
+        parent: {
+          type: 'string',
+          description: 'Parent record id',
+          default: '',
+        },
       },
     },
   })
@@ -46,14 +65,20 @@ export class FilesController {
   async uploadFile(
     @Param('collectionName') collectionName: string,
     @UploadedFile() file: Express.Multer.File,
+    @Body('object_name') object_name: string,
+    @Body('record_id') record_id: string,
+    @Body('parent') parent: string,
+    @Req() req: Request,
   ) {
+
+    const user = req['user'];
     if (!file) {
       throw new Error('未找到上传的文件');
     }
     const fileRecord = await this.filesService.uploadFile(
       collectionName,
       file,
-      {},
+      { object_name, record_id, parent, owner: user._id, space: user.space },
     );
     return fileRecord;
   }

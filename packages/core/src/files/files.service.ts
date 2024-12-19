@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import * as fs from 'fs-extra';
 import { v4 as uuid } from 'uuid';
 import * as path from 'path';
-import { MongodbService } from '@builder6/core';
+import { MongodbService } from '../mongodb/mongodb.service';
 import stream from 'stream';
 import * as mime from 'mime-types';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class FilesService {
@@ -15,6 +16,7 @@ export class FilesService {
   public storageDir: string;
   public s3Bucket: string;
   public rootUrl: string;
+  private readonly logger = new Logger(FilesService.name);
 
   constructor(
     private configService: ConfigService,
@@ -61,28 +63,29 @@ export class FilesService {
     },
     metadata: {
       _id?: string;
-      userId?: string;
-      spaceId?: string;
-      objectName?: string;
-      recordId?: string;
-      parentId?: string;
+      owner?: string;
+      space?: string;
+      object_name?: string;
+      record_id?: string;
+      parent?: string;
     },
   ): Promise<object> {
     const {
       _id = uuid(),
-      objectName = 'default',
-      userId,
-      spaceId,
-      recordId,
-      parentId,
+      object_name,
+      owner,
+      space,
+      record_id,
+      parent,
     } = metadata;
 
     const mimeType =
       file.mimetype ||
       mime.lookup(file.originalname) ||
       'application/octet-stream';
-    let fileUrl: string;
     let relativeKey: string;
+
+    const md5 = crypto.createHash('md5').update(file.buffer).digest('hex');
 
     // 获取当前时间并生成路径
     const currentDate = new Date();
@@ -92,17 +95,17 @@ export class FilesService {
     const collectionFolderName = this.getCollectionFolderName(collectionName);
 
     if (this.cfsStore === 'local') {
-      // 构造文件存储路径，例如：objectName/2024/12/uniqueFileName
+      // 构造文件存储路径，例如：object_name/2024/12/uniqueFileName
       const fileDir = path.join(
         this.storageDir,
         'files',
         collectionFolderName,
-        objectName,
+        object_name || 'default',
         year.toString(),
         month,
       );
       relativeKey = path.join(
-        objectName,
+        object_name || 'default',
         year.toString(),
         month,
         uniqueFileName,
@@ -114,7 +117,7 @@ export class FilesService {
         await fs.ensureDir(fileDir);
         // 将文件写入本地存储目录
         await fs.writeFile(filePath, file.buffer);
-        fileUrl = filePath; // 本地保存的路径
+        this.logger.log(`文件上传成功: ${filePath}`);
       } catch (err) {
         throw new Error(`文件保存到本地失败: ${err.message}`);
       }
@@ -122,8 +125,8 @@ export class FilesService {
       // 如果存储配置为 S3
       const collectionFolderName = this.getCollectionFolderName(collectionName);
 
-      // 构造 S3 中的文件路径，例如：objectName/2024/12/uniqueFileName
-      relativeKey = `${collectionFolderName}/${objectName}/${year}/${month}/${uniqueFileName}`;
+      // 构造 S3 中的文件路径，例如：object_name/2024/12/uniqueFileName
+      relativeKey = `${collectionFolderName}/${object_name || 'default'}/${year}/${month}/${uniqueFileName}`;
       const params = {
         Bucket: this.s3Bucket,
         Key: relativeKey,
@@ -133,7 +136,7 @@ export class FilesService {
 
       try {
         const data = await this.s3.upload(params).promise();
-        fileUrl = data.Location; // 返回文件的 S3 URL
+        this.logger.log(`文件上传S3成功: ${relativeKey}`);
       } catch (err) {
         throw new Error(`文件上传失败: ${err.message}`);
       }
@@ -143,18 +146,18 @@ export class FilesService {
 
     const savedRecord = await this.mongodbService.insertOne(collectionName, {
       _id,
-      link: fileUrl,
       original: {
         type: mimeType,
         size: file.size,
         name: file.originalname,
+        md5,
       },
       metadata: {
-        owner: userId,
-        space: spaceId,
-        record_id: recordId,
-        object_name: objectName,
-        parent: parentId,
+        owner: owner,
+        space: space,
+        record_id: record_id,
+        object_name: object_name,
+        parent: parent,
       },
       copies: {
         files: {
@@ -238,7 +241,7 @@ export class FilesService {
 
     if (this.cfsStore === 'local') {
       try {
-        // 构造文件存储路径，例如：objectName/2024/12/uniqueFileName
+        // 构造文件存储路径，例如：object_name/2024/12/uniqueFileName
         const key = fileRecord.copies.files.key;
         const collectionFolderName =
           this.getCollectionFolderName(collectionName);

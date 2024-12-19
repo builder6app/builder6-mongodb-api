@@ -30,10 +30,11 @@ yarn
 yarn start:dev
 ```
 
-## 编译 
+## 编译并运行正式版
 
 ```bash
 yarn build
+yarn start
 ```
 
 ## 编译并监听

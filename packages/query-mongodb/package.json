@@ -1,6 +1,6 @@
 {
   "name": "@builder6/query-mongodb",
-  "version": "0.6.3",
+  "version": "0.6.5",
   "description": "Querying a MongoDB collection using DevExtreme data store load parameters",
   "main": "index.js",
   "files": [
@@ -56,5 +56,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "2f816481fc81096a973e75ed27ff9b8bb0638e0c"
+  "gitHead": "32136c21b3b6878d1035075b469622964b35caa7"
 }

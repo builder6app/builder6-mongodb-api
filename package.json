@@ -16,12 +16,16 @@
     "build:watch": "nx run-many -t build:watch",
     "clean": "nx run-many -t clean",
     "format": "nx run-many -t format",
-    "lint": "nx run-many -t lint"
+    "lint": "nx run-many -t lint",
+    "cnpm:sync": "lerna exec --no-private  -- cnpm sync \\$LERNA_PACKAGE_NAME"
   },
   "license": "MIT",
   "devDependencies": {
+    "k6": "^0.0.0",
     "lerna": "^8.1.9",
     "nx": "20.2.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "cnpm": "^9.4.0"
+  }
 }
