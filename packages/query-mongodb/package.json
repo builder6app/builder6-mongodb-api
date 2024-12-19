@@ -1,6 +1,6 @@
 {
   "name": "@builder6/query-mongodb",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "description": "Querying a MongoDB collection using DevExtreme data store load parameters",
   "main": "index.js",
   "files": [

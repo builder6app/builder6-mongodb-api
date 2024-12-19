@@ -1,6 +1,6 @@
 {
   "name": "@builder6/rooms",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "description": "",
   "author": "",
   "private": true,
@@ -11,7 +11,7 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.6.5"
+    "@builder6/core": "^0.7.0"
   },
   "jest": {
     "moduleFileExtensions": [

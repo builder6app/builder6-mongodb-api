@@ -1,6 +1,6 @@
 {
   "name": "@builder6/tables",
-  "version": "0.6.5",
+  "version": "0.7.0",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
@@ -12,7 +12,7 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.6.5",
+    "@builder6/core": "^0.7.0",
     "dataloader": "^2.2.3"
   },
   "publishConfig": {
