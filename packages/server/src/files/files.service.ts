@@ -7,6 +7,7 @@ import { MongodbService } from '@builder6/core';
 import stream from 'stream';
 import * as mime from 'mime-types';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class FilesService {
@@ -84,6 +85,8 @@ export class FilesService {
     let fileUrl: string;
     let relativeKey: string;
 
+    const md5 = crypto.createHash('md5').update(file.buffer).digest('hex');
+
     // 获取当前时间并生成路径
     const currentDate = new Date();
     const year = currentDate.getFullYear();
@@ -133,7 +136,7 @@ export class FilesService {
 
       try {
         const data = await this.s3.upload(params).promise();
-        fileUrl = data.Location; // 返回文件的 S3 URL
+        console.log('S3 上传成功', data);
       } catch (err) {
         throw new Error(`文件上传失败: ${err.message}`);
       }
@@ -143,11 +146,11 @@ export class FilesService {
 
     const savedRecord = await this.mongodbService.insertOne(collectionName, {
       _id,
-      link: fileUrl,
       original: {
         type: mimeType,
         size: file.size,
         name: file.originalname,
+        md5,
       },
       metadata: {
         owner: userId,
