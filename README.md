@@ -80,7 +80,7 @@ B6_PLUGIN_SERVICES=@builder6/node-red
 B6_PLUGIN_MODULE=@builder6/node-red
 ```
 
-启动服务时，会自动查找所有module类插件，如果找到 `dist/app.modules.js` 则作为 nestjs module 加载。
+启动服务时，会自动查找所有module类插件，如果找到 `dist/plugin.modules.js` 则作为 nestjs module 加载。
 
 
 ## 与 Steedos 集成

@@ -1,7 +1,7 @@
 {
   "name": "@builder6/tables",
   "version": "0.7.0",
-  "main": "dist/index.js",
+  "main": "dist/plugin.module.js",
   "license": "MIT",
   "files": [
     "dist",

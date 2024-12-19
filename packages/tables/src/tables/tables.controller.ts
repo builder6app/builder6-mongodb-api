@@ -25,7 +25,6 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@builder6/core';
 import { MetaService } from './meta.service';
-import { Liquid } from 'liquidjs';
 import * as path from 'path';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
@@ -33,7 +32,6 @@ import * as path from 'path';
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class TablesController {
-  private liquidEngine: Liquid;
   constructor(
     private readonly tablesService: TablesService,
     private readonly metaService: MetaService,
