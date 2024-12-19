@@ -121,9 +121,7 @@ class B6Server {
 
   async loadConfig() {
 
-    const configJs = require('./b6.config');
     this.config = {
-      ...configJs,
       ...getEnvConfigs(),
     };
 
@@ -264,7 +262,7 @@ class B6Server {
 
     this.logger.log('Loaded config', this.config);
   }
-  
+
   async startApp() {
 
     const ExpressApplication = require('./app.express');
