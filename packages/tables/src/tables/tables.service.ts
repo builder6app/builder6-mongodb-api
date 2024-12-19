@@ -51,13 +51,13 @@ export class TablesService {
     return entry;
   }
 
-  async recordInsertOne(baseId: string, tableId, data: any) {
+  async recordInsertOne(baseId: string, tableId, record: any) {
     const lookupFields = await this.getTableLookupFields(baseId, tableId);
-    await this.roolbackRecordLookupFields(data, lookupFields);
+    await this.roolbackRecordLookupFields(record, lookupFields);
 
-    const record = await this.insertOne(baseId, tableId, data);
-    await this.convertRecordLookupFields(record, lookupFields);
-    return record;
+    const recordInserted = await this.insertOne(baseId, tableId, record);
+    await this.convertRecordLookupFields(recordInserted, lookupFields);
+    return recordInserted;
   }
 
   async find(
@@ -152,19 +152,29 @@ export class TablesService {
     baseId: string,
     tableId: string,
     query: object,
-    data: any,
+    record: any,
   ) {
     const lookupFields = await this.getTableLookupFields(baseId, tableId);
-    await this.roolbackRecordLookupFields(data, lookupFields);
-    const record = await this.findOneAndUpdate(baseId, tableId, query, data);
-    await this.convertRecordLookupFields(record, lookupFields);
-    return record;
+    await this.roolbackRecordLookupFields(record, lookupFields);
+    const updatedRecord = await this.findOneAndUpdate(
+      baseId,
+      tableId,
+      query,
+      record,
+    );
+    await this.convertRecordLookupFields(updatedRecord, lookupFields);
+    return updatedRecord;
   }
 
   async deleteOne(baseId: string, tableId: string, query: object) {
     const collection = this.getCollection(baseId, tableId);
     const result = await collection.deleteOne(query);
     return result;
+  }
+
+  async recordDeleteMany(baseId: string, tableId: string, query: object) {
+    const records = await this.deleteMany(baseId, tableId, query);
+    return records;
   }
 
   async deleteMany(baseId: string, tableId: string, query: object) {
