@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "@builder6/core": "^0.6.5",
-    "dataloader": "^2.2.3",
-    "liquidjs": "^10.19.0"
+    "dataloader": "^2.2.3"
   },
   "publishConfig": {
     "access": "public"
