@@ -13,6 +13,7 @@ import { OidcModule } from './oidc/oidc.module';
 import { AppController } from './app.controller';
 import { PluginModule } from './plugin/plugin.module';
 import { EmailModule } from '@builder6/email';
+import { PagesModule } from '@builder6/pages';
 import getConfig from './app.config';
 
 @Module({
@@ -31,11 +32,12 @@ import getConfig from './app.config';
     AuthModule,
     MongodbModule,
     SteedosModule,
-    TablesModule,
-    RoomsModule,
     FilesModule,
-    Microsoft365Module,
     EmailModule,
+    TablesModule,
+    PagesModule,
+    RoomsModule,
+    Microsoft365Module,
     PluginModule.forRoot(),
     ...(process.env.B6_OIDC_ENABLED ? [OidcModule] : []),
   ],
