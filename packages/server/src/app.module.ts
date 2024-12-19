@@ -11,7 +11,7 @@ import { MoleculerModule } from '@builder6/moleculer';
 import { Microsoft365Module } from './microsoft365/microsoft365.module';
 import { OidcModule } from './oidc/oidc.module';
 import { AppController } from './app.controller';
-import { PluginModule } from './plugin/plugin.module';
+import { PluginModule } from '@builder6/core';
 import { EmailModule } from '@builder6/email';
 import { PagesModule } from '@builder6/pages';
 import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
