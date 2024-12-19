@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
-import { AuthModule, MongodbModule } from '@builder6/core';
+import { MongodbModule } from '../mongodb/mongodb.module';
 import { FilesMoleculer } from './files.moleculer';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [AuthModule, MongodbModule],

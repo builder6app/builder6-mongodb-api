@@ -16,7 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { Response } from 'express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { AuthGuard } from '@builder6/core';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('api/v6/files/')
 @UseGuards(AuthGuard)
