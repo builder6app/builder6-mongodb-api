@@ -19,7 +19,7 @@
 import { Logger } from '@nestjs/common';
 
 import * as project from '../package.json';
-import { getEnvConfigs } from './app.config';
+import { getEnvConfigs } from '@builder6/core';
 
 const childProcess = require('child_process');
 
@@ -150,20 +150,17 @@ class B6Server {
       process.exit();
     }
 
-    if (this.parsedArgs.version) {
-      console.log('Builder6 Server v' + project.version);
-      console.log('Node.js ' + process.version);
-      console.log(
-        os.type() +
-          ' ' +
-          os.release() +
-          ' ' +
-          os.arch() +
-          ' ' +
-          os.endianness(),
-      );
-      process.exit();
-    }
+    console.log('Builder6 Server v' + project.version);
+    console.log('Node.js ' + process.version);
+    console.log(
+      os.type() +
+        ' ' +
+        os.release() +
+        ' ' +
+        os.arch() +
+        ' ' +
+        os.endianness(),
+    );
 
     // if (this.parsedArgs.config) {
     //   // User-specified config file
@@ -267,141 +264,7 @@ class B6Server {
 
     this.logger.log('Loaded config', this.config);
   }
-  getPluginPackages() {
-    // packages 格式为 @builder6/app1@1.0.0,@builder6/app2
-    // 转为 格式 { "@builder6/app1": "1.0.0", "@builder6/app2": "latest" }
-    if (this.config.plugin?.packages) {
-      const pluginList = this.config.plugin.packages.split(',');
-      const pluginMap = {};
-      pluginList.forEach((plugin) => {
-        const match = plugin.match(/^(@[^@]+\/[^@]+|[^@]+)(?:@(.+))?$/);
-        if (match) {
-          const name = match[1]; // 包名
-          const version = match[2] || 'latest'; // 版本号（默认 latest）
-          pluginMap[name] = version;
-        }
-      });
-      return pluginMap;
-    }
-    return {};
-  }
-  async updateNpmrc() {
-    const npmrcPath = path.join(process.env.B6_PLUGIN_DIR, '.npmrc');
-    if (this.config.plugin?.npmrc) {
-      try {
-        fs.writeFileSync(npmrcPath, this.config.plugin?.npmrc);
-      } catch (error) {
-        this.state = States.STOPPED;
-        this.logger.log('Unable to write .npmrc file');
-        throw error;
-      }
-    } else {
-      if (fs.existsSync(npmrcPath)) {
-        try {
-          fs.unlinkSync(npmrcPath);
-        } catch (error) {
-          this.state = States.STOPPED;
-          this.logger.log('Unable to remove old .npmrc file');
-          throw error;
-        }
-      }
-    }
-  }
-  async updatePackage() {
-    const pkgFilePath = path.join(process.env.B6_PLUGIN_DIR, 'package.json');
-    if (!fs.existsSync(pkgFilePath)) {
-      // 写入一个空的 package.json
-      fs.writeFileSync(
-        pkgFilePath,
-        JSON.stringify(
-          { name: 'b6-server', version: '0.0.1', dependencies: {} },
-          null,
-          2,
-        ),
-      );
-    }
-    const packageContent = fs.readFileSync(pkgFilePath, { encoding: 'utf8' });
-    const pkg = JSON.parse(packageContent);
-    const existingDependencies = pkg.dependencies || {};
-    const wantedDependencies = this.getPluginPackages();
-
-    const existingModules = Object.keys(existingDependencies);
-    const wantedModules = Object.keys(wantedDependencies);
-
-    let changed = false;
-    if (existingModules.length !== wantedModules.length) {
-      changed = true;
-    } else {
-      existingModules.sort();
-      wantedModules.sort();
-      for (let i = 0; i < existingModules.length; i++) {
-        if (existingModules[i] !== wantedModules[i]) {
-          changed = true;
-          break;
-        }
-        if (
-          existingDependencies[existingModules[i]] !==
-          wantedDependencies[wantedModules[i]]
-        ) {
-          changed = true;
-          break;
-        }
-      }
-    }
-
-    if (changed) {
-      this.state = States.INSTALLING;
-      this.logger.log('Updating project dependencies', wantedDependencies);
-      pkg.dependencies = wantedDependencies;
-      fs.writeFileSync(pkgFilePath, JSON.stringify(pkg, null, 2));
-      const npmEnv = Object.assign({}, process.env, this.config.env);
-      const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-      return new Promise<void>((resolve, reject) => {
-        const child = childProcess.spawn(
-          npmCommand,
-          [
-            'install',
-            '--omit=dev',
-            '--no-audit',
-            '--no-update-notifier',
-            '--no-fund',
-          ],
-          {
-            windowsHide: true,
-            cwd: path.join(process.env.B6_PLUGIN_DIR),
-            env: npmEnv,
-            shell: true,
-          },
-        );
-        child.stdout.on('data', (data) => {
-          this.logger.log('[npm] ' + data);
-        });
-        child.stderr.on('data', (data) => {
-          this.logger.log('[npm] ' + data);
-        });
-        child.on('error', (err) => {
-          this.logger.log('[npm] ' + err.toString());
-        });
-        child.on('close', (code) => {
-          if (code === 0) {
-            resolve();
-          } else {
-            reject(
-              new Error(
-                `Failed to install project dependencies ret code: ${code} signal ${child.signalCode}`,
-              ),
-            );
-          }
-        });
-      }).catch((err) => {
-        // Revert the package file to the previous content. That ensures
-        // it will try to install again the next time it attempts to run
-        fs.writeFileSync(pkgFilePath, packageContent);
-        throw err;
-      });
-    }
-  }
-
+  
   async startApp() {
 
     const ExpressApplication = require('./app.express');
@@ -410,9 +273,6 @@ class B6Server {
   }
 
   async bootstrap() {
-    await this.loadConfig();
-    await this.updateNpmrc();
-    await this.updatePackage();
     await this.startApp();
   }
 }

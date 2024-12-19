@@ -1,5 +1,7 @@
 import * as dotenvFlow from 'dotenv-flow';
 import * as path from 'path';
+import defaultConfig from './default.config';
+import moleculerConfig from './moleculer.config';
 
 dotenvFlow.config({
   path: process.cwd(),
@@ -60,10 +62,31 @@ export function getEnvConfigs() {
   return env;
 }
 
-export default function getConfig() {
+
+export async function getDbConfigs() {
+  return {}
+}
+
+export function getFileConfigs(){
+  return {}
+}
+
+export function getConfigs() {
   const env = getEnvConfigs();
+  const file = getFileConfigs();
   return {
-    plugin: {},
+    ...defaultConfig,
     ...env,
-  };
+    ...file,
+  }
+}
+
+export function getMoleculerConfigs() {
+  const env = getEnvConfigs();
+  const file = getFileConfigs();
+  return {
+    ...moleculerConfig,
+    ...env,
+    ...file
+  }
 }

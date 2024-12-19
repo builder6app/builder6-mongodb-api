@@ -14,13 +14,12 @@ import { AppController } from './app.controller';
 import { PluginModule } from './plugin/plugin.module';
 import { EmailModule } from '@builder6/email';
 import { PagesModule } from '@builder6/pages';
-import getConfig from './app.config';
+import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['.env.local', '.env'],
-      load: [getConfig],
+      load: [getConfigs, getDbConfigs],
       isGlobal: true, // 使配置在整个应用中可用
     }),
     MoleculerModule.forRoot({
@@ -28,6 +27,7 @@ import getConfig from './app.config';
         namespace: "steedos", // some moleculer options
         transporter: process.env.B6_TRANSPORTER,
         // hotReload: true, // hotReload feature from moleculer will not work 
+        ...getMoleculerConfigs(),
     }),
     AuthModule,
     MongodbModule,
@@ -38,7 +38,7 @@ import getConfig from './app.config';
     PagesModule,
     RoomsModule,
     Microsoft365Module,
-    PluginModule.forRoot(),
+    PluginModule.forRootAsync(),
     ...(process.env.B6_OIDC_ENABLED ? [OidcModule] : []),
   ],
   controllers: [AppController],

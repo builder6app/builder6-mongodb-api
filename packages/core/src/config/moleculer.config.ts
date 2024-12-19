@@ -1,8 +1,6 @@
 'use strict';
 import * as _ from 'lodash';
 
-import AppConfig from './app.config';
-
 /**
  * Steedos ServiceBroker configuration file
  *
@@ -10,7 +8,7 @@ import AppConfig from './app.config';
  * https://moleculer.services/docs/0.14/configuration.html
  */
 
-const defaultConfig = {
+export default {
   namespace: 'steedos',
   nodeID: null,
   metadata: {},
@@ -105,11 +103,4 @@ const defaultConfig = {
   stopped(broker: any) {
     // Custom logic after broker stops
   },
-};
-
-export default () => {
-  return {
-    ...defaultConfig,
-    ...AppConfig(),
-  };
 };
