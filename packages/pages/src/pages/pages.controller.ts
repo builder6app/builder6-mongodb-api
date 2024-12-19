@@ -1,10 +1,10 @@
 import { Get, Controller } from '@nestjs/common';
 
-@Controller('/api/v6/pages')
+@Controller('/b6/pages')
 export class PagesController {
 
   @Get('')
   async Hello() {
-    return 'Hello, World!';
+    return 'Welcome to Builder6 Pages!';
   }
 }

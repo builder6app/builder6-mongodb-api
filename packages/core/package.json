@@ -10,7 +10,7 @@
     "@builder6/query-mongodb": "^0.7.0"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc -b",
+    "build": "rm -rf dist && tsc",
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "publishConfig": {

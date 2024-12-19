@@ -5,10 +5,11 @@ import { MetaService } from './meta.service';
 import { MongodbModule } from '@builder6/core';
 import { AuthModule } from '@builder6/core';
 import { TablesMoleculer } from './tables.moleculer';
+import { TablesAppController } from './app.controller';
 
 @Module({
   imports: [AuthModule, MongodbModule],
-  controllers: [TablesController],
+  controllers: [TablesController, TablesAppController],
   providers: [MetaService, TablesService, TablesMoleculer],
 })
 export class TablesModule {}
