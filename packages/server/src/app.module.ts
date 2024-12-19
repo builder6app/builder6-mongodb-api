@@ -5,7 +5,7 @@ import { MongodbModule } from '@builder6/core';
 import { TablesModule } from '@builder6/tables';
 import { AuthModule } from '@builder6/core';
 import { SteedosModule } from './steedos/steedos.module';
-import { RoomsModule } from './rooms/rooms.module';
+import { RoomsModule } from '@builder6/rooms';
 import { FilesModule } from '@builder6/core';
 import { MoleculerModule } from '@builder6/moleculer';
 import { Microsoft365Module } from './microsoft365/microsoft365.module';

@@ -16,7 +16,7 @@ export class OidcService {
       configUrl: process.env.B6_OIDC_CONFIG_URL,
       client_id: process.env.B6_OIDC_CLIENT_ID,
       client_secret: process.env.B6_OIDC_CLIENT_SECRET,
-      redirect_uri: `${process.env.ROOT_URL}/api/v6/oidc/${providerId}/callback`,
+      redirect_uri: `${process.env.ROOT_URL}/api/v6/oidc/${providerId}/login/callback`,
       scope: process.env.B6_OIDC_CLIENT_SCOPE || 'openid email profile',
       state,
       nonce,
