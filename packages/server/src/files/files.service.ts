@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import * as fs from 'fs-extra';
 import { v4 as uuid } from 'uuid';
@@ -16,6 +16,7 @@ export class FilesService {
   public storageDir: string;
   public s3Bucket: string;
   public rootUrl: string;
+  private readonly logger = new Logger(FilesService.name);
 
   constructor(
     private configService: ConfigService,
@@ -71,7 +72,7 @@ export class FilesService {
   ): Promise<object> {
     const {
       _id = uuid(),
-      objectName = 'default',
+      objectName,
       userId,
       spaceId,
       recordId,
@@ -82,7 +83,6 @@ export class FilesService {
       file.mimetype ||
       mime.lookup(file.originalname) ||
       'application/octet-stream';
-    let fileUrl: string;
     let relativeKey: string;
 
     const md5 = crypto.createHash('md5').update(file.buffer).digest('hex');
@@ -100,12 +100,12 @@ export class FilesService {
         this.storageDir,
         'files',
         collectionFolderName,
-        objectName,
+        objectName || 'default',
         year.toString(),
         month,
       );
       relativeKey = path.join(
-        objectName,
+        objectName || 'default',
         year.toString(),
         month,
         uniqueFileName,
@@ -117,7 +117,7 @@ export class FilesService {
         await fs.ensureDir(fileDir);
         // 将文件写入本地存储目录
         await fs.writeFile(filePath, file.buffer);
-        fileUrl = filePath; // 本地保存的路径
+        this.logger.log(`文件上传成功: ${filePath}`);
       } catch (err) {
         throw new Error(`文件保存到本地失败: ${err.message}`);
       }
@@ -126,7 +126,7 @@ export class FilesService {
       const collectionFolderName = this.getCollectionFolderName(collectionName);
 
       // 构造 S3 中的文件路径，例如：objectName/2024/12/uniqueFileName
-      relativeKey = `${collectionFolderName}/${objectName}/${year}/${month}/${uniqueFileName}`;
+      relativeKey = `${collectionFolderName}/${objectName || 'default'}/${year}/${month}/${uniqueFileName}`;
       const params = {
         Bucket: this.s3Bucket,
         Key: relativeKey,
@@ -136,7 +136,7 @@ export class FilesService {
 
       try {
         const data = await this.s3.upload(params).promise();
-        console.log('S3 上传成功', data);
+        this.logger.log(`文件上传S3成功: ${relativeKey}`);
       } catch (err) {
         throw new Error(`文件上传失败: ${err.message}`);
       }
