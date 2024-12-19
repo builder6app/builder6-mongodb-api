@@ -12,10 +12,11 @@ import { Response, Request } from 'express';
 import { Issuer, Client } from 'openid-client';
 
 import { OidcService } from './oidc.service';
+import { AuthService } from '@builder6/core';
 
 @Controller('api/v6/oidc')
 export class OidcController {
-  constructor(private readonly oidcService: OidcService) {}
+  constructor(private readonly oidcService: OidcService, private readonly authService: AuthService) {}
 
   @Get(':providerId/login')
   async login(@Param('providerId') providerId: string, @Req() req, @Res() res) {
@@ -83,8 +84,20 @@ export class OidcController {
     const userInfo = await client.userinfo(tokenSet);
     console.log('userinfo %j', userInfo);
 
-    // 此处可进行登录态建立和用户信息入库等处理
-    // 简单返回用户信息作为示例
-    return res.json({ tokenSet, userInfo });
+    if (userInfo.email) {
+      const userSession = await this.authService.signIn(userInfo.email);
+
+      const { user, space, auth_token, access_token } = userSession;
+
+      this.authService.setAuthCookies(res, {
+        user_id: user,
+        space_id: space,
+        auth_token,
+        access_token,
+      });
+    }
+
+    res.redirect('/');
+
   }
 }

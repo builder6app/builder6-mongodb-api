@@ -45,22 +45,14 @@ export class AuthController {
         signInDto.username,
         signInDto.password,
       );
-      const { user, space, authToken } = result;
+      const { user, space, auth_token, access_token } = result;
 
-      const cookieOptions: CookieOptions = {
-        httpOnly: true,
-        sameSite: 'strict',
-        maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
-      };
-
-      if (process.env.STEEDOS_AUTH_COOKIES_USE_SAMESITE == 'None') {
-        cookieOptions.sameSite = 'none';
-        cookieOptions.secure = true;
-      }
-      res.cookie('X-Auth-Token', authToken, cookieOptions);
-      res.cookie('X-User-Id', user, cookieOptions);
-      res.cookie('X-Space-Id', space, cookieOptions);
-
+      this.authService.setAuthCookies(res, {
+        user_id: user,
+        space_id: space,
+        auth_token,
+        access_token,
+      });
       return res.status(200).json(result);
     } catch (error) {
       console.error('Error during signIn:', error);

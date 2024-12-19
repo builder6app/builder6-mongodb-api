@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { MongodbService } from '../mongodb';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -17,16 +17,12 @@ export class AuthService {
 
   async signIn(
     username: string,
-    password: string,
+    password?: string,
     spaceId?: string,
   ): Promise<any> {
     if (!spaceId) {
       spaceId = await this.getMasterSpaceId();
     }
-
-    const hash = crypto.createHash('sha256');
-    hash.update(password);
-    const bcryptPassword = hash.digest('hex');
     const user = (await this.mongodbService.findOne('users', {
       $or: [
         { username: username },
@@ -38,13 +34,20 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const match = await bcrypt.compare(
-      bcryptPassword,
-      user.services.password.bcrypt,
-    );
-    if (!match) {
-      throw new UnauthorizedException();
+    if (password) {
+      const hash = crypto.createHash('sha256');
+      hash.update(password);
+      const bcryptPassword = hash.digest('hex');
+
+      const match = await bcrypt.compare(
+        bcryptPassword,
+        user.services.password.bcrypt,
+      );
+      if (!match) {
+        throw new UnauthorizedException();
+      }
     }
+
 
     const space_user = await this.getSpaceUser(user._id, spaceId);
     if (!space_user) {
@@ -80,9 +83,28 @@ export class AuthService {
 
     return {
       access_token: access_token,
-      authToken: authToken,
+      auth_token: authToken,
       ...space_user,
     };
+  }
+
+  async setAuthCookies(res: Response, { access_token, auth_token, user_id, space_id }) {
+
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
+    };
+
+    if (process.env.STEEDOS_AUTH_COOKIES_USE_SAMESITE == 'None') {
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+    res.cookie('X-Access-Token', access_token, cookieOptions);
+    res.cookie('X-Auth-Token', auth_token, cookieOptions);
+    res.cookie('X-User-Id', user_id, cookieOptions);
+    res.cookie('X-Space-Id', space_id, cookieOptions);
+
   }
 
   async getMasterSpaceId(): Promise<string> {
