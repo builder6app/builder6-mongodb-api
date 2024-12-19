@@ -18,6 +18,7 @@ export class TablesMoleculer extends Service {
         insertOne: this.insertOne,
         findOneAndUpdate: this.findOneAndUpdate,
         deleteMany: this.deleteMany,
+        find: this.find,
       },
       created: this.serviceCreated,
       started: this.serviceStarted,
