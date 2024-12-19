@@ -6,7 +6,7 @@ import { TablesService } from './tables.service';
 @Injectable()
 export class TablesMoleculer extends Service {
   constructor(
-    tablesService: TablesService,
+    private readonly tablesService: TablesService,
     @InjectBroker() broker: ServiceBroker,
   ) {
     super(broker);
