@@ -32,6 +32,8 @@ export class PluginModule {
   static state: any;
   static targetState: any;
 
+  constructor(private readonly moleculerService: MoleculerPluginService) {}
+
   static forRootAsync(): DynamicModule {
     return {
       module: PluginModule,
@@ -60,6 +62,11 @@ export class PluginModule {
       ],
       exports: ['PLUGINS'],
     };
+  }
+
+
+  onModuleInit() {
+    this.moleculerService.loadServices();
   }
 
   // static forRoot(): DynamicModule {

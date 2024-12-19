@@ -19,7 +19,6 @@ export class MoleculerPluginService {
       console.error('B6_TRANSPORTER env is required.');
       return;
     }
-    this.loadServices();
   }
 
   loadServices() {
