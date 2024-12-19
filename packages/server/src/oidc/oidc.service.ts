@@ -15,12 +15,12 @@ export class OidcService {
 
     // 从数据库获取 OIDC Provider 配置
     return {
-      issuer: this.configService.get('identity.oidc.issuer'),
-      config_url: this.configService.get('identity.oidc.config.url'),
-      client_id: this.configService.get('identity.oidc.client.id'),
-      client_secret: this.configService.get('identity.oidc.client.secret'),
+      issuer: this.configService.get('oidc.issuer'),
+      config_url: this.configService.get('oidc.config.url'),
+      client_id: this.configService.get('oidc.client.id'),
+      client_secret: this.configService.get('oidc.client.secret'),
       redirect_uri: `${process.env.ROOT_URL}/api/v6/oidc/${providerId}/login/callback`,
-      scope: this.configService.get('identity.oidc.scope') || 'openid email profile',
+      scope: this.configService.get('oidc.scope') || 'openid email profile',
       state,
       nonce,
       code_challenge_method,
