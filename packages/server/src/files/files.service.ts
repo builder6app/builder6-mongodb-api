@@ -63,20 +63,20 @@ export class FilesService {
     },
     metadata: {
       _id?: string;
-      userId?: string;
-      spaceId?: string;
-      objectName?: string;
-      recordId?: string;
-      parentId?: string;
+      owner?: string;
+      space?: string;
+      object_name?: string;
+      record_id?: string;
+      parent?: string;
     },
   ): Promise<object> {
     const {
       _id = uuid(),
-      objectName,
-      userId,
-      spaceId,
-      recordId,
-      parentId,
+      object_name,
+      owner,
+      space,
+      record_id,
+      parent,
     } = metadata;
 
     const mimeType =
@@ -95,17 +95,17 @@ export class FilesService {
     const collectionFolderName = this.getCollectionFolderName(collectionName);
 
     if (this.cfsStore === 'local') {
-      // 构造文件存储路径，例如：objectName/2024/12/uniqueFileName
+      // 构造文件存储路径，例如：object_name/2024/12/uniqueFileName
       const fileDir = path.join(
         this.storageDir,
         'files',
         collectionFolderName,
-        objectName || 'default',
+        object_name || 'default',
         year.toString(),
         month,
       );
       relativeKey = path.join(
-        objectName || 'default',
+        object_name || 'default',
         year.toString(),
         month,
         uniqueFileName,
@@ -125,8 +125,8 @@ export class FilesService {
       // 如果存储配置为 S3
       const collectionFolderName = this.getCollectionFolderName(collectionName);
 
-      // 构造 S3 中的文件路径，例如：objectName/2024/12/uniqueFileName
-      relativeKey = `${collectionFolderName}/${objectName || 'default'}/${year}/${month}/${uniqueFileName}`;
+      // 构造 S3 中的文件路径，例如：object_name/2024/12/uniqueFileName
+      relativeKey = `${collectionFolderName}/${object_name || 'default'}/${year}/${month}/${uniqueFileName}`;
       const params = {
         Bucket: this.s3Bucket,
         Key: relativeKey,
@@ -153,11 +153,11 @@ export class FilesService {
         md5,
       },
       metadata: {
-        owner: userId,
-        space: spaceId,
-        record_id: recordId,
-        object_name: objectName,
-        parent: parentId,
+        owner: owner,
+        space: space,
+        record_id: record_id,
+        object_name: object_name,
+        parent: parent,
       },
       copies: {
         files: {
@@ -241,7 +241,7 @@ export class FilesService {
 
     if (this.cfsStore === 'local') {
       try {
-        // 构造文件存储路径，例如：objectName/2024/12/uniqueFileName
+        // 构造文件存储路径，例如：object_name/2024/12/uniqueFileName
         const key = fileRecord.copies.files.key;
         const collectionFolderName =
           this.getCollectionFolderName(collectionName);
