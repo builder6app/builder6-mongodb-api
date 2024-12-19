@@ -2,15 +2,12 @@ import { DynamicModule, Logger, Module } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { PluginService } from './plugin.service';
-import getConfig from '@/app.config';
+import getConfig from '../app.config';
 import { MoleculerPluginService } from './moleculer.service';
 import { MoleculerModule } from '@builder6/moleculer';
 
 @Module({
-  imports: [
-        MoleculerModule.forRoot({
-        })
-  ],
+  imports: [MoleculerModule.forRoot({})],
   providers: [PluginService, MoleculerPluginService],
 })
 export class PluginModule {
@@ -52,6 +49,8 @@ export class PluginModule {
     // 动态引入并创建服务
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     this.logger.log(`加载 Nestjs 插件： ${packageName} ...`);
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const PluginModule = require(packageModulePath);
 
     return PluginModule.default;
