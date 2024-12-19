@@ -25,12 +25,15 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@builder6/core';
 import { MetaService } from './meta.service';
+import { Liquid } from 'liquidjs';
+import * as path from 'path';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('api/v6/tables/')
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class TablesController {
+  private liquidEngine: Liquid;
   constructor(
     private readonly tablesService: TablesService,
     private readonly metaService: MetaService,
@@ -417,26 +420,30 @@ export class TablesController {
   }
 
   @Get('devextreme/datagrid/:baseId/:tableId')
-  @Render('devextreme/datagrid')
   async getDemo(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
+    @Res() res: Response
   ) {
-    return {
+    const absolutePath = path.resolve(__dirname, '../../views/devextreme/datagrid.hbs');
+
+    res.render(absolutePath, {
       baseId,
       tableId,
-    };
+    });
   }
 
   @Get('ag-grid/ag-grid/:baseId/:tableId')
-  @Render('ag-grid/ag-grid')
   async AgGrid(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
+    @Res() res: Response
   ) {
-    return {
+    const absolutePath = path.resolve(__dirname, '../../views/ag-grid/ag-grid.hbs');
+
+    res.render(absolutePath, {
       baseId,
       tableId,
-    };
+    });
   }
 }

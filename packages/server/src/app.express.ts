@@ -40,7 +40,6 @@ export default async function ExpressApplication() {
   SwaggerModule.setup('api/v6', app, documentFactory);
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
 
   app.use(cookieParser());

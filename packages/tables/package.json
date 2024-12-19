@@ -4,7 +4,8 @@
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "views"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc",
@@ -12,7 +13,8 @@
   },
   "dependencies": {
     "@builder6/core": "^0.6.5",
-    "dataloader": "^2.2.3"
+    "dataloader": "^2.2.3",
+    "liquidjs": "^10.19.0"
   },
   "publishConfig": {
     "access": "public"
