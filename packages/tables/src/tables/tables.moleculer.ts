@@ -34,25 +34,60 @@ export class TablesMoleculer extends Service {
 
   async insertOne(ctx: Context) {
     const { baseId, tableId, record } = ctx.params as any;
-    const result = this.tablesService.recordInsertOne(baseId, tableId, record);
-    return result;
+    try {
+      const result = this.tablesService.recordInsertOne(
+        baseId,
+        tableId,
+        record,
+      );
+      return result;
+    } catch (error) {
+      console.error(error);
+      return {
+        error: {
+          message: error.message,
+        },
+      };
+    }
   }
 
   async deleteMany(ctx: Context) {
     const { baseId, tableId, query } = ctx.params as any;
-    const result = this.tablesService.recordDeleteMany(baseId, tableId, query);
-    return result;
+    try {
+      const result = this.tablesService.recordDeleteMany(
+        baseId,
+        tableId,
+        query,
+      );
+      return result;
+    } catch (error) {
+      console.error(error);
+      return {
+        error: {
+          message: error.message,
+        },
+      };
+    }
   }
 
   async findOneAndUpdate(ctx: Context) {
     const { baseId, tableId, query, record } = ctx.params as any;
-    const result = this.tablesService.recordFindOneAndUpdate(
-      baseId,
-      tableId,
-      query,
-      record,
-    );
-    return result;
+    try {
+      const result = this.tablesService.recordFindOneAndUpdate(
+        baseId,
+        tableId,
+        query,
+        record,
+      );
+      return result;
+    } catch (error) {
+      console.error(error);
+      return {
+        error: {
+          message: error.message,
+        },
+      };
+    }
   }
 
   async find(ctx: Context) {
@@ -62,30 +97,39 @@ export class TablesMoleculer extends Service {
       options = {},
       processOptions = {},
     } = ctx.params as any;
-    const { fields, filters, top, skip, sort } = options;
+    try {
+      const { fields, filters, top, skip, sort } = options;
 
-    const loadOptions = { take: top, skip: skip, filter: filters } as any;
+      const loadOptions = { take: top, skip: skip, filter: filters } as any;
 
-    if (sort) {
-      const sortFields = sort.split(',');
-      loadOptions.sort = sortFields.map((sortField) => {
-        const [field, dir] = sortField.split(' ');
-        return { selector: field, desc: dir === 'desc' };
-      });
-    }
-    if (fields) {
-      try {
-        loadOptions.select = JSON.parse(fields);
-      } catch {
-        loadOptions.select = fields.split(',');
+      if (sort) {
+        const sortFields = sort.split(',');
+        loadOptions.sort = sortFields.map((sortField) => {
+          const [field, dir] = sortField.split(' ');
+          return { selector: field, desc: dir === 'desc' };
+        });
       }
+      if (fields) {
+        try {
+          loadOptions.select = JSON.parse(fields);
+        } catch {
+          loadOptions.select = fields.split(',');
+        }
+      }
+      const result = this.tablesService.recordFind(
+        baseId,
+        tableId,
+        loadOptions,
+        processOptions,
+      );
+      return result;
+    } catch (error) {
+      console.error(error);
+      return {
+        error: {
+          message: error.message,
+        },
+      };
     }
-    const result = this.tablesService.recordFind(
-      baseId,
-      tableId,
-      loadOptions,
-      processOptions,
-    );
-    return result;
   }
 }
