@@ -17,7 +17,9 @@
     "clean": "nx run-many -t clean",
     "format": "nx run-many -t format",
     "lint": "nx run-many -t lint",
+    "prerelease": "nx run-many -t build --parallel=1",
     "release": "lerna publish --force-publish",
+    "postrelease": "lerna exec --no-private  -- cnpm sync \\$LERNA_PACKAGE_NAME",
     "cnpm:sync": "lerna exec --no-private  -- cnpm sync \\$LERNA_PACKAGE_NAME"
   },
   "license": "MIT",
