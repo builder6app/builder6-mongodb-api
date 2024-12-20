@@ -95,7 +95,7 @@ export class OidcController {
         access_token,
       });
       
-      res.redirect('/');
+      return res.redirect('/');
     } else {
       return res.status(401).send(tokenSet.claims());
     }
