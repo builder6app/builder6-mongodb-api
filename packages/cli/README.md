@@ -20,7 +20,7 @@ $ npm install -g @builder6/cli
 $ b6 COMMAND
 running command...
 $ b6 (--version)
-@builder6/cli/0.8.0 darwin-arm64 node-v18.20.2
+@builder6/cli/0.8.1 darwin-arm64 node-v18.20.2
 $ b6 --help [COMMAND]
 USAGE
   $ b6 COMMAND
@@ -66,7 +66,7 @@ EXAMPLES
   hello friend from oclif! (./src/commands/hello/index.ts)
 ```
 
-_See code: [src/commands/hello/index.ts](https://github.com/builder6app/cli/blob/v0.8.0/src/commands/hello/index.ts)_
+_See code: [src/commands/hello/index.ts](https://github.com/builder6app/cli/blob/v0.8.1/src/commands/hello/index.ts)_
 
 ## `b6 hello world`
 
@@ -84,7 +84,7 @@ EXAMPLES
   hello world! (./src/commands/hello/world.ts)
 ```
 
-_See code: [src/commands/hello/world.ts](https://github.com/builder6app/cli/blob/v0.8.0/src/commands/hello/world.ts)_
+_See code: [src/commands/hello/world.ts](https://github.com/builder6app/cli/blob/v0.8.1/src/commands/hello/world.ts)_
 
 ## `b6 help [COMMAND]`
 
@@ -411,5 +411,5 @@ EXAMPLES
   $ b6 start --port 5100
 ```
 
-_See code: [src/commands/start/index.ts](https://github.com/builder6app/cli/blob/v0.8.0/src/commands/start/index.ts)_
+_See code: [src/commands/start/index.ts](https://github.com/builder6app/cli/blob/v0.8.1/src/commands/start/index.ts)_
 <!-- commandsstop -->

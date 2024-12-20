@@ -1,6 +1,6 @@
 {
   "name": "@builder6/tables",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "main": "dist/plugin.module.js",
   "license": "MIT",
   "files": [
@@ -12,7 +12,7 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.8.0",
+    "@builder6/core": "^0.8.1",
     "dataloader": "^2.2.3"
   },
   "publishConfig": {
