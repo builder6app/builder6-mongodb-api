@@ -1,6 +1,6 @@
 {
   "name": "@builder6/server",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "",
   "author": "",
   "license": "AGPL-3.0-only",
@@ -29,13 +29,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@builder6/core": "^0.7.7",
-    "@builder6/email": "^0.7.7",
-    "@builder6/moleculer": "^0.7.7",
-    "@builder6/pages": "^0.7.7",
-    "@builder6/query-mongodb": "^0.7.7",
-    "@builder6/rooms": "^0.7.7",
-    "@builder6/tables": "^0.7.7",
+    "@builder6/core": "^0.7.8",
+    "@builder6/email": "^0.7.8",
+    "@builder6/moleculer": "^0.7.8",
+    "@builder6/pages": "^0.7.8",
+    "@builder6/query-mongodb": "^0.7.8",
+    "@builder6/rooms": "^0.7.8",
+    "@builder6/tables": "^0.7.8",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^9.0.0",
