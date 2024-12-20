@@ -25,9 +25,9 @@ export class AuthService {
     }
     const user = (await this.mongodbService.findOne('users', {
       $or: [
-        { username: username },
-        { 'emails.address': username },
-        { mobile: username },
+        { username: { $regex: new RegExp(username, 'i') } },
+        { 'emails.address': { $regex: new RegExp(username, 'i') } },
+        { mobile: { $regex: new RegExp(username, 'i') } },
       ],
     })) as any;
     if (!user) {

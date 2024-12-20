@@ -38,12 +38,16 @@ export class AuthController {
   async login(
     @Req() req: Request,
     @Res() res: Response,
-    @Body() signInDto: Record<string, any>,
+    @Body('username') username: string,
+    @Body('password') password: string,
   ) {
     try {
+      if (!username || !password) {
+        return res.status(401).json({ message: 'username and password is required' });
+      }
       const result = await this.authService.signIn(
-        signInDto.username,
-        signInDto.password,
+        username,
+        password,
       );
       const { user, space, auth_token, access_token } = result;
 
