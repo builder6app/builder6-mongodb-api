@@ -45,7 +45,20 @@ function parseEnvToJSON(env, prefixes) {
     keys.forEach((k, index) => {
       if (index === keys.length - 1) {
         // 最后一层，赋值
-        current[k] = isNaN(env[key]) ? env[key] : Number(env[key]);
+        const value = env[key];
+
+        // 检查是否为布尔值
+        if (value.toLowerCase() === 'true') {
+          current[k] = true;
+        } else if (value.toLowerCase() === 'false') {
+          current[k] = false;
+        } else if (!isNaN(value)) {
+          // 如果是数字
+          current[k] = Number(value);
+        } else {
+          // 默认保留为字符串
+          current[k] = value;
+        }
       } else {
         // 如果层级不存在，初始化为对象
         current[k] = current[k] || {};
