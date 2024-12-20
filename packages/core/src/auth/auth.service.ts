@@ -1,13 +1,14 @@
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { v4 as uuid } from 'uuid';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { MongodbService } from '../mongodb';
 import { JwtService } from '@nestjs/jwt';
 import { CookieOptions, Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private masterSpaceId: string;
 
   constructor(
@@ -31,6 +32,7 @@ export class AuthService {
       ],
     })) as any;
     if (!user) {
+      this.logger.log(`Login failed ${username}, user not found`);
       throw new UnauthorizedException();
     }
 
@@ -44,6 +46,7 @@ export class AuthService {
         user.services.password.bcrypt,
       );
       if (!match) {
+        this.logger.log(`Login failed ${username}, Password does not match`);
         throw new UnauthorizedException();
       }
     }
@@ -51,6 +54,7 @@ export class AuthService {
 
     const space_user = await this.getSpaceUser(user._id, spaceId);
     if (!space_user) {
+      this.logger.log(`Login failed ${username}, space_user not found`);
       throw new UnauthorizedException();
     }
 
