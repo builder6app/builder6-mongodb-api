@@ -1,3 +1,7 @@
 export default {
-  plugin: {}
+  plugin: {},
+  unpkg: {
+    url: "https://unpkg.com",
+  }
+
 }

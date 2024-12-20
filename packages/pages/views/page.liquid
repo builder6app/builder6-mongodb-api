@@ -1,3 +1,41 @@
 Welcome to app {{ appId }} / {{ pageId }}
 
-{{  config | json }}
+<!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <script src="https://cdn.tailwindcss.com" defer></script>
+  
+      <script src="{{config.unpkg.url}}/@builder6/sdk@2.2.5/dist/index.umd.js"></script>
+      
+      <script src="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/sdk.js"></script>
+      <!-- Babel 编译器 -->
+      <script src="{{config.unpkg.url}}/@babel/standalone/babel.min.js"></script>
+      <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/themes/antd.css" />
+      <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/helper.css" />
+      <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/iconfont.css" />
+      <script async>
+        window['React'] = amisRequire('react');
+        window['ReactDOM'] = amisRequire('react-dom');
+        window['moment'] = amisRequire('moment');
+        window['Amis'] = amisRequire('amis');
+        window['AmisEmbed'] = amisRequire('amis/embed');
+      </script>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Builder6 Fiddle</title>
+    </head>
+    <body>
+      <div id="root" class="w-full h-full"></div>
+      <!-- 编写 React 代码 -->
+      <script type="text/babel">
+        const App = () => {
+          return <h1>Hello, React in Browser!</h1>;
+        };
+    
+        // 挂载到 DOM 上
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+      </script>
+    </body>
+  </html>
+  
