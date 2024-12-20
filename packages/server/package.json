@@ -10,9 +10,6 @@
     "views"
   ],
   "main": "dist/index.js",
-  "bin": {
-    "b6server": "dist/b6.server.js"
-  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

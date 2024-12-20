@@ -12,16 +12,14 @@ export default class Start extends Command {
   ]
 
   static flags = {
-    port: Flags.integer({description: 'port to listen on', default: 5100}),
-    userDir: Flags.string({char:'u', description:'use specified user directory'}),
-    config: Flags.string({char:'c', default: 'b6.config.js', description:'use specified config file'}),
   }
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Start)
 
-
+    const {bootstrap} = require('@builder6/server');
     this.log(`Launching builder6 to port ${flags.port}...`)
+    bootstrap();
 
   }
 }

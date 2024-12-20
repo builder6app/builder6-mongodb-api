@@ -11,7 +11,7 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import * as session from 'express-session';
 import * as project from '../package.json';
 
-export default async function ExpressApplication() {
+export async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useWebSocketAdapter(new WsAdapter(app));
   app.enableCors({
@@ -50,5 +50,5 @@ export default async function ExpressApplication() {
   );
   app.use(compression());
 
-  return app;
+  await app.listen(process.env.B6_PORT ?? 5100);
 }
