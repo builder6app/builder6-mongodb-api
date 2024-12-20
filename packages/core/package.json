@@ -1,13 +1,13 @@
 {
   "name": "@builder6/core",
-  "version": "0.7.10",
+  "version": "0.7.11",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@builder6/query-mongodb": "^0.7.10"
+    "@builder6/query-mongodb": "^0.7.11"
   },
   "scripts": {
     "build": "rm -rf dist && tsc",
