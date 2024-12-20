@@ -15,17 +15,18 @@ export class EmailService {
       this.emailConfig = {
         host: this.configService.get('email.host'), // 邮件服务提供商的SMTP服务器地址
         port: this.configService.get('email.port'), // SMTP端口
-        secure: this.configService.get('email.secure') || true, // 是否使用TLS
+        secure: this.configService.get('email.secure'), // 是否使用TLS
         auth: {
           user: this.configService.get('email.username'), // 邮箱账号
           pass: this.configService.get('email.password'), // 邮箱密码或SMTP授权码
         },
-        logger: this.configService.get('email.logger') || true, // 启用日志
-        debug: this.configService.get('email.debug') || false, // 是否debug
+        logger: this.configService.get('email.logger'), // 启用日志
+        debug: this.configService.get('email.debug'), // 是否debug
         tls: {
           rejectUnauthorized: false
         }
       }
+      console.log('emailConfig:', this.emailConfig);
       this.transporter = nodemailer.createTransport(this.emailConfig);
     }
   }
