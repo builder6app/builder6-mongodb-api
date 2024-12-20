@@ -22,7 +22,7 @@ export class PagesController {
     @Query() query: Record<string, any>,
     @Res() res: Response
   ) {
-    const template= 'page';
+    const template= pageId;
     const config = getConfigs();
     try {
       const rendered = await this.pagesService.render(template, {

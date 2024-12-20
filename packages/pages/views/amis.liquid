@@ -1,0 +1,55 @@
+{% layout 'layout.liquid' %}
+
+{% block content %}
+      <head>
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <script src="{{config.unpkg.url}}/@builder6/sdk@2.2.5/dist/index.umd.js"></script>
+        
+        <script src="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/sdk.js"></script>
+        <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/themes/antd.css" />
+        <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/helper.css" />
+        <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/iconfont.css" />
+        <script async>
+          window['React'] = amisRequire('react');
+          window['ReactDOM'] = amisRequire('react-dom');
+          window['moment'] = amisRequire('moment');
+        </script>
+      </head>
+
+      <div id="root" class="w-full h-full"></div>
+
+      <script type="text/javascript">
+        (function () {
+          let amis = amisRequire('amis/embed');
+          // 通过替换下面这个配置来生成不同页面
+          let amisJSON = {
+            type: 'page',
+            title: '表单页面',
+            body: {
+              type: 'form',
+              mode: 'horizontal',
+              api: '/saveForm',
+              body: [
+                {
+                  label: 'Name',
+                  type: 'input-text',
+                  name: 'name'
+                },
+                {
+                  label: 'Email',
+                  type: 'input-email',
+                  name: 'email'
+                }
+              ]
+            }
+          };
+          const props = {};
+          const env = {
+            theme: 'antd'
+          };
+          let amisScoped = amis.embed('#root', amisJSON, props, env);
+        })();
+      </script>
+      Hello
+{% endblock %}
