@@ -26,6 +26,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@builder6/cli": "^0.8.0",
     "@builder6/core": "^0.8.0",
     "@builder6/email": "^0.8.0",
     "@builder6/moleculer": "^0.8.0",
