@@ -12,14 +12,16 @@ import { Response, Request } from 'express';
 import { Issuer, Client } from 'openid-client';
 
 import { OidcService } from './oidc.service';
+import { AuthService } from '@builder6/core';
 
 @Controller('api/v6/oidc')
 export class OidcController {
-  constructor(private readonly oidcService: OidcService) {}
+  constructor(private readonly oidcService: OidcService, private readonly authService: AuthService) {}
 
   @Get(':providerId/login')
   async login(@Param('providerId') providerId: string, @Req() req, @Res() res) {
     const provider = await this.oidcService.getProviderFromDB(providerId);
+    console.log(provider)
     const issuer = await Issuer.discover(provider.issuer);
 
     const client = new issuer.Client({
@@ -45,7 +47,7 @@ export class OidcController {
     return res.redirect(redirectTo);
   }
 
-  @Get(':providerId/callback')
+  @Get(':providerId/login/callback')
   async callback(
     @Param('providerId') providerId: string,
     @Req() req,
@@ -73,17 +75,30 @@ export class OidcController {
       nonce: storedNonce,
     });
     // console.log('received and validated tokens %j', tokenSet);
-    // console.log('validated ID Token claims %j', tokenSet.claims());
+    console.log('validated ID Token claims %j', tokenSet.claims());
 
     delete req.session[`oidc_${providerId}_state`];
     delete req.session[`oidc_${providerId}_code_verifier`];
     delete req.session[`oidc_${providerId}_nonce`];
 
-    const userInfo = await client.userinfo(tokenSet);
-    console.log('userinfo %j', userInfo);
+    const email = tokenSet.claims().email;
 
-    // 此处可进行登录态建立和用户信息入库等处理
-    // 简单返回用户信息作为示例
-    return res.json({ tokenSet, userInfo });
+    if (email) {
+      const userSession = await this.authService.signIn(email);
+
+      const { user, space, auth_token, access_token } = userSession;
+
+      this.authService.setAuthCookies(res, {
+        user_id: user,
+        space_id: space,
+        auth_token,
+        access_token,
+      });
+      
+      return res.redirect('/');
+    } else {
+      return res.status(401).send(tokenSet.claims());
+    }
+
   }
 }

@@ -2,13 +2,14 @@ import {
   Body,
   Controller,
   Post,
+  Query,
   Req,
   Res,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiQuery } from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
 
 @Controller('api/v6/auth')
@@ -17,6 +18,11 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
+  @ApiQuery({
+    name: 'redirect_to',
+    required: false,
+    description: '登录成功后跳转的地址',
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -38,30 +44,30 @@ export class AuthController {
   async login(
     @Req() req: Request,
     @Res() res: Response,
-    @Body() signInDto: Record<string, any>,
+    @Query('redirect_to') redirect_to: string,
+    @Body('username') username: string,
+    @Body('password') password: string,
   ) {
     try {
-      const result = await this.authService.signIn(
-        signInDto.username,
-        signInDto.password,
-      );
-      const { user, space, authToken } = result;
-
-      const cookieOptions: CookieOptions = {
-        httpOnly: true,
-        sameSite: 'strict',
-        maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
-      };
-
-      if (process.env.STEEDOS_AUTH_COOKIES_USE_SAMESITE == 'None') {
-        cookieOptions.sameSite = 'none';
-        cookieOptions.secure = true;
+      if (!username || !password) {
+        return res.status(401).json({ message: 'username and password is required' });
       }
-      res.cookie('X-Auth-Token', authToken, cookieOptions);
-      res.cookie('X-User-Id', user, cookieOptions);
-      res.cookie('X-Space-Id', space, cookieOptions);
+      const result = await this.authService.signIn(
+        username,
+        password,
+      );
+      const { user, space, auth_token, access_token } = result;
 
-      return res.status(200).json(result);
+      this.authService.setAuthCookies(res, {
+        user_id: user,
+        space_id: space,
+        auth_token,
+        access_token,
+      });
+      if (redirect_to)
+        return res.redirect(redirect_to);
+      else
+        return res.status(200).json(result);
     } catch (error) {
       console.error('Error during signIn:', error);
       return res.status(401).json({ message: 'Authentication failed' });

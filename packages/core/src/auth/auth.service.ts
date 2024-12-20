@@ -1,13 +1,14 @@
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { v4 as uuid } from 'uuid';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { MongodbService } from '../mongodb';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private masterSpaceId: string;
 
   constructor(
@@ -17,37 +18,43 @@ export class AuthService {
 
   async signIn(
     username: string,
-    password: string,
+    password?: string,
     spaceId?: string,
   ): Promise<any> {
     if (!spaceId) {
       spaceId = await this.getMasterSpaceId();
     }
-
-    const hash = crypto.createHash('sha256');
-    hash.update(password);
-    const bcryptPassword = hash.digest('hex');
     const user = (await this.mongodbService.findOne('users', {
       $or: [
-        { username: username },
-        { 'emails.address': username },
-        { mobile: username },
+        { username: { $regex: new RegExp(username, 'i') } },
+        { 'emails.address': { $regex: new RegExp(username, 'i') } },
+        { mobile: { $regex: new RegExp(username, 'i') } },
       ],
     })) as any;
     if (!user) {
+      this.logger.log(`Login failed ${username}, user not found`);
       throw new UnauthorizedException();
     }
 
-    const match = await bcrypt.compare(
-      bcryptPassword,
-      user.services.password.bcrypt,
-    );
-    if (!match) {
-      throw new UnauthorizedException();
+    if (password) {
+      const hash = crypto.createHash('sha256');
+      hash.update(password);
+      const bcryptPassword = hash.digest('hex');
+
+      const match = await bcrypt.compare(
+        bcryptPassword,
+        user.services.password.bcrypt,
+      );
+      if (!match) {
+        this.logger.log(`Login failed ${username}, Password does not match`);
+        throw new UnauthorizedException();
+      }
     }
+
 
     const space_user = await this.getSpaceUser(user._id, spaceId);
     if (!space_user) {
+      this.logger.log(`Login failed ${username}, space_user not found`);
       throw new UnauthorizedException();
     }
 
@@ -78,11 +85,31 @@ export class AuthService {
       data,
     );
 
+    this.logger.log(`Login success ${username}, auth_token ${authToken}`);
     return {
       access_token: access_token,
-      authToken: authToken,
+      auth_token: authToken,
       ...space_user,
     };
+  }
+
+  setAuthCookies(res: Response, { access_token, auth_token, user_id, space_id }) {
+
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+      sameSite: 'strict',
+      maxAge: 2 * 365 * 24 * 60 * 60 * 1000, // maximum expiry 2 years
+    };
+
+    if (process.env.STEEDOS_AUTH_COOKIES_USE_SAMESITE == 'None') {
+      cookieOptions.sameSite = 'none';
+      cookieOptions.secure = true;
+    }
+    res.cookie('X-Access-Token', access_token, cookieOptions);
+    res.cookie('X-Auth-Token', auth_token, cookieOptions);
+    res.cookie('X-User-Id', user_id, cookieOptions);
+    res.cookie('X-Space-Id', space_id, cookieOptions);
+
   }
 
   async getMasterSpaceId(): Promise<string> {

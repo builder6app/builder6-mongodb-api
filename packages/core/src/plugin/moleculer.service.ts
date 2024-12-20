@@ -19,7 +19,6 @@ export class MoleculerPluginService {
       console.error('B6_TRANSPORTER env is required.');
       return;
     }
-    this.loadServices();
   }
 
   loadServices() {
@@ -83,12 +82,27 @@ export class MoleculerPluginService {
     }
   }
 
+  getPluginDir() { 
+
+    const pluginsPath = path.resolve(process.cwd(), 'plugins');
+            
+    // 检查文件夹是否存在，如果不存在则创建
+    if (!fs.existsSync(pluginsPath)) {
+      fs.mkdirSync(pluginsPath, { recursive: true });
+      console.log(`Plugins folder created at: ${pluginsPath}`);
+    }
+
+    return pluginsPath
+
+  }
+
+
   private getPackagePath(packageName: string): string {
     try {
       return path.dirname(
         require.resolve(`${packageName}/package.json`, {
           paths: [
-            path.join(process.env.B6_PLUGIN_DIR, 'node_modules'),
+            path.join(this.getPluginDir(), 'node_modules'),
             ...module.paths,
           ],
         }),

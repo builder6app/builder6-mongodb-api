@@ -10,6 +10,6 @@ import {
 export class AppController {
   @Get('')
   async getRoot() {
-    return `Welcome to the API: <a href="/api/v6">/api/v6</a>`;
+    return `Welcome to Builder6 API: <a href="/api/v6">/api/v6</a>`;
   }
 }

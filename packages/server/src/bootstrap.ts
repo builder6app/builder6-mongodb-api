@@ -9,8 +9,9 @@ import { urlencoded, json } from 'express';
 import { WsAdapter } from '@nestjs/platform-ws';
 
 import * as session from 'express-session';
+import * as project from '../package.json';
 
-export default async function ExpressApplication() {
+export async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useWebSocketAdapter(new WsAdapter(app));
   app.enableCors({
@@ -31,7 +32,7 @@ export default async function ExpressApplication() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Builder6 API')
     .setDescription('The Builder6 API description')
-    .setVersion('2.0')
+    .setVersion(project.version)
     .addBearerAuth()
     .build();
 
@@ -40,7 +41,6 @@ export default async function ExpressApplication() {
   SwaggerModule.setup('api/v6', app, documentFactory);
 
   app.useStaticAssets(join(__dirname, '..', 'public'));
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('hbs');
 
   app.use(cookieParser());
@@ -50,5 +50,5 @@ export default async function ExpressApplication() {
   );
   app.use(compression());
 
-  return app;
+  await app.listen(process.env.B6_PORT ?? 5100);
 }

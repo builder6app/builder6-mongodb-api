@@ -1,0 +1,22 @@
+{% layout 'layout/theme.liquid' %}
+
+{% block content %}
+
+    <!-- 引入 React 和 ReactDOM -->
+    <script src="{{config.unpkg.url}}/react@18/umd/react.development.js" crossorigin></script>
+    <script src="{{config.unpkg.url}}/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel 编译器 -->
+    <script src="{{config.unpkg.url}}/@babel/standalone/babel.min.js"></script>
+
+
+    <div id="root" class="w-full h-full"></div>
+    <script type="text/babel">
+      const App = () => {
+        return <h1>Hello, React in Browser!</h1>;
+      };
+  
+      // 挂载到 DOM 上
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script> 
+{% endblock %}

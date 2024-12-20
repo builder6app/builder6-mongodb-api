@@ -1,0 +1,35 @@
+{
+  "name": "@builder6/rooms",
+  "version": "0.8.3",
+  "description": "",
+  "author": "",
+  "license": "MIT",
+  "main": "dist/plugin.module.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "build:watch": "rm -rf dist && tsc --watch"
+  },
+  "dependencies": {
+    "@builder6/core": "^0.8.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

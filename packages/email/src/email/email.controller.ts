@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Patch, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
 import { AdminGuard } from '@builder6/core';
 import { EmailService } from './email.service';
@@ -51,6 +51,34 @@ export class EmailController {
     try {
       await this.emailService.sendMail(to, subject, text, html);
       return { message: '邮件发送成功' };
+    } catch (error) {
+      console.error('Query error', error);
+      return {
+        error: {
+          code: 500,
+          message: error.message,
+        },
+      };
+    }
+  }
+
+
+  @Patch('config')
+  @ApiOperation({
+    summary: '设置邮件参数',
+  })
+  @ApiBody({
+    description: '发送邮件所需的参数',
+    schema: {
+      type: 'object',
+    },
+  })
+  async updateConfig(
+    @Body() config: object,
+  ) {
+    try {
+      await this.emailService.updateConfig(config);
+      return { message: 'ok' };
     } catch (error) {
       console.error('Query error', error);
       return {

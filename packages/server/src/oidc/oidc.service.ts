@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { generators } from 'openid-client';
 
 @Injectable()
 export class OidcService {
+  constructor(private configService: ConfigService) {
+  }
   async getProviderFromDB(providerId: string) {
     const code_challenge_method = 'S256';
     const code_verifier = generators.codeVerifier();
@@ -12,12 +15,12 @@ export class OidcService {
 
     // 从数据库获取 OIDC Provider 配置
     return {
-      issuer: process.env.B6_OIDC_ISSUER,
-      configUrl: process.env.B6_OIDC_CONFIG_URL,
-      client_id: process.env.B6_OIDC_CLIENT_ID,
-      client_secret: process.env.B6_OIDC_CLIENT_SECRET,
-      redirect_uri: `${process.env.ROOT_URL}/api/v6/oidc/${providerId}/callback`,
-      scope: process.env.B6_OIDC_CLIENT_SCOPE || 'openid email profile',
+      issuer: this.configService.get('oidc.issuer'),
+      config_url: this.configService.get('oidc.config.url'),
+      client_id: this.configService.get('oidc.client.id'),
+      client_secret: this.configService.get('oidc.client.secret'),
+      redirect_uri: `${process.env.ROOT_URL}/api/v6/oidc/${providerId}/login/callback`,
+      scope: this.configService.get('oidc.scope') || 'openid email profile',
       state,
       nonce,
       code_challenge_method,

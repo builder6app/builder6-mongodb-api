@@ -1,0 +1,23 @@
+{
+  "name": "@builder6/pages",
+  "version": "0.8.3",
+  "main": "dist/plugin.module.js",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "views"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "build:watch": "rm -rf dist && tsc --watch"
+  },
+  "dependencies": {
+    "@builder6/core": "^0.8.3",
+    "dataloader": "^2.2.3",
+    "liquidjs": "^10.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "32136c21b3b6878d1035075b469622964b35caa7"
+}

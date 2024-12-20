@@ -1,17 +1,18 @@
 {
   "name": "@builder6/tables",
-  "version": "0.6.5",
-  "main": "dist/index.js",
+  "version": "0.8.3",
+  "main": "dist/plugin.module.js",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "views"
   ],
   "scripts": {
     "build": "rm -rf dist && tsc",
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.6.5",
+    "@builder6/core": "^0.8.3",
     "dataloader": "^2.2.3"
   },
   "publishConfig": {
