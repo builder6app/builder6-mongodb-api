@@ -85,6 +85,7 @@ export class AuthService {
       data,
     );
 
+    this.logger.log(`Login success ${username}, auth_token ${authToken}`);
     return {
       access_token: access_token,
       auth_token: authToken,
