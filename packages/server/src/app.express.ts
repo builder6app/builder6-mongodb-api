@@ -9,6 +9,7 @@ import { urlencoded, json } from 'express';
 import { WsAdapter } from '@nestjs/platform-ws';
 
 import * as session from 'express-session';
+import * as project from '../package.json';
 
 export default async function ExpressApplication() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -31,7 +32,7 @@ export default async function ExpressApplication() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Builder6 API')
     .setDescription('The Builder6 API description')
-    .setVersion('2.0')
+    .setVersion(project.version)
     .addBearerAuth()
     .build();
 
