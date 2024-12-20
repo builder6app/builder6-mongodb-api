@@ -2,13 +2,14 @@ import {
   Body,
   Controller,
   Post,
+  Query,
   Req,
   Res,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiQuery } from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
 
 @Controller('api/v6/auth')
@@ -17,6 +18,11 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
+  @ApiQuery({
+    name: 'redirect_to',
+    required: false,
+    description: '登录成功后跳转的地址',
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -38,6 +44,7 @@ export class AuthController {
   async login(
     @Req() req: Request,
     @Res() res: Response,
+    @Query('redirect_to') redirect_to: string,
     @Body('username') username: string,
     @Body('password') password: string,
   ) {
@@ -57,7 +64,10 @@ export class AuthController {
         auth_token,
         access_token,
       });
-      return res.status(200).json(result);
+      if (redirect_to)
+        return res.redirect(redirect_to);
+      else
+        return res.status(200).json(result);
     } catch (error) {
       console.error('Error during signIn:', error);
       return res.status(401).json({ message: 'Authentication failed' });
