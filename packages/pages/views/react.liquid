@@ -1,4 +1,4 @@
-{% layout 'layout.liquid' %}
+{% layout 'layout/theme.liquid' %}
 
 {% block content %}
 
@@ -7,6 +7,9 @@
     <script src="{{config.unpkg.url}}/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <!-- Babel 编译器 -->
     <script src="{{config.unpkg.url}}/@babel/standalone/babel.min.js"></script>
+
+
+    <div id="root" class="w-full h-full"></div>
     <script type="text/babel">
       const App = () => {
         return <h1>Hello, React in Browser!</h1>;
