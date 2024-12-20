@@ -93,7 +93,7 @@ export class AuthService {
     };
   }
 
-  async setAuthCookies(res: Response, { access_token, auth_token, user_id, space_id }) {
+  setAuthCookies(res: Response, { access_token, auth_token, user_id, space_id }) {
 
     const cookieOptions: CookieOptions = {
       httpOnly: true,
