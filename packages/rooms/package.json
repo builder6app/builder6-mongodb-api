@@ -1,6 +1,6 @@
 {
   "name": "@builder6/rooms",
-  "version": "0.7.11",
+  "version": "0.7.12",
   "description": "",
   "author": "",
   "license": "MIT",
@@ -10,7 +10,7 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.7.11"
+    "@builder6/core": "^0.7.12"
   },
   "jest": {
     "moduleFileExtensions": [
