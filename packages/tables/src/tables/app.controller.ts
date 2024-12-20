@@ -26,42 +26,61 @@ import {
 import { AuthGuard } from '@builder6/core';
 import { MetaService } from './meta.service';
 import * as path from 'path';
+import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
+import { LiquidService } from './liquid.service';
 
 // 兼容 Steedos OpenAPI v1 格式的 api
 @Controller('b6/tables/')
 @UseGuards(AuthGuard)
 export class TablesAppController {
 
+  constructor(private readonly liquidService: LiquidService) {}
+
   @Get('')
   async Hello() {
     return 'Welcome to Builder6 Tables!';
   }
 
-  @Get('devextreme/datagrid/:baseId/:tableId')
+  @Get('grid/:baseId/:tableId')
   async getDemo(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
     @Res() res: Response
   ) {
-    const absolutePath = path.resolve(__dirname, '../../views/devextreme/datagrid.hbs');
+    const config = getConfigs();
+    try {
+      const rendered = await this.liquidService.render('grid', {
+        baseId,
+        tableId,
+        config,
+      });
 
-    res.render(absolutePath, {
-      baseId,
-      tableId,
-    });
+      res.status(200).send(rendered); // 返回渲染后的字符串
+    } catch (error) {
+      console.log(error)
+      return { error: 'Template rendering failed', details: error.message };
+    }
   }
 
-  @Get('ag-grid/ag-grid/:baseId/:tableId')
+  @Get('ag-grid/:baseId/:tableId')
   async AgGrid(
     @Param('baseId') baseId: string,
     @Param('tableId') tableId: string,
     @Res() res: Response
   ) {
-    const absolutePath = path.resolve(__dirname, '../../views/ag-grid/ag-grid.hbs');
+    
+    const config = getConfigs();
+    try {
+      const rendered = await this.liquidService.render('ag-grid', {
+        baseId,
+        tableId,
+        config,
+      });
 
-    res.render(absolutePath, {
-      baseId,
-      tableId,
-    });
+      res.status(200).send(rendered); // 返回渲染后的字符串
+    } catch (error) {
+      console.log(error)
+      return { error: 'Template rendering failed', details: error.message };
+    }
   }
 }

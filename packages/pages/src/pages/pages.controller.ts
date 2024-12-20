@@ -3,12 +3,13 @@ import { Request, Response } from 'express';
 import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
 
 import { PagesService } from './pages.service';
+import { LiquidService } from './liquid.service';
 
 
 
 @Controller('/b6/pages')
 export class PagesController {
-  constructor(private readonly pagesService: PagesService) {}
+  constructor(private readonly liquidService: LiquidService) {}
 
   @Get('')
   async Hello() {
@@ -25,7 +26,7 @@ export class PagesController {
     const template= pageId;
     const config = getConfigs();
     try {
-      const rendered = await this.pagesService.render(template, {
+      const rendered = await this.liquidService.render(template, {
         ...query,
         appId,
         pageId,
