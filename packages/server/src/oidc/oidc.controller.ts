@@ -75,17 +75,16 @@ export class OidcController {
       nonce: storedNonce,
     });
     // console.log('received and validated tokens %j', tokenSet);
-    // console.log('validated ID Token claims %j', tokenSet.claims());
+    console.log('validated ID Token claims %j', tokenSet.claims());
 
     delete req.session[`oidc_${providerId}_state`];
     delete req.session[`oidc_${providerId}_code_verifier`];
     delete req.session[`oidc_${providerId}_nonce`];
 
-    const userInfo = await client.userinfo(tokenSet);
-    console.log('userinfo %j', userInfo);
+    const email = tokenSet.claims().email;
 
-    if (userInfo.email) {
-      const userSession = await this.authService.signIn(userInfo.email);
+    if (email) {
+      const userSession = await this.authService.signIn(email);
 
       const { user, space, auth_token, access_token } = userSession;
 
