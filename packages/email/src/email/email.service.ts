@@ -22,6 +22,9 @@ export class EmailService {
         },
         logger: this.configService.get('email.logger') || true, // 启用日志
         debug: this.configService.get('email.debug') || false, // 是否debug
+        tls: {
+          rejectUnauthorized: false
+        }
       }
       this.transporter = nodemailer.createTransport(this.emailConfig);
     }
