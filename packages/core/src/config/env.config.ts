@@ -7,10 +7,13 @@ dotenvFlow.config({
 });
 
 /* 兼容 Steedos 环境变量 */
-process.env.STEEDOS_ROOT_URL = process.env.ROOT_URL;
-process.env.STEEDOS_MONGO_URL = process.env.MONGO_URL;
+process.env.B6_ROOT_URL = process.env.B6_ROOT_URL || process.env.ROOT_URL;
+process.env.B6_MONGO_URL = process.env.B6_MONGO_URL || process.env.MONGO_URL;
+process.env.B6_TRANSPORTER = process.env.B6_TRANSPORTER || process.env.TRANSPORTER;
+process.env.B6_CACHER = process.env.B6_CACHER || process.env.CACHER;
 
 process.env.B6_HOME = process.cwd();
+process.env.B6_HOST = process.env.B6_HOST || process.env.B6_ROOT_URL;
 
 /**
  * 将以指定前缀开头的环境变量解析为 JSON 对象

@@ -19,7 +19,7 @@ export class OidcService {
       config_url: this.configService.get('oidc.config.url'),
       client_id: this.configService.get('oidc.client.id'),
       client_secret: this.configService.get('oidc.client.secret'),
-      redirect_uri: `${this.configService.get('root.url')}/api/v6/oidc/${providerId}/login/callback`,
+      redirect_uri: `${this.configService.get('host')}/api/v6/oidc/${providerId}/login/callback`,
       scope: this.configService.get('oidc.scope') || 'openid email profile',
       state,
       nonce,

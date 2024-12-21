@@ -13,6 +13,7 @@ yarn b6 start
 
 ```bash
 B6_PORT=5100
+B6_HOST=http://127.0.0.1:5100
 B6_MONGO_URL=mongodb://127.0.0.1:27017/steedos
 B6_TRANSPORTER=redis://127.0.0.1:6379
 ```

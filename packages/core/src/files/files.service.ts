@@ -22,7 +22,7 @@ export class FilesService {
     private configService: ConfigService,
     private mongodbService: MongodbService,
   ) {
-    this.rootUrl = configService.get('root.url');
+    this.rootUrl = configService.get('host');
     this.storageDir = configService.get('storage.dir') || './steedos-storage';
     // 初始化 S3 客户端
     this.cfsStore = configService.get('cfs.store') || 'local';
