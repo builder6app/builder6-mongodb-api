@@ -10,7 +10,7 @@ import { AuthGuard } from './auth.guard';
   imports: [
     MongodbModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'secret',
+      secret: process.env.B6_JWT_SECRET || 'secret',
       signOptions: { expiresIn: '60s' },
     }),
   ],

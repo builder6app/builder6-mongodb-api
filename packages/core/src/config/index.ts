@@ -15,10 +15,11 @@ export function getEnvConfigs() {
 }
 
 export function getMoleculerConfigs() {
+  const { moleculer } = envConfigs;
   return {
     ...moleculerConfigs,
     ...projectConfigs,
-    ...envConfigs,
+    ...moleculer,
   }
 }
 
