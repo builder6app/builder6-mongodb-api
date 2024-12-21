@@ -4,6 +4,88 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Builder6</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+            
+    <script src="{{config.unpkg.url}}/@builder6/react@3.2.17/dist/builder-react.browser.js"></script>
+    <script src="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/sdk.js"></script>
+
+    <script src="{{config.unpkg.url}}/lodash@4.17.21/lodash.js"></script>
+    <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/themes/antd.css" />
+    <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/helper.css" />
+    <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/iconfont.css" />
+    <script async>
+      window['React'] = amisRequire('react');
+      window['ReactDOM'] = amisRequire('react-dom');
+      window['moment'] = amisRequire('moment');
+      window['Builder'] = Builder6React.Builder;
+      window['builder'] = Builder6React.builder;
+    </script>
+
+    <script>
+      renderAmis = function (dom, schema, data, env) {
+
+        const assetUrls = env.assetUrls
+        const content = {
+          data: {
+            blocks: [
+              {
+                "@type": "@builder.io/sdk:Element",
+                "@version": 2,
+                layerName: "Page",
+                id: `builder-assets`,
+                component: {
+                  name: "Core:AssetsLoader",
+                  options: {
+                    urls: assetUrls,
+                  },
+                },
+                children: [
+                  {
+                    id: `builder-amis`,
+                    "@type": "@builder.io/sdk:Element",
+                    "@version": 2,
+                    component: {
+                      name: "Core:Amis",
+                      options: {
+                        schema: schema,
+                        data: data,
+                        env,
+                      },
+                    },
+                    responsiveStyles: {
+                      large: {
+                        display: "flex",
+                        flexDirection: "column",
+                        position: "relative",
+                        flexShrink: "0",
+                        boxSizing: "border-box",
+                        width: "100%",
+                      },
+                    },
+                  },
+                ],
+                responsiveStyles: {
+                  large: {
+                    display: "flex" ,
+                    flexDirection: "column",
+                    position: "relative",
+                    flexShrink: "0",
+                    boxSizing: "border-box",
+                    width: "100%",
+                  },
+                },
+              },
+            ],
+          },
+        };
+
+
+        // 挂载到 DOM 上
+        const root = ReactDOM.createRoot(dom);
+        root.render(React.createElement(Builder6React.BuilderComponent, {content}));
+      }
+    </script>
   </head>
   <body>
     <main>

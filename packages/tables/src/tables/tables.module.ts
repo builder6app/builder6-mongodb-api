@@ -6,10 +6,11 @@ import { MongodbModule } from '@builder6/core';
 import { AuthModule } from '@builder6/core';
 import { TablesMoleculer } from './tables.moleculer';
 import { TablesAppController } from './app.controller';
+import { LiquidService } from './liquid.service';
 
 @Module({
   imports: [AuthModule, MongodbModule],
   controllers: [TablesController, TablesAppController],
-  providers: [MetaService, TablesService, TablesMoleculer],
+  providers: [MetaService, TablesService, TablesMoleculer, LiquidService],
 })
 export class TablesModule {}

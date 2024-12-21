@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AG Grid Enterprise with Dynamic Loading and Editing</title>
+    <!-- 引入 AG Grid 的 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
+    <style>
+        /* 设置表格的高度和宽度 */
+        html {
+            overflow: hidden;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        #myGrid {
+            height: calc(100% - 100px);
+            width: 100%;
+        }
+
+        .custom-tooltip {
+            padding: 5px;
+        }
+
+        .custom-tooltip p {
+            margin: 5px;
+            white-space: nowrap;
+        }
+
+        .custom-tooltip p:first-of-type {
+            font-weight: bold;
+        }
+
+        .verification-errors-row {
+            background-color: #cc693344;
+        }
+
+        .verification-errors-row .ag-cell-edit-wrapper {
+            border: solid 3px #cc693344 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>AG Grid - Dynamic Loading and Editing</h1>
+    <div class="button-container">
+        <!-- 创建一个按钮来添加新行 -->
+        <button id="addRowBtn">Add New Row</button>
+        <button id="deleteButton">Delete Selected Rows</button>
+    </div>
+    <!-- 创建一个容器来放置 AG Grid -->
+    <div id="myGrid" class="ag-theme-alpine"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/lodash"></script>
+    <!-- 引入 AG Grid 的 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-enterprise/dist/ag-grid-enterprise.noStyle.js"></script>
+    <!-- 引入 Amis Formula -->
+    <script type="module">
+        import * as amisFormula from 'https://cdn.skypack.dev/amis-formula';
+        window.amisFormula = amisFormula;
+        window.evaluate = amisFormula.evaluate;
+
+        // const expression = '${1 + 2 * 3}';
+        // const result = evaluate(expression);
+        // console.log('Result:', result); // Output: 7
+    </script>
+    <script type="module">
+        import * as locale from '/ag-grid/locale_zh.js';
+        window.agGridLocale = locale;
+    </script>
+</body>
+<script>
+
+    const B6_TABLES_API = '/api/v6/tables';
+    const baseId = '{{ baseId }}';
+    const tableId = '{{ tableId }}';
+
+    // 启用 AG Grid 企业版
+    agGrid.LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
+
+    let gridApi; // 提前声明 gridApi 以便全局访问
+    let gridOptions; // 提前声明 gridOptions 以便全局访问
+    let table;
+    const mode = "edit";//edit/readonly/design
+    const isReadonly = mode === "readonly";
+
+    const padZero = num => num.toString().padStart(2, '0');
+    class DateTimeEditor {
+        init(params) {
+            this.eInput = document.createElement('input');
+            this.eInput.type = 'datetime-local';
+            // this.eInput.value = params.value ? this.formatDate(params.value) : '';
+            const localDate = new Date(params.value);
+            const value = `${localDate.getFullYear()}-${padZero(localDate.getMonth() + 1)}-${padZero(localDate.getDate())} ${padZero(localDate.getHours())}:${padZero(localDate.getMinutes())}`;
+            this.eInput.value = value;
+            this.eInput.style.width = '100%';
+        }
+
+        getGui() {
+            return this.eInput;
+        }
+
+        afterGuiAttached() {
+            this.eInput.focus();
+        }
+
+        getValue() {
+            const value = this.eInput.value;
+            return value ? new Date(value) : null;
+        }
+
+        formatDate(date) {
+            const d = new Date(date);
+            return d.toISOString();
+        }
+    }
+
+    class MultiSelectCellEditor {
+        init(params) {
+            this.eInput = document.createElement('select');
+            this.eInput.setAttribute('multiple', 'true');
+            this.eInput.style.width = '200px';
+            const options = params.colDef.cellEditorParams.values;
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.text = option;
+                optionElement.value = option;
+                this.eInput.appendChild(optionElement);
+            });
+
+            // 设置初始值
+            const selectedValues = Array.isArray(params.value) ? params.value : [];
+            for (let option of this.eInput.options) {
+                if (selectedValues.includes(option.value)) {
+                    option.selected = true;
+                }
+            }
+        }
+
+        getGui() {
+            return this.eInput;
+        }
+
+        afterGuiAttached() {
+            this.eInput.focus();
+        }
+
+        getValue() {
+            const selectedOptions = Array.from(this.eInput.selectedOptions);
+            return selectedOptions.map(option => option.value);
+        }
+
+        destroy() { }
+
+        isPopup() {
+            return true;
+        }
+    }
+
+    class CustomTooltip {
+        constructor() {
+            this.eGui = null;
+        }
+
+        init(params) {
+            this.eGui = document.createElement('div');
+            const color = params.color || '#cc693344';
+
+            this.eGui.classList.add('custom-tooltip');
+            this.eGui.style.backgroundColor = color;
+            this.eGui.innerHTML = `
+            <div><b>不符合校验规则</b></div>
+            <div>${params.value}</div>
+        `;
+        }
+
+        getGui() {
+            return this.eGui;
+        }
+    }
+
+    // 创建一个异步函数来初始化表格
+    function initializeGrid() {
+        return new Promise(function (resolve, reject) {
+            try {
+                // 获取列定义
+                fetch(B6_TABLES_API + '/meta/bases/' + baseId + '/tables/' + tableId, { credentials: 'include' })
+                    .then(function (response) {
+                        return response.json().then(function (data) {
+                            table = data;
+                            console.log(table);
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        initGridOptionsAndRender(data, resolve, reject);
+                    })
+                    .catch(function (error) {
+                        console.error('Error initializing grid:', error);
+                        reject(error);
+                    });
+            } catch (error) {
+                console.error('Error initializing grid:', error);
+                reject(error);
+            }
+        });
+    }
+
+    function getDataTypeDefinitions() {
+        return {
+            date: {
+                baseDataType: 'date',
+                extendsDataType: 'date',
+                valueParser__: function (params) {
+                    // ag-grid官网明确说valueParser是用来实现保存数据前数据转换的，但是实测这个函数并不一定会被触发
+                    // 另外valueSetter也能实现类似功能，但是一样实测不会被触发
+                    // 所以只能手动在调用保存接口前实现相关转换逻辑
+                    // 见：
+                    // https://www.ag-grid.com/javascript-data-grid/column-properties/#reference-editing-valueParser
+                    // https://www.ag-grid.com/javascript-data-grid/cell-data-types/#overriding-the-pre-defined-cell-data-type-definitions
+                    // 后面测试到规则是输入值为string类型时，即复制粘贴进来的字段值才会走valueParser
+                    // 因为要考虑到从excel大量copy数据过来时保持原错误字段值提醒用户手动改值, 所以不可以启用valueParser做值转换，只能手动在调用保存接口前实现相关转换逻辑
+                    console.log("valueParser:", params.newValue);
+                },
+                valueGetter: function (params) {
+                    var fieldType = params.colDef.cellEditorParams.fieldConfig.type;
+                    var fieldName = params.colDef.field;
+                    var fieldValue = params.data[fieldName];
+                    if (!fieldValue) return null;
+
+                    var date = new Date(fieldValue);
+                    return date;
+                },
+                valueFormatter: function (params) {
+                    var fieldType = params.colDef.cellEditorParams.fieldConfig.type;
+                    var date = new Date(params.value);
+
+                    if (!params.value) return "";
+
+                    if (fieldType === "date") {
+                        return date.getFullYear() + '-' + padZero(date.getMonth() + 1) + '-' + padZero(date.getDate());
+                    } else if (fieldType === "datetime") {
+                        // Convert to local time considering timezone
+                        var localDate = new Date(date.getTime());
+                        return localDate.getFullYear() + '-' + padZero(localDate.getMonth() + 1) + '-' + padZero(localDate.getDate()) + ' ' + padZero(localDate.getHours()) + ':' + padZero(localDate.getMinutes());
+                    }
+
+                    return "";
+                }
+            },
+            formula: {
+                baseDataType: 'text',
+                extendsDataType: 'text',
+                fields: {}
+            }
+        };
+    }
+
+    function tooltipValueGetter(params) {
+        if (params.data.__verificationErrors && params.data.__verificationErrors.length) {
+            return params.data.__verificationErrors[0];
+        }
+    }
+
+    function getColumnDef(field, dataTypeDefinitions) {
+        var cellDataType,
+            cellEditorParams,
+            cellEditor,
+            cellRendererParams,
+            cellRenderer,
+            valueFormatter,
+            valueGetter,
+            fieldOptions,
+            editable = true,
+            filter,
+            filterParams;
+
+        // 根据字段类型设置 dataType
+        cellEditorParams = {
+            fieldConfig: field
+        };
+        cellRendererParams = {};
+        filterParams = {
+            debounceMs: 200,
+            maxNumConditions: 1
+        };
+        switch (field.type) {
+            case 'text':
+            case 'textarea':
+                cellDataType = 'text';
+                filter = 'agTextColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["contains", "notContains", "equals", "startsWith", "endsWith"]
+                });
+                break;
+            case 'number':
+                cellDataType = 'number';
+                Object.assign(cellEditorParams, {
+                    precision: field.precision || 0
+                });
+                filter = 'agNumberColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                });
+                break;
+            case 'select':
+                cellDataType = 'text';
+                fieldOptions = field.options && field.options.split("\n").map(function (n) { return n.trim(); }) || [];
+                fieldOptions.unshift(null);
+                Object.assign(cellEditorParams, {
+                    values: fieldOptions
+                });
+                cellEditor = "agSelectCellEditor";
+                filter = 'agSetColumnFilter';
+                Object.assign(filterParams, {
+                    values: fieldOptions
+                });
+                break;
+            case 'select-multiple':
+                cellDataType = 'object';
+                fieldOptions = field.options && field.options.split("\n").map(function (n) { return n.trim(); }) || [];
+                Object.assign(cellEditorParams, {
+                    values: fieldOptions
+                });
+                cellEditor = MultiSelectCellEditor;
+                filter = 'agSetColumnFilter';
+                Object.assign(filterParams, {
+                    values: fieldOptions
+                });
+                break;
+            case 'date':
+                cellDataType = 'date';
+                cellEditor = "agDateCellEditor";
+                valueFormatter = dataTypeDefinitions.date.valueFormatter;
+                // 如果不定义valueGetter，双击单元格进入编辑状态时，值显示为空
+                valueGetter = dataTypeDefinitions.date.valueGetter;
+                filter = 'agDateColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                });
+                break;
+            case 'datetime':
+                cellDataType = 'date';
+                editable = false;
+                // cellEditor = DateTimeEditor;
+                // 因为日期时间依赖了DateTimeEditor.init函数中对初始值定义，所以这里没必要再走一次valueGetter
+                // valueGetter = dataTypeDefinitions.date.valueGetter;
+                /*
+                filter = 'agDateColumnFilter';
+                Object.assign(filterParams, {
+                    filterOptions: ["equals", "greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual"]
+                });*/
+                break;
+            case 'boolean':
+                cellDataType = 'boolean';
+                Object.assign(cellRendererParams, {
+                    disabled: true
+                });
+                cellRenderer = "agCheckboxCellRenderer";
+                filter = 'agSetColumnFilter';
+                Object.assign(filterParams, {
+                    values: [true, false],
+                    suppressSelectAll: true,
+                    comparator: function (a, b) {
+                        // 将 true 显示在 false 之前
+                        if (a === true && b === false) return -1;
+                        if (a === false && b === true) return 1;
+                        return 0;
+                    },
+                    valueFormatter: function (params) {
+                        return params.value ? '是' : '否';
+                    }
+                });
+                break;
+            case 'formula':
+                cellDataType = 'formula';
+                editable = false;
+                // 记录所有公式字段配置方便取出来用
+                dataTypeDefinitions.formula.fields[field.name.toLowerCase()] = field;
+                break;
+            default:
+                cellDataType = 'text'; // 默认类型
+        }
+
+        return {
+            field: field.name.toLowerCase(),
+            headerName: field.label,
+            cellDataType: cellDataType,
+            cellEditorParams: cellEditorParams,
+            cellEditor: cellEditor,
+            cellRendererParams: cellRendererParams,
+            cellRenderer: cellRenderer,
+            editable: isReadonly ? false : editable,
+            valueFormatter: valueFormatter,
+            valueGetter: valueGetter,
+            tooltipValueGetter: tooltipValueGetter,
+            filter: filter,
+            filterParams: filterParams
+        };
+
+    }
+
+    function initGridOptionsAndRender(data, resolve, reject) {
+        var dataTypeDefinitions = getDataTypeDefinitions();
+
+        var columnDefs = data.fields.map(function (field) {
+            return getColumnDef(field, dataTypeDefinitions);
+        });
+
+        var pageSize = 100000;
+        // 初始化网格配置
+        gridOptions = {
+            columnDefs: columnDefs,
+            dataTypeDefinitions: dataTypeDefinitions,
+            rowClassRules: {
+                'verification-errors-row': function (params) {
+                    if (!params.data) {
+                        return false;
+                    }
+                    const hasVerificationErrors = params.data.__verificationErrors && params.data.__verificationErrors.length;
+                    const isFormulaError = params.data.__isFormulaFieldRunError;
+                    return hasVerificationErrors || isFormulaError;
+                }
+            },
+            rowData: null, // 初始为空，通过 API 动态加载
+            rowModelType: 'serverSide',
+            pagination: false,
+            paginationPageSizeSelector: false,
+            paginationPageSize: pageSize,
+            cacheBlockSize: pageSize,
+            // editType: 'fullRow',
+            cellSelection: {
+                handle: {
+                    mode: 'range',
+                }
+            },
+            // onRowValueChanged: isReadonly ? null : onRowValueChanged,
+            onCellValueChanged: isReadonly ? null : onCellValueChanged,
+            //datasource: getDataSource(),
+            defaultColDef: {
+                flex: 1,
+                minWidth: 100,
+                resizable: true
+            },
+            getRowId: function (params) { return params.data._id; },
+            selectionColumnDef: {
+                pinned: 'left'
+            },
+            rowSelection: isReadonly ? null : {
+                mode: "multiRow",
+                selectAll: "all",
+                checkboxes: true,
+                headerCheckbox: true
+            },
+            serverSideDatasource: getServerSideDatasource(),
+            localeText: agGridLocale.AG_GRID_LOCALE_CN
+        };
+
+        console.log("gridOptions:", gridOptions);
+
+        // 渲染网格
+        var gridDiv = document.querySelector('#myGrid');
+        gridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+        // 设置新增行按钮的事件
+        document.getElementById('addRowBtn').addEventListener('click', addNewRow);
+
+        // Add event listener to the delete button
+        document.getElementById('deleteButton').addEventListener('click', deleteSelectedRows);
+
+        resolve();
+    }
+
+    // 校验数据表中配置的Verifications并返回错误信息
+    function getTableVerificationErrors(data, tableVerifications) {
+        let validated = true;
+        const verificationErrors = [];
+        // verification校验
+        const verifications = tableVerifications || [];
+        verifications.forEach(function (verification) {
+            validated = runAmisFormula(verification.rule, data, function (ex) {
+                console.warn("执行校验规则“" + verification.rule + "”公式出错了，请检查校验规则公式配置：", ex);
+                alert("执行校验规则“" + verification.rule + "”公式出错了，请检查校验规则公式配置：" + (ex && ex.toString()));
+            });
+            if (!validated) {
+                verificationErrors.push(verification.alert);
+            }
+        });
+        return verificationErrors;
+    }
+
+    // 校验number值小数位数，必须小于等于指定位数
+    function checkNumberPrecision(num, precision) {
+        const numStr = num.toString();
+        const parts = numStr.split('.');
+        if (precision > 0) {
+            if (parts.length === 1) {
+                return true;
+            }
+            return parts[1].length <= precision;
+        }
+        else {
+            return parts.length === 1;
+        }
+    }
+
+    //校验字符串日期值是否合法，如果合法返回Date类型，否则返回null
+    function parseDate(str) {
+        // 定义正则表达式，匹配不同的日期格式
+        // 格式：YYYY-MM-DD、YYYY/MM/DD 和 YYYY-MM-DDTHH:MM:SS.SSSZ 
+        // 最后一种TZ格式是服务端返回的格式值，复制其它列字段值时会把这种格式值提交到接口，必须兼容
+        var regex = new RegExp('^(\\d{4})([-\\/])(0?[1-9]|1[0-2])\\2(0?[1-9]|[12][0-9]|3[01])(T(\\d{2}):(\\d{2}):(\\d{2})(\\.\\d{3})?Z)?$');
+
+        // 检查是否匹配正则表达式
+        var match = str.match(regex);
+        if (!match) {
+            return null;
+        }
+
+        // 提取年份、月份、日期和时间
+        var year = match[1];
+        var month = match[3].padStart(2, '0'); // 补齐月份前导零
+        var day = match[4].padStart(2, '0');   // 补齐日期前导零
+
+        // 如果有时间部分，提取时间
+        var timePart = match[5] ? match[5] : '';
+        var standardizedDateStr = year + '-' + month + '-' + day + timePart;
+
+        // 使用 Date 对象验证日期是否合法
+        // 这里 standardizedDateStr 必须经过上面的补充前导零操作，否则new Date执行的结果会差8小时
+        var date = new Date(standardizedDateStr);
+        var timestamp = date.getTime();
+
+        // 检查是否是合法日期
+        if (typeof timestamp !== 'number' || isNaN(timestamp)) {
+            return null;
+        }
+
+        // 检查生成的日期和输入是否一致（避免 2024-02-30 这种情况）
+        if (date.getUTCFullYear() === parseInt(year, 10) &&
+            date.getUTCMonth() + 1 === parseInt(month, 10) &&
+            date.getUTCDate() === parseInt(day, 10)) {
+            return date;
+        }
+
+        return null;
+    }
+
+    // 判断一个js变量是否一个合法的Date变量
+    function isValidDate(date) {
+        if (_.isNil(date)) {
+            return true;
+        }
+        return Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date.getTime());
+    }
+
+    // 校验单选字段是否在选项范围
+    function checkSelectValueValid(value, options) {
+        return (options || []).indexOf(value) > -1;
+    }
+
+    const changeQueue = new Map();
+
+    function processChangeQueue() {
+        changeQueue.forEach((event, rowIndex) => {
+            onRowValueChanged(event);
+        });
+        changeQueue.clear();
+    }
+
+    const debouncedProcessChangeQueue = _.debounce(processChangeQueue, 200);
+
+    function onCellValueChanged(event) {
+        const rowIndex = event.node.rowIndex;
+
+        if (!changeQueue.has(rowIndex)) {
+            changeQueue.set(rowIndex, event);
+        } else {
+            const existingEvent = changeQueue.get(rowIndex);
+            // 更新现有的 event 对象中的数据
+            existingEvent.data = { ...existingEvent.data, ...event.data };
+        }
+
+        debouncedProcessChangeQueue();
+    }
+
+    // 监听行数据改变事件
+    async function onRowValueChanged(event) {
+        const data = event.data;
+        console.log('Saving updated data to server:', data);
+        try {
+            const allGridColumns = event.api.getAllGridColumns();
+            // 字段类型值转换以及字段校验
+            const fieldsVerificationErrors = [];
+            const colDefs = _.keyBy(_.map(allGridColumns, "colDef"), "field");
+            _.each(data, function (n, k) {
+                if (_.isNil(n)) {
+                    return;
+                }
+                const colDef = colDefs[k];
+                if (colDef) {
+                    const fieldConfig = colDef.cellEditorParams.fieldConfig;
+                    if (fieldConfig.type === "date") {
+                        let isDateString = false;
+                        if (typeof n === 'string') {
+                            // 粘贴行数据过来时是字符串
+                            n = parseDate(n);
+                            isDateString = true;
+                        }
+                        if (!isValidDate(n)) {
+                            fieldsVerificationErrors.push("字段“" + fieldConfig.label + "”必须是合法的日期格式！");
+                            return;
+                        }
+                        let utcDate = n;
+                        if (!isDateString) {
+                            // 设置为选中日期的 UTC 0 点
+                            // 只有从日期控件输入的值需要做转换，从粘贴行数据过来的字符串格式不用处理时区，因为要求粘贴过来的只兼容 YYYY-MM-DD YYYY/MM/DD 两种格式
+                            const timezoneOffset = n.getTimezoneOffset();
+                            utcDate = new Date(n.getTime() - timezoneOffset * 60 * 1000);
+                        }
+                        data[k] = utcDate;
+                    }
+                    else if (fieldConfig.type === "number") {
+                        if (typeof n === 'string') {
+                            n = Number(n);
+                        }
+                        if (typeof n !== 'number' || _.isNaN(n)) {
+                            fieldsVerificationErrors.push("字段“" + fieldConfig.label + "”必须是数字！");
+                        }
+                        else {
+                            let isPrecisionValid = checkNumberPrecision(n, fieldConfig.precision);
+                            if (!isPrecisionValid) {
+                                fieldsVerificationErrors.push("字段“" + fieldConfig.label + "”小数位数不能大于" + fieldConfig.precision || 0 + "！");
+                            }
+                        }
+                    }
+                    else if (fieldConfig.type === "select") {
+                        if (typeof n !== 'string') {
+                            fieldsVerificationErrors.push("字段“" + fieldConfig.label + "”是单选类型，只支持字符串！");
+                            return;
+                        }
+                        let isSelectValueValid = checkSelectValueValid(n, colDef.cellEditorParams.values || []);
+                        if (!isSelectValueValid) {
+                            fieldsVerificationErrors.push("字段“" + fieldConfig.label + "”是单选类型，请输入合法的选项值！");
+                        }
+                    }
+                }
+            });
+            // verifications校验
+            const rowNode = event.node;
+            const tableVerificationErrors = getTableVerificationErrors(data, table.verifications);
+            const verificationErrors = _.union(fieldsVerificationErrors, tableVerificationErrors);
+            let allValidated = verificationErrors.length === 0;
+            if (!allValidated) {
+                console.log("The table verifications is not passed for the row data:", table.verifications, data);
+                let editingCellsCount = event.api.getEditingCells().length;
+                if (editingCellsCount === 0) {
+                    // 多行校验不通过时只开启第一行编辑状态
+                    /*
+                    // 从行编辑改为单元格编辑后，不再需要自动开启编辑状态
+                    event.api.startEditingCell({
+                        rowIndex: event.rowIndex,
+                        colKey: allGridColumns[0].colId
+                    });*/
+                }
+                rowNode.setData(Object.assign({}, data, { __verificationErrors: verificationErrors }));
+                alert(verificationErrors.join(`\n`));
+                console.log(verificationErrors.join(`\n`));
+                return;
+            }
+            // 循环所有公式字段执行公式计算并设置值到data中
+            const isFormulaRunSuccess = setRowDataFormulaValues(data);
+            rowNode.setData(Object.assign({}, data, { __isFormulaFieldRunError: !isFormulaRunSuccess }));
+            if (!isFormulaRunSuccess) {
+                return;
+            }
+            // 保存更新的数据到服务端
+            delete data.__verificationErrors;
+            delete data.__isFormulaFieldRunError;
+            const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + data._id, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error('Server error! Status: ' + response.status);
+            }
+            const responseData = await response.json();
+            console.log('Data saved successfully:', responseData);
+            rowNode.setData(responseData);
+        } catch (error) {
+            console.error('Error saving data:', error);
+            alert('保存数据失败，请刷新浏览器以查看最新数据状态，并稍后重试。');
+        }
+    }
+
+    function getServerSideDatasource() {
+        return {
+            getRows: function (params) {
+                console.log('Server Side Datasource - Requesting rows from server:', params.request);
+                // 模拟Promise来处理异步流程，尽量贴近async/await效果
+                return new Promise(function (resolve, reject) {
+                    try {
+                        var colDefs = _.keyBy(_.map(params.api.getAllGridColumns(), function (col) { return col.colDef; }), "field");
+                        var modelFilters = filterModelToOdataFilters(params.request.filterModel, colDefs);
+                        console.log('Server Side Datasource - Requesting rows by modelFilters:', modelFilters);
+                        var url = B6_TABLES_API + '/' + baseId + '/' + tableId;
+                        // 翻页
+                        var startRow = params.request.startRow;
+                        var endRow = params.request.endRow;
+                        var pageSize = params.api.paginationGetPageSize();
+
+                        var separator = url.indexOf('?') !== -1 ? '&' : '?';
+                        url += separator + 'skip=' + startRow + '&top=' + pageSize;
+
+                        // 过滤
+                        if (modelFilters.length > 0) {
+                            separator = url.indexOf('?') !== -1 ? '&' : '?';
+                            url += separator + 'filters=' + JSON.stringify(modelFilters);
+                        }
+
+                        // 排序
+                        var sortModel = params.request.sortModel;
+                        var sort = [];
+                        _.forEach(sortModel, function (sortField) {
+                            sort.push(sortField.colId + ' ' + sortField.sort);
+                        });
+                        console.log('Server Side Datasource - Requesting rows by sortModel:', sortModel);
+                        if (sort.length > 0) {
+                            separator = url.indexOf('?') !== -1 ? '&' : '?';
+                            url += separator + 'sort=' + sort.join(",");
+                        }
+
+                        fetch(url).then(function (response) {
+                            if (!response.ok) {
+                                throw new Error('Server error! Status: ' + response.status);
+                            }
+                            return response.json();
+                        }).then(function (data) {
+                            console.log('Server Side Datasource - data:', data);
+                            params.success({
+                                rowData: data.data,
+                                rowCount: data.totalCount
+                            });
+                            resolve();
+                        }).catch(function (error) {
+                            console.error('Error fetching data from server:', error);
+                            alert('无法从服务器获取数据，请检查网络连接并重试。如果问题持续，请联系技术支持。');
+                            params.fail();
+                            reject(error);
+                        });
+                    } catch (error) {
+                        console.error('Error fetching data from server:', error);
+                        alert('发生了意外错误。请重试或联系技术支持。');
+                        params.fail();
+                        reject(error);
+                    }
+                });
+            }
+        };
+    }
+
+    function scrollToBottomAfterRefresh() {
+        const rowCount = gridApi.getDisplayedRowCount();
+        if (rowCount > 0) {
+            // Scroll to the last row
+            gridApi.ensureIndexVisible(rowCount - 1, 'bottom');
+        }
+
+        // Remove the event listener to prevent scrolling on subsequent updates
+        gridApi.removeEventListener('storeRefreshed', scrollToBottomAfterRefresh);
+    }
+
+    // 新增行的功能
+    async function addNewRow() {
+        if (!gridOptions) {
+            console.error('Grid options not available. Ensure grid is initialized properly.');
+            return;
+        }
+
+        // 有排序和过滤条件情况下不允许新建数据，因为新建后不知道是哪一行
+        const gridState = gridApi.getState();
+        const sortState = gridState.sort;
+        const filterState = gridState.filter;
+        if (!_.isEmpty(sortState)) {
+            alert("请先移除排序");
+            return;
+        }
+
+        if (!_.isEmpty(filterState)) {
+            alert("请先移除过滤条件");
+            return;
+        }
+
+        const newRow = createNewRowData();
+        if (!newRow) {
+            return;
+        }
+
+        // 将新增数据发送到服务器
+        try {
+            const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newRow)
+            });
+
+            if (!response.ok) {
+                throw new Error('Server error! Status: ' + response.status);
+            }
+            console.log('New row added successfully');
+            // 新增数据成功后刷新网格数据
+            gridApi.addEventListener('storeRefreshed', scrollToBottomAfterRefresh);
+            gridApi.refreshServerSide({ purge: false });//purge设置为true会造成上面scrollToBottomAfterRefresh不生效
+
+        } catch (error) {
+            console.error('Error adding new row:', error);
+            alert('新增行时发生错误，请稍后重试。');
+        }
+    }
+
+    function getAllRowData() {
+        const rowData = [];
+        const rowCount = gridApi.getDisplayedRowCount();
+
+        for (let i = 0; i < rowCount; i++) {
+            const rowNode = gridApi.getDisplayedRowAtIndex(i);
+            rowData.push(rowNode.data);
+        }
+
+        return rowData;
+    }
+
+    function getSelectedRowData() {
+        // Get the selected nodes and extract their data
+        const gridState = gridApi.getState();
+        const rowSelectionState = gridState.rowSelection;
+        const isSelectAll = rowSelectionState.selectAll;
+        const toggledNodes = rowSelectionState.toggledNodes;
+        if (isSelectAll) {
+            // 用户勾选了表头全选勾选框时，gridApi.getSelectedNodes()取不到数据，这里手动获取列表上的行数据
+            // gridApi.getState().rowSelection.toggledNodes 中记录了全选时用户取消了哪些选项的id值集合
+            let allRowData = getAllRowData();
+            if (_.isEmpty(toggledNodes)) {
+                return allRowData;
+            }
+            else {
+                const selectedData = allRowData.filter(dataItem => toggledNodes.indexOf(dataItem._id) < 0);
+                return selectedData;
+            }
+        }
+        else {
+            const selectedNodes = gridApi.getSelectedNodes();
+            const selectedData = selectedNodes.map(node => node.data);
+            return selectedData;
+        }
+    }
+
+    async function deleteSelectedRows() {
+        if (!gridOptions) {
+            console.error('Grid options not available. Ensure grid is initialized properly.');
+            return;
+        }
+
+        const selectedData = getSelectedRowData();
+        const selectedIds = selectedData.map(data => data._id);
+        console.log('Deleting Rows:', selectedIds);
+
+        // Check if any rows are selected
+        if (selectedIds.length === 0) {
+            alert('没有选中任何行！');
+            return;
+        }
+
+        try {
+            /* 后续支持批量删除接口可以改为只调用一次删除接口
+            // Call the API to delete the selected rows
+            const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: selectedIds })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Remove the selected rows from the grid
+                gridApi.applyTransaction({ remove: selectedData });
+            } else {
+                alert('删除行时发生错误');
+            }*/
+
+
+            for (const data of selectedData) {
+                const id = data._id;
+                // Call the API to delete each selected row
+                const response = await fetch(B6_TABLES_API + '/' + baseId + '/' + tableId + '/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server error! Status: ' + response.status);
+                }
+
+                const result = await response.json();
+
+                if (result.deleted) {
+                    // Remove the row from the grid only if the deletion was successful
+                    gridApi.applyServerSideTransaction({ remove: [data] });
+                } else {
+                    alert("删除 ID 为 " + id + " 的行失败");
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting rows:', error);
+            alert('删除行时发生错误，请稍后重试。');
+        }
+    }
+
+    function runAmisFormula(formula, data, catchBack, options) {
+        // evalMode为true表示公式表达式中不需要写外层${}
+        try {
+            return evaluate(formula, data, Object.assign({ evalMode: true }, options));
+        }
+        catch (ex) {
+            typeof catchBack === "function" && catchBack(ex);
+        }
+    }
+
+    function setRowDataFormulaValues(rowData) {
+        // 循环所有公式字段执行公式计算并设置值到rowData中
+        var dataTypeDefinitions = gridApi.getGridOption("dataTypeDefinitions");
+        var formulaFields = dataTypeDefinitions.formula.fields;
+        var success = true;
+
+        for (var formulaFieldName in formulaFields) {
+            if (formulaFields.hasOwnProperty(formulaFieldName)) {
+                var formulaField = formulaFields[formulaFieldName];
+                var formula = formulaField.formula;
+                var formulaValue = runAmisFormula(formula, rowData, function (ex) {
+                    console.warn("公式字段“" + formulaField.label + "”执行公式”" + formula + "“出错了，请检查公式配置：", ex);
+                    alert("公式字段“" + formulaField.label + "”执行公式”" + formula + "“出错了，请检查公式配置：" + (ex && ex.toString()));
+                    success = false;
+                });
+                // 检查结果是否为数值
+                if (typeof formulaValue === 'number') {
+                    // 四舍五入并保留两位小数
+                    formulaValue = Math.round(formulaValue * 100) / 100;
+                }
+                console.log("ag-grid amis formula run:", formulaField.label, formula, formulaValue);
+                rowData[formulaFieldName] = formulaValue;
+            }
+        }
+
+        return success;
+    }
+
+    // 创建一个新行数据，可以初始化为默认值或空值
+    function createNewRowData() {
+        const newRow = {};
+        // 可以给每个字段一个默认值，例如：
+        gridOptions.columnDefs.forEach(colDef => {
+            const dfValue = getFieldDefaultValue(colDef); // 设置为空或设置默认值
+            if (typeof dfValue != "undefined") {
+                newRow[colDef.field] = dfValue;
+            }
+        });
+
+        // 设置默认值后需要进行依赖字段默认值的公式计算
+        const isFormulaRunSuccess = setRowDataFormulaValues(newRow);
+        if (!isFormulaRunSuccess) {
+            return;
+        }
+        return newRow;
+    }
+
+    function getFieldDefaultValue(colDef) {
+        const fieldConfig = colDef.cellEditorParams.fieldConfig;
+        const defaultValue = fieldConfig.default_value;
+        if (typeof defaultValue !== "undefined") {
+            return defaultValue;
+        }
+        if (fieldConfig.type === "boolean") {
+            return false;
+        }
+    }
+
+    const FilterTypesMap = {
+        'equals': '=',
+        'notEqual': '!=',
+        'contains': 'contains',
+        'notContains': 'notcontains',
+        'startsWith': 'startswith',
+        'endsWith': 'endswith',
+        'lessThan': '<',
+        'lessThanOrEqual': '<=',
+        'greaterThan': '>',
+        'greaterThanOrEqual': '>=',
+        'empty': 'empty' //TODO 不支持
+    }
+
+    /**
+     * 把ag-grid filterModel 转为魔方filters格式
+     * @param filterModel 
+     */
+    function filterModelToOdataFilters(filterModel, colDefs) {
+        const filters = [];
+        _.forEach(filterModel, (value, key) => {
+            const fieldConfig = colDefs[key].cellEditorParams.fieldConfig;
+            if (value.type === 'between') {
+                if (value.filterType === "number") {
+                    filters.push([key, "between", [value.numberFrom, value.numberTo]]);
+                } else {
+                    if (value.filter) {
+                        filters.push([key, value.type, value.filter]);
+                    } else {
+                        filters.push([key, "between", [value.dateFrom, value.dateTo]]);
+                    }
+                }
+
+            } else {
+                let filterItem;
+                switch (fieldConfig.type) {
+                    case 'text':
+                    case 'textarea':
+                        filterItem = [key, FilterTypesMap[value.type], value.filter];
+                        filters.push(filterItem);
+                        break;
+                    case 'number':
+                        filterItem = [key, FilterTypesMap[value.type], value.filter];
+                        filters.push(filterItem);
+                        break;
+                    case 'select':
+                    case 'select-multiple':
+                        // 因为不需要支持多选，这里先不处理，如果要支持多选使用anyof过滤操作符应该就可以了，比如["category", "anyof", selectedCategories]
+                        const filterValues = value.values;
+                        if (filterValues.length) {
+                            let filterItem = [];
+                            for (let i = 0; i < filterValues.length; i++) {
+                                filterItem.push([key, "=", filterValues[i]]);
+                                if (i < filterValues.length - 1) {
+                                    filterItem.push("or");
+                                }
+                            }
+                            filters.push(filterItem);
+                        }
+                        break;
+                    case 'date':
+                    case 'datetime':
+                        let dateValue = new Date(value.dateFrom);
+                        if (fieldConfig.type === "date") {
+                            // 设置为日期的 UTC 0 点
+                            const timezoneOffset = dateValue.getTimezoneOffset();
+                            dateValue = new Date(dateValue.getTime() - timezoneOffset * 60 * 1000);
+                        }
+                        filterItem = [key, FilterTypesMap[value.type], dateValue];
+                        filters.push(filterItem);
+                        break;
+                    case 'boolean':
+                        let filterValue = value.values[0];
+                        if (typeof filterValue !== "boolean") {
+                            filterValue = filterValue === "true"
+                        }
+                        filterItem = [key, "=", filterValue];
+                        filters.push(filterItem);
+                        break;
+                    case 'formula':
+                        // 不支持公式字段过滤
+                        break;
+                }
+            }
+        })
+        return filters;
+    }
+
+    // 在文档加载后初始化表格
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeGrid();
+    });
+</script>
+
+
+</html>

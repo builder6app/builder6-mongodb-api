@@ -3,34 +3,31 @@ import { Request, Response } from 'express';
 import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
 
 import { PagesService } from './pages.service';
+import { LiquidService } from './liquid.service';
 
 
 
 @Controller('/b6/pages')
 export class PagesController {
-  constructor(private readonly pagesService: PagesService) {}
+  constructor(private readonly liquidService: LiquidService) {}
 
   @Get('')
   async Hello() {
     return 'Welcome to Builder6 Pages!';
   }
 
-  @Get(':appId/:pageId')
+  @Get(':template')
   async getDemo(
-    @Param('appId') appId: string,
-    @Param('pageId') pageId: string,
+    @Param('template') template: string,
     @Query() query: Record<string, any>,
     @Res() res: Response
   ) {
-    const template= pageId;
     const config = getConfigs();
     try {
-      const rendered = await this.pagesService.render(template, {
+      const rendered = await this.liquidService.render(template, {
         ...query,
-        appId,
-        pageId,
         config,
-      });
+      }); 
 
       res.status(200).send(rendered); // 返回渲染后的字符串
     } catch (error) {
