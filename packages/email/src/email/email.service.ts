@@ -26,7 +26,6 @@ export class EmailService {
           rejectUnauthorized: false
         }
       }
-      console.log('emailConfig:', this.emailConfig);
       this.transporter = nodemailer.createTransport(this.emailConfig);
     }
   }

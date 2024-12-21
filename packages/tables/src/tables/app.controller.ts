@@ -26,7 +26,7 @@ import {
 import { AuthGuard } from '@builder6/core';
 import { MetaService } from './meta.service';
 import * as path from 'path';
-import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
+import { getConfigs } from '@builder6/core';
 import { LiquidService } from './liquid.service';
 
 // 兼容 Steedos OpenAPI v1 格式的 api

@@ -1,6 +1,6 @@
 import { Get, Controller, Param, Res, Query } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
+import { getConfigs } from '@builder6/core';
 
 import { PagesService } from './pages.service';
 import { LiquidService } from './liquid.service';

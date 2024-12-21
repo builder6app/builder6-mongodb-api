@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { MongodbModule } from '@builder6/core';
@@ -14,12 +14,13 @@ import { AppController } from './app.controller';
 import { PluginModule } from '@builder6/core';
 import { EmailModule } from '@builder6/email';
 import { PagesModule } from '@builder6/pages';
-import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
+import { getConfigs, getEnvConfigs, getMoleculerConfigs } from '@builder6/core';
+import * as project from '../package.json';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [getConfigs, getDbConfigs],
+      load: [getConfigs],
       isGlobal: true, // 使配置在整个应用中可用
     }),
     MoleculerModule.forRoot({
@@ -28,6 +29,7 @@ import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
         transporter: process.env.B6_TRANSPORTER,
         // hotReload: true, // hotReload feature from moleculer will not work 
         ...getMoleculerConfigs(),
+        ...getEnvConfigs(),
     }),
     AuthModule,
     MongodbModule,
@@ -44,4 +46,24 @@ import { getConfigs, getDbConfigs, getMoleculerConfigs } from '@builder6/core';
   controllers: [AppController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule {
+  private readonly logger = new Logger(AppModule.name);
+
+  onModuleInit (){
+
+    const configs = getConfigs();
+    console.log("*************************************************************************************");
+    console.log("*")
+    console.log(`*  Builder6 Server ...`);
+    console.log("*")
+    console.log(`*  VERSION: ${project.version}`);
+    console.log("*")
+    console.log(`*  PORT: ${configs.port}`);
+    console.log(`*  MONGO_URL: ${configs.mongo.url}`);
+    console.log(`*  PROJECT_DIR: ${configs.home}`);
+    console.log("*")
+    console.log("*************************************************************************************");
+    console.log(configs)
+
+  }
+}

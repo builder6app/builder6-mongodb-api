@@ -12,7 +12,6 @@ yarn b6 start
 基本环境变量
 
 ```bash
-B6_ROOT_URL=http://localhost:5100
 B6_PORT=5100
 B6_MONGO_URL=mongodb://127.0.0.1:27017/steedos
 B6_TRANSPORTER=redis://127.0.0.1:6379

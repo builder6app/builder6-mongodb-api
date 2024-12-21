@@ -31,9 +31,9 @@ export default {
     },
   },
 
-  transporter: process.env.B6_TRANSPORTER,
+  transporter: process.env.TRANSPORTER,
 
-  cacher: process.env.B6_CACHER,
+  cacher: process.env.CACHER,
 
   serializer: 'JSON',
 
