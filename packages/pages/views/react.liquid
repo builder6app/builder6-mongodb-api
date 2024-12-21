@@ -2,23 +2,7 @@
 
 {% block content %}
 
-    <script src="https://cdn.tailwindcss.com"></script>
-            
-    <script src="{{config.unpkg.url}}/@builder6/react@3.2.17/dist/builder-react.browser.js"></script>
-    <script src="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/sdk.js"></script>
-
     <script src="{{config.unpkg.url}}/@babel/standalone/babel.min.js"></script>
-    <script src="{{config.unpkg.url}}/lodash@4.17.21/lodash.js"></script>
-    <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/themes/antd.css" />
-    <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/lib/helper.css" />
-    <link rel="stylesheet" href="{{config.unpkg.url}}/@steedos-widgets/amis@6.3.0-patch.3/sdk/iconfont.css" />
-    <script async>
-      window['React'] = amisRequire('react');
-      window['ReactDOM'] = amisRequire('react-dom');
-      window['moment'] = amisRequire('moment');
-      window['Builder'] = Builder6React.Builder;
-      window['builder'] = Builder6React.builder;
-    </script>
 
     <div id="root" class="w-full h-full"></div>
     <script type="text/babel">
