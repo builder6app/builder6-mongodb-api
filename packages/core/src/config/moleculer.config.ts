@@ -31,10 +31,10 @@ export default {
     },
   },
 
-  transporter: process.env.TRANSPORTER,
+  transporter: process.env.B6_TRANSPORTER,
 
-  cacher: process.env.CACHER,
-
+  cacher: process.env.B6_CACHER,
+  
   serializer: 'JSON',
 
   requestTimeout: 0,

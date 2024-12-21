@@ -51,19 +51,20 @@ export class AppModule {
 
   onModuleInit (){
 
-    const configs = getConfigs();
-    console.log("*************************************************************************************");
-    console.log("*")
-    console.log(`*  Builder6 Server ...`);
-    console.log("*")
-    console.log(`*  VERSION: ${project.version}`);
-    console.log("*")
-    console.log(`*  PORT: ${configs.port}`);
-    console.log(`*  MONGO_URL: ${configs.mongo.url}`);
-    console.log(`*  PROJECT_DIR: ${configs.home}`);
-    console.log("*")
-    console.log("*************************************************************************************");
-    console.log(configs)
-
   }
 }
+
+
+const configs = getConfigs();
+console.log("*************************************************************************************");
+console.log("*")
+console.log(`*  Builder6 Server ...`);
+console.log("*")
+console.log(`*  VERSION: ${project.version}`);
+console.log("*")
+console.log(`*  PORT: ${configs.port}`);
+console.log(`*  MONGO_URL: ${configs.mongo.url}`);
+console.log(`*  PROJECT_DIR: ${configs.home}`);
+console.log("*")
+console.log("*************************************************************************************");
+console.log(configs)
