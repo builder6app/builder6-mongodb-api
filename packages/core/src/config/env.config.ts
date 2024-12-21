@@ -12,6 +12,8 @@ process.env.B6_MONGO_URL = process.env.B6_MONGO_URL || process.env.MONGO_URL;
 process.env.B6_TRANSPORTER = process.env.B6_TRANSPORTER || process.env.TRANSPORTER || '';
 process.env.B6_CACHER = process.env.B6_CACHER || process.env.CACHER || '';
 
+process.env.B6_JWT_SECRET = process.env.B6_JWT_SECRET || process.env.JWT_SECRET || '';
+
 process.env.B6_HOME = process.cwd();
 process.env.B6_HOST = process.env.B6_HOST || process.env.B6_ROOT_URL;
 
