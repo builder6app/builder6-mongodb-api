@@ -5,6 +5,7 @@ import {
   SubscribeMessage,
 } from '@nestjs/websockets';
 import { WebSocket, Server } from 'ws';
+import * as ws from 'ws';
 import Redis from 'ioredis';
 import * as url from 'url';
 import { v4 as uuidv4 } from 'uuid';

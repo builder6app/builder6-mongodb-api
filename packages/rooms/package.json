@@ -10,8 +10,10 @@
     "build:watch": "rm -rf dist && tsc --watch"
   },
   "dependencies": {
-    "@builder6/core": "^0.8.3"
+    "@builder6/core": "^0.8.3",
+    "ws": "^8.18.0"
   },
+  "devDependencies": {},
   "jest": {
     "moduleFileExtensions": [
       "js",

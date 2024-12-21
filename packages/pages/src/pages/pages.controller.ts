@@ -23,7 +23,7 @@ export class PagesController {
     @Query() query: Record<string, any>,
     @Res() res: Response
   ) {
-    const template= pageId;
+    const template= appId;
     const config = getConfigs();
     try {
       const rendered = await this.liquidService.render(template, {

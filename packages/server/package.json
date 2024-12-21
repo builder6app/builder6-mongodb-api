@@ -72,7 +72,8 @@
     "regenerator-runtime": "^0.14.1",
     "rxjs": "^7.8.1",
     "sha256": "^0.2.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@nestjs/testing": "^9.0.0",
