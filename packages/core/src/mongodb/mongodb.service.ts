@@ -14,7 +14,6 @@ export class MongodbService {
 
   constructor(private configService: ConfigService) {
     const mongoUrl = configService.get('mongo.url');
-    console.log('mongoUrl', mongoUrl);
     this.client = new MongoClient(mongoUrl, {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
@@ -44,7 +43,6 @@ export class MongodbService {
 
   async find(collectionName: string, query: object, options: object = {}) {
     const collection = this.db.collection(collectionName);
-    this.logger.log('find', query, options);
     return await collection.find(query, options).toArray();
   }
 
