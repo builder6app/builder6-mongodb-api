@@ -1,88 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
+{% layout 'layout/theme.liquid' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AG Grid Enterprise with Dynamic Loading and Editing</title>
-    <!-- 引入 AG Grid 的 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
-    <style>
-        /* 设置表格的高度和宽度 */
-        html {
-            overflow: hidden;
-        }
+{% block content %}
 
-        html,
-        body {
-            height: 100%;
-        }
+  <div id="root" class="w-full h-full"></div>
+  <script type="text/javascript">
 
-        #myGrid {
-            height: calc(100% - 100px);
-            width: 100%;
-        }
-
-        .custom-tooltip {
-            padding: 5px;
-        }
-
-        .custom-tooltip p {
-            margin: 5px;
-            white-space: nowrap;
-        }
-
-        .custom-tooltip p:first-of-type {
-            font-weight: bold;
-        }
-
-        .verification-errors-row {
-            background-color: #cc693344;
-        }
-
-        .verification-errors-row .ag-cell-edit-wrapper {
-            border: solid 3px #cc693344 !important;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>AG Grid - Dynamic Loading and Editing</h1>
-    <div class="button-container">
-        <!-- 创建一个按钮来添加新行 -->
-        <button id="addRowBtn">Add New Row</button>
-        <button id="deleteButton">Delete Selected Rows</button>
-    </div>
-    <!-- 创建一个容器来放置 AG Grid -->
-    <div id="myGrid" class="ag-theme-alpine"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/lodash"></script>
-    <!-- 引入 AG Grid 的 JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/ag-grid-enterprise/dist/ag-grid-enterprise.noStyle.js"></script>
-    <!-- 引入 Amis Formula -->
-    <script type="module">
-        import * as amisFormula from 'https://cdn.skypack.dev/amis-formula';
-        window.amisFormula = amisFormula;
-        window.evaluate = amisFormula.evaluate;
-
-        // const expression = '${1 + 2 * 3}';
-        // const result = evaluate(expression);
-        // console.log('Result:', result); // Output: 7
-    </script>
-    <script type="module">
-        import * as locale from '/ag-grid/locale_zh.js';
-        window.agGridLocale = locale;
-    </script>
-</body>
-<script>
-
-    const B6_TABLES_API = '/api/v6/tables';
+const B6_TABLES_API = '/api/v6/tables';
     const baseId = '{{ baseId }}';
     const tableId = '{{ tableId }}';
-
-    // 启用 AG Grid 企业版
-    agGrid.LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
 
     let gridApi; // 提前声明 gridApi 以便全局访问
     let gridOptions; // 提前声明 gridOptions 以便全局访问
@@ -1088,11 +1013,17 @@
         return filters;
     }
 
-    // 在文档加载后初始化表格
-    document.addEventListener('DOMContentLoaded', function () {
-        initializeGrid();
-    });
-</script>
+    const schema = {
+      type: "ag-grid",
+      className: "flex flex-col m-3 gap-3",
+      config: {
 
-
-</html>
+      }
+    }
+    const data = {}
+    const env = {
+      assetUrls: ['https://unpkg.com/@steedos-widgets/ag-grid@6.3.11-beta.20/dist/assets.json'], 
+    }
+    renderAmis(document.getElementById('root'), schema, data, env)
+  </script> 
+{% endblock %}

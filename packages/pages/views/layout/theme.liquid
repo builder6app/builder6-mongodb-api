@@ -22,6 +22,70 @@
       window['builder'] = Builder6React.builder;
     </script>
 
+    <script>
+      renderAmis = function (dom, schema, data, env) {
+
+        const assetUrls = env.assetUrls
+        const content = {
+          data: {
+            blocks: [
+              {
+                "@type": "@builder.io/sdk:Element",
+                "@version": 2,
+                layerName: "Page",
+                id: `builder-assets`,
+                component: {
+                  name: "Core:AssetsLoader",
+                  options: {
+                    urls: assetUrls,
+                  },
+                },
+                children: [
+                  {
+                    id: `builder-amis`,
+                    "@type": "@builder.io/sdk:Element",
+                    "@version": 2,
+                    component: {
+                      name: "Core:Amis",
+                      options: {
+                        schema: schema,
+                        data: data,
+                        env,
+                      },
+                    },
+                    responsiveStyles: {
+                      large: {
+                        display: "flex",
+                        flexDirection: "column",
+                        position: "relative",
+                        flexShrink: "0",
+                        boxSizing: "border-box",
+                        width: "100%",
+                      },
+                    },
+                  },
+                ],
+                responsiveStyles: {
+                  large: {
+                    display: "flex" ,
+                    flexDirection: "column",
+                    position: "relative",
+                    flexShrink: "0",
+                    boxSizing: "border-box",
+                    width: "100%",
+                  },
+                },
+              },
+            ],
+          },
+        };
+
+
+        // 挂载到 DOM 上
+        const root = ReactDOM.createRoot(dom);
+        root.render(React.createElement(Builder6React.BuilderComponent, {content}));
+      }
+    </script>
   </head>
   <body>
     <main>

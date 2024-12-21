@@ -1,0 +1,19 @@
+{% layout 'layout/theme.liquid' %}
+
+{% block content %}
+
+  <div id="root" class="w-full h-full"></div>
+  <script type="text/javascript">
+    const schema = {
+      type: "rooms-comments",
+      className: "flex flex-col m-3 gap-3",
+      roomId: "test",
+      baseUrl: ""
+    }
+    const data = {}
+    const env = {
+      assetUrls: ['https://unpkg.com/@steedos-widgets/liveblocks@6.3.11-beta.20/dist/assets.json'], 
+    }
+    renderAmis(document.getElementById('root'), schema, data, env)
+  </script> 
+{% endblock %}

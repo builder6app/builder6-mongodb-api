@@ -3,5 +3,4 @@ export default {
   unpkg: {
     url: "https://unpkg.com",
   }
-
 }

@@ -16,22 +16,18 @@ export class PagesController {
     return 'Welcome to Builder6 Pages!';
   }
 
-  @Get(':appId/:pageId')
+  @Get(':template')
   async getDemo(
-    @Param('appId') appId: string,
-    @Param('pageId') pageId: string,
+    @Param('template') template: string,
     @Query() query: Record<string, any>,
     @Res() res: Response
   ) {
-    const template= appId;
     const config = getConfigs();
     try {
       const rendered = await this.liquidService.render(template, {
         ...query,
-        appId,
-        pageId,
         config,
-      });
+      }); 
 
       res.status(200).send(rendered); // 返回渲染后的字符串
     } catch (error) {
